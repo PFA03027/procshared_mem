@@ -1,0 +1,16 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "make build-test",
+			"type": "shell",
+			"command": "make BUILDTYPE=Debug build-test",
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+			}
+		},
+	]
+}
