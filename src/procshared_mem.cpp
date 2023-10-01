@@ -33,6 +33,8 @@ using type_of_errno = typename std::remove_reference<decltype( errno )>::type;
 
 procshared_mem_defer_t procshared_mem_defer;
 
+const char* p_id_file_base_dir = TMP_DIR_FOR_ID_FILE;
+
 std::string make_strerror( type_of_errno e_v )
 {
 #if ( _POSIX_C_SOURCE >= 200112L ) && !_GNU_SOURCE
@@ -289,9 +291,10 @@ struct procshared_mem::procshared_mem_mem_header {
 	}
 };
 
-procshared_mem::procshared_mem( const char* p_shm_name, off_t length, mode_t mode, const procshared_mem_defer_t& procshared_mem_defer_val )
+procshared_mem::procshared_mem( const char* p_shm_name, const char* p_id_dirname, off_t length, mode_t mode, const procshared_mem_defer_t& procshared_mem_defer_val )
   : pathname_( ( p_shm_name == nullptr ) ? "p_shm_name_is_nullptr" : p_shm_name )
-  , id_fname_( get_id_filename( p_shm_name ) )
+  , id_dirname_( ( p_id_dirname == nullptr ) ? "p_id_dirname_is_nullptr" : p_id_dirname )
+  , id_fname_( get_id_filename( p_shm_name, p_id_dirname ) )
   , mode_( mode )
   , length_( calc_total_len( length ) )
   , is_owner_( false )
@@ -304,9 +307,10 @@ procshared_mem::procshared_mem( const char* p_shm_name, off_t length, mode_t mod
 	check_path_name( p_shm_name );
 }
 
-procshared_mem::procshared_mem( const char* p_shm_name, off_t length, mode_t mode, std::function<void( void*, off_t )> initfunctor_arg )
+procshared_mem::procshared_mem( const char* p_shm_name, const char* p_id_dirname, off_t length, mode_t mode, std::function<void( void*, off_t )> initfunctor_arg )
   : pathname_( ( p_shm_name == nullptr ) ? "p_shm_name_is_nullptr" : p_shm_name )
-  , id_fname_( get_id_filename( p_shm_name ) )
+  , id_dirname_( ( p_id_dirname == nullptr ) ? "p_id_dirname_is_nullptr" : p_id_dirname )
+  , id_fname_( get_id_filename( p_shm_name, p_id_dirname ) )
   , mode_( mode )
   , length_( calc_total_len( length ) )
   , is_owner_( false )
@@ -321,8 +325,8 @@ procshared_mem::procshared_mem( const char* p_shm_name, off_t length, mode_t mod
 	setup_as_both();
 }
 
-procshared_mem::procshared_mem( const char* p_shm_name, off_t length, mode_t mode )
-  : procshared_mem( p_shm_name, length, mode, []( void*, off_t ) {} )
+procshared_mem::procshared_mem( const char* p_shm_name, const char* p_id_dirname, off_t length, mode_t mode )
+  : procshared_mem( p_shm_name, p_id_dirname, length, mode, []( void*, off_t ) {} )
 {
 }
 
@@ -359,9 +363,12 @@ void procshared_mem::check_path_name( const char* p_shm_name )
 	}
 }
 
-std::string procshared_mem::get_id_filename( const char* p_path_name_arg )
+std::string procshared_mem::get_id_filename( const char* p_path_name_arg, const char* p_id_dirname_arg )
 {
-	std::string ans( TMP_DIR_FOR_ID_FILE );
+	if ( p_path_name_arg == nullptr ) {
+		throw procshared_mem_error( "p_path_name_arg is nullptr" );
+	}
+	std::string ans( ( p_id_dirname_arg != nullptr ) ? p_id_dirname_arg : TMP_DIR_FOR_ID_FILE );
 	return ans + std::string( p_path_name_arg );
 }
 

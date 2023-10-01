@@ -2,7 +2,7 @@
  class of shared memory b/w processes and it startup asyncronous
 
 # using resources
- in case that shared memory name is "/test_shm", below resource are used;
+ in case that shared memory name is "/test_shm" and id directory name is "/tmp", below resource are used;
  * semaphore file by sem_open() that names "/test_shm"
  * id file by open() that names "/tmp/test_shm"  This is empry file, but inode number is refered.
  * shared memory by shm_open() that names "/tmp_shm"  Length of this shard memory is set by class procshared_mem's constructor argument.

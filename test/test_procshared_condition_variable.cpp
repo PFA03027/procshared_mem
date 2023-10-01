@@ -229,7 +229,7 @@ TEST( Test_procshared_condition_variable_bw_proc, CanWaitForPred_Timeout )
 {
 	// Arrange
 	procshared_mem::debug_force_cleanup( p_shm_obj_name );   // to remove ghost data
-	procshared_mem                     shm_obj( p_shm_obj_name, 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, []( void* p_mem, off_t len ) {
+	procshared_mem                     shm_obj( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, []( void* p_mem, off_t len ) {
         if ( p_mem == nullptr ) {
             return;
         }
@@ -245,7 +245,7 @@ TEST( Test_procshared_condition_variable_bw_proc, CanWaitForPred_Timeout )
 
 	// Act
 	std::thread t1( std::move( task1 ), []() -> int {
-		procshared_mem shm_obj_secondary( p_shm_obj_name, 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, procshared_mem_defer );
+		procshared_mem shm_obj_secondary( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, procshared_mem_defer );
 		shm_obj_secondary.allocate_shm_as_secondary();
 		if ( not shm_obj_secondary.debug_test_integrity() ) {
 			return 1;
@@ -277,7 +277,7 @@ TEST( Test_procshared_condition_variable_bw_proc, CanWaitForPred_NoTimeout )
 {
 	// Arrange
 	procshared_mem::debug_force_cleanup( p_shm_obj_name );   // to remove ghost data
-	procshared_mem    shm_obj( p_shm_obj_name, 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, []( void* p_mem, off_t len ) {
+	procshared_mem    shm_obj( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, []( void* p_mem, off_t len ) {
         if ( p_mem == nullptr ) {
             return;
         }
@@ -292,7 +292,7 @@ TEST( Test_procshared_condition_variable_bw_proc, CanWaitForPred_NoTimeout )
 	std::future<child_proc_return_t>                                f1 = task1.get_future();
 
 	std::thread t1( std::move( task1 ), []() -> int {
-		procshared_mem shm_obj_secondary( p_shm_obj_name, 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, procshared_mem_defer );
+		procshared_mem shm_obj_secondary( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, procshared_mem_defer );
 		shm_obj_secondary.allocate_shm_as_secondary();
 		if ( not shm_obj_secondary.debug_test_integrity() ) {
 			return 1;

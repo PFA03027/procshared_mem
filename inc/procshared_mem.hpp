@@ -44,6 +44,7 @@ public:
 	 * To allocate a shared memory, please call allocate_shm_as_both(), allocate_shm_as_primary() or allocate_shm_as_secondary().
 	 *
 	 * @param p_shm_name shared memory name. this string should start '/' and shorter than NAME_MAX-4
+	 * @param p_id_dirname directory name of id file. e.g. "/tmp"
 	 * @param length shared memory size
 	 * @param mode access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
 	 *
@@ -51,7 +52,7 @@ public:
 	 *
 	 * @note p_shm_name string AAA must follow POSIX semaphore name specifications. please refer sem_open or sem_overview
 	 */
-	procshared_mem( const char* p_shm_name, off_t length, mode_t mode, const procshared_mem_defer_t& procshared_mem_defer_val );
+	procshared_mem( const char* p_shm_name, const char* p_id_dirname, off_t length, mode_t mode, const procshared_mem_defer_t& procshared_mem_defer_val );
 
 	/**
 	 * @brief Construct a new cooperative startup shared memory object
@@ -59,6 +60,7 @@ public:
 	 * This constructor allocates a shared memory during constructor.
 	 *
 	 * @param p_shm_name shared memory name. this string should start '/' and shorter than NAME_MAX-4
+	 * @param p_id_dirname directory name of id file. e.g. "/tmp"
 	 * @param length shared memory size
 	 * @param mode access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
 	 *
@@ -66,7 +68,7 @@ public:
 	 *
 	 * @note p_shm_name string AAA must follow POSIX semaphore name specifications. please refer sem_open or sem_overview
 	 */
-	procshared_mem( const char* p_shm_name, off_t length, mode_t mode );
+	procshared_mem( const char* p_shm_name, const char* p_id_dirname, off_t length, mode_t mode );
 
 	/**
 	 * @brief Construct a new cooperative startup shared memory object
@@ -75,6 +77,7 @@ public:
 	 * If an instance got as a primary role, it calls a functor initfunctor_arg() after finish setup of a shared memory
 	 *
 	 * @param p_shm_name shared memory name. this string should start '/' and shorter than NAME_MAX-4
+	 * @param p_id_dirname directory name of id file. e.g. "/tmp"
 	 * @param length shared memory size
 	 * @param mode access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
 	 * @param initfunctor_arg a functor to initialize a shared memory area that length is same to an argument 'length'
@@ -83,7 +86,7 @@ public:
 	 *
 	 * @note p_shm_name string AAA must follow POSIX semaphore name specifications. please refer sem_open or sem_overview
 	 */
-	procshared_mem( const char* p_shm_name, off_t length, mode_t mode, std::function<void( void*, off_t )> initfunctor_arg );
+	procshared_mem( const char* p_shm_name, const char* p_id_dirname, off_t length, mode_t mode, std::function<void( void*, off_t )> initfunctor_arg );
 
 	~procshared_mem();
 
@@ -112,11 +115,12 @@ private:
 	void close_resources( void );
 	void remove_resources( void );
 
-	static std::string get_id_filename( const char* p_path_name_arg );
+	static std::string get_id_filename( const char* p_path_name_arg, const char* p_id_dirname_arg );
 	static ino_t       get_inode_of_fd( int id_f_fd );
 	static off_t       calc_total_len( off_t requested_length );
 
 	const std::string                   pathname_;
+	const std::string                   id_dirname_;
 	const std::string                   id_fname_;
 	const mode_t                        mode_;
 	const off_t                         length_;
