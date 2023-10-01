@@ -22,6 +22,10 @@ if(NOT EXISTS "${PROJECT_SOURCE_DIR}/test/googletest/CMakeLists.txt")
 message(FATAL_ERROR "The submodules were not downloaded! GOOGLETEST was turned off or failed. Please update submodules and try again.")
 endif()
 
+# Google Testの不要なキャッシュ変数をオフにしておく
+option(BUILD_GMOCK "Builds the googlemock subprojects" OFF)
+option(INSTALL_GTEST "Enables installation of googletest" OFF)
+
 add_custom_target(build-test)
 
 add_subdirectory(googletest)
