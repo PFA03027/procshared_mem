@@ -13,6 +13,8 @@
 
 #include "procshared_krmalloc.hpp"
 
+#include "test_procshared_common.hpp"
+
 TEST( ProcShared_KRmalloc_Cntr, CanConstruct )
 {
 	// Arrange
@@ -91,6 +93,39 @@ TEST_F( ProcShared_KRmalloc, CanAllocateSmall )
 
 	// Act
 	void* p_allc_mem = p_sut->allocate( 10 );
+
+	// Assert
+	EXPECT_NE( p_allc_mem, nullptr );
+}
+
+TEST_F( ProcShared_KRmalloc, CanAllocateSmallwSmallAlignment )
+{
+	// Arrange
+
+	// Act
+	void* p_allc_mem = p_sut->allocate( 20, 8 );
+
+	// Assert
+	EXPECT_NE( p_allc_mem, nullptr );
+}
+
+TEST_F( ProcShared_KRmalloc, CanAllocateSmallwEQAlignment )
+{
+	// Arrange
+
+	// Act
+	void* p_allc_mem = p_sut->allocate( 20, 16 );
+
+	// Assert
+	EXPECT_NE( p_allc_mem, nullptr );
+}
+
+TEST_F( ProcShared_KRmalloc, CanAllocateSmallwBigAlignment )
+{
+	// Arrange
+
+	// Act
+	void* p_allc_mem = p_sut->allocate( 20, 128 );
 
 	// Assert
 	EXPECT_NE( p_allc_mem, nullptr );

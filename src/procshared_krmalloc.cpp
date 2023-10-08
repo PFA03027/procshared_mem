@@ -35,15 +35,15 @@ procshared_mem_krmalloc::procshared_mem_krmalloc( size_t mem_bytes )
   , op_freep_( nullptr )
   , base_blk_( nullptr, 0 )
 {
-	uintptr_t addr_buff = reinterpret_cast<uintptr_t>( buff_ );
-	uintptr_t addr_top  = ( ( addr_buff + sizeof( block::block_header ) - 1 ) / sizeof( block::block_header ) ) * sizeof( block::block_header );
+	uintptr_t addr_buff = reinterpret_cast<uintptr_t>( base_blk_.block_body_ );
+	uintptr_t addr_top  = ( ( addr_buff + size_of_block_header() - 1 ) / size_of_block_header() ) * size_of_block_header();
 	uintptr_t diff      = addr_top - addr_buff;
 
 	if ( mem_bytes <= ( diff + sizeof( procshared_mem_krmalloc ) ) ) {
 		throw std::bad_alloc();
 	}
 
-	size_t num_of_blocks = ( mem_bytes - ( diff + sizeof( procshared_mem_krmalloc ) ) ) / sizeof( block::block_header );
+	size_t num_of_blocks = ( mem_bytes - ( diff + sizeof( procshared_mem_krmalloc ) ) ) / size_of_block_header();
 	if ( num_of_blocks < 2 ) {
 		throw std::bad_alloc();
 	}
@@ -54,9 +54,12 @@ procshared_mem_krmalloc::procshared_mem_krmalloc( size_t mem_bytes )
 	op_freep_ = &base_blk_;
 }
 
-void* procshared_mem_krmalloc::allocate( size_t req_bytes )
+void* procshared_mem_krmalloc::allocate( size_t req_bytes, size_t alignment )
 {
-	size_t req_num_of_blocks_w_header = bytes2blocksize( req_bytes ) + 1;
+	const size_t real_alignment  = ( alignment == 0 ) ? 1 : alignment;
+	const size_t additional_size = ( alignment <= size_of_block_header() ) ? 0 : ( alignment - size_of_block_header() );
+
+	size_t req_num_of_blocks_w_header = bytes2blocksize( req_bytes + additional_size ) + 1;
 
 	std::lock_guard<procshared_mutex> lk( mtx_ );
 
@@ -71,21 +74,49 @@ void* procshared_mem_krmalloc::allocate( size_t req_bytes )
 			// 要求ブロック数より大きい空きブロック本体を持つブロックを見つけたので、後ろから切り出す。
 			size_t new_block_size = p_cur_blk->active_header_.size_of_this_block_ - req_num_of_blocks_w_header;
 			block* p_ans          = reinterpret_cast<block*>( &( p_cur_blk->block_body_[new_block_size - 1] ) );
+			// 候補として値を設定し、最適化の余地を確認する。
+			// なお、この確認は、deallocate動作で一意にblockの開始位置を決定できることを保証するためでもある。
+			p_ans->set_next_ptr( nullptr );
+			p_ans->set_blk_size( req_num_of_blocks_w_header );
+			size_t opt_val = p_ans->header_slot_optimize( real_alignment );   // 補正量を算出
+			req_num_of_blocks_w_header -= opt_val;
+			new_block_size = p_cur_blk->active_header_.size_of_this_block_ - req_num_of_blocks_w_header;
+			p_ans          = reinterpret_cast<block*>( &( p_cur_blk->block_body_[new_block_size - 1] ) );
+
 			p_cur_blk->set_blk_size( new_block_size );
 			op_freep_ = p_cur_blk;
 
 			p_ans->set_next_ptr( nullptr );
 			p_ans->set_blk_size( req_num_of_blocks_w_header );
-			return p_ans->get_body_ptr();
+			return p_ans->get_body_ptr( real_alignment );
 
 		} else if ( ( p_pre_blk != nullptr ) && ( p_cur_blk->active_header_.size_of_this_block_ >= req_num_of_blocks_w_header ) ) {
-			// 要求ブロック数と同じ大きさ or + 1の空きブロック本体を持つブロックを見つけたので、このブロックを返す。また、ブロックリストから外す。
-			p_pre_blk->set_next_ptr( p_nxt_blk );
-			op_freep_ = p_pre_blk;
+			// 要求ブロック数と同じ大きさの空きブロック本体を持つブロックを見つけたので、このブロックを返す。また、ブロックリストから外す。
+			// 要求ブロック数+ 1の空きブロック本体を持つブロックを見つけたので、このブロックを返す。また、ブロックリストから外す。
+			// また、候補として値を設定し、最適化の余地を確認する。
+			// なお、この確認は、deallocate動作で一意にblockの開始位置を決定できることを保証するためでもある。
+			size_t opt_val = p_cur_blk->header_slot_optimize( real_alignment );   // 補正量を算出
+			block* p_ans   = nullptr;
+			if ( opt_val == 0 ) {
+				// 補正は必要ないので、そのままブロックリストから外す
+				p_pre_blk->set_next_ptr( p_nxt_blk );
 
-			block* p_ans = p_cur_blk;
-			p_ans->set_next_ptr( nullptr );
-			return p_ans->get_body_ptr();
+				block* p_ans = p_cur_blk;
+				p_ans->set_next_ptr( nullptr );
+			} else {
+				// 補正分だけ、返す位置を変える
+				block* p_ans = reinterpret_cast<block*>( &( p_cur_blk->block_body_[opt_val - 1] ) );
+				req_num_of_blocks_w_header -= opt_val;
+				p_ans->set_next_ptr( nullptr );
+				p_ans->set_blk_size( req_num_of_blocks_w_header );
+
+				// 補正分だけ、preのサイズを補正する
+				p_pre_blk->set_next_ptr( p_nxt_blk );
+				size_t pre_blk_new_size = p_pre_blk->get_blk_size() + opt_val;
+				p_pre_blk->set_blk_size( pre_blk_new_size );
+			}
+			op_freep_ = p_pre_blk;
+			return p_ans->get_body_ptr( real_alignment );
 		}
 
 		// 次のブロックを探す
@@ -96,10 +127,10 @@ void* procshared_mem_krmalloc::allocate( size_t req_bytes )
 	return nullptr;
 }
 
-void procshared_mem_krmalloc::deallocate( void* p )
+void procshared_mem_krmalloc::deallocate( void* p, size_t alignment )
 {
 	uintptr_t addr_p   = reinterpret_cast<uintptr_t>( p );
-	uintptr_t addr_top = reinterpret_cast<uintptr_t>( buff_ );
+	uintptr_t addr_top = reinterpret_cast<uintptr_t>( base_blk_.block_body_ );
 	uintptr_t addr_end = addr_top + mem_size_;
 	if ( addr_p < addr_top ) {
 		// out of range
@@ -109,12 +140,8 @@ void procshared_mem_krmalloc::deallocate( void* p )
 		// out of range
 		return;
 	}
-	if ( ( addr_p % sizeof( block::block_header ) ) != 0 ) {
-		// invalid address
-		return;
-	}
 
-	uintptr_t    addr_target_blk = addr_p - sizeof( block::block_header );
+	uintptr_t    addr_target_blk = ( addr_p / size_of_block_header() - 1 ) * size_of_block_header();
 	block* const p_target_blk    = reinterpret_cast<block*>( addr_target_blk );
 
 	std::lock_guard<procshared_mutex> lk( mtx_ );
