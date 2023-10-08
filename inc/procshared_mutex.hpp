@@ -55,6 +55,6 @@ private:
 	procshared_mutex_base mtx_;
 };
 
-static_assert( std::is_standard_layout<procshared_mutex>::value, "procshared_mutex needs standard layout" );
+static_assert( std::is_standard_layout<procshared_mutex>::value, "procshared_mutex should be standard layout" );
 
 #endif   // PROCSHARED_MUTEX_HPP_

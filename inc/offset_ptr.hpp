@@ -3,7 +3,7 @@
  * @author Teruaki Ata (PFA03027@nifty.com)
  * @brief offset base pointer
  * @version 0.1
- * @date 2023-10-02
+ * @date 2023-08-19
  *
  * @copyright Copyright (c) 2023, Teruaki Ata (PFA03027@nifty.com)
  *
@@ -25,11 +25,15 @@
 template <typename T>
 class offset_ptr {
 public:
-	using value_type        = T;
-	using pointer           = value_type*;
-	using reference         = value_type&;   // std::add_lvalue_reference<value_type>::type;
-	using difference_type   = decltype( std::declval<pointer>() - std::declval<pointer>() );
+	using value_type      = T;
+	using pointer         = value_type*;
+	using reference       = value_type&;      // std::add_lvalue_reference<value_type>::type;
+	using difference_type = std::ptrdiff_t;   // using difference_type = decltype( std::declval<pointer>() - std::declval<pointer>() );
+#if __cplusplus >= 202002L
 	using iterator_category = std::contiguous_iterator_tag;
+#else
+	using iterator_category = std::random_access_iterator_tag;
+#endif
 
 	constexpr offset_ptr( void ) noexcept
 	  : offset_( calc_offset_as_nullptr( this ) )
