@@ -7,6 +7,12 @@
  *
  * @copyright Copyright (c) 2023, Teruaki Ata (PFA03027@nifty.com)
  *
+ * 作ってみたはよいが、じつはすでに boost::interprocess::offset_ptr というのがあった。thisポインタをうまく使うというコンセプトもまったく同じ。
+ * まぁ、だれでも思いつきそうだしなぁ。誰かが作っていそうだとは思ってた。( 一一)
+ *
+ * 下記が、それ。う～ん、車輪の再発明かぁ。まぁ、しょうがない。
+ * https://www.boost.org/doc/libs/1_36_0/doc/html/interprocess/offset_ptr.html
+ *
  */
 
 #ifndef OFFSET_PTR_HPP_
