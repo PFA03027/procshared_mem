@@ -30,14 +30,7 @@ public:
 		 allocate( size_t req_bytes, size_t alignment = alignof( std::max_align_t ) );
 	void deallocate( void* p, size_t alignment = alignof( std::max_align_t ) );
 
-	static constexpr inline size_t size_of_block_header( void )
-	{
-		return sizeof( block::block_header );
-	}
-
 private:
-	procshared_mem_krmalloc( size_t mem_bytes );
-
 	struct block {
 		struct block_header {
 			offset_ptr<block> op_next_block_;        // 次のブロックへのオフセットポインタ
@@ -114,10 +107,14 @@ private:
 		block_header block_body_[0];   // ブロック本体。ブロックをブロックヘッダー単位で分割管理するので、block_header型の配列としてアクセスできるように定義
 	};
 
-	inline static size_t bytes2blocksize( size_t bytes )
-	{
-		return ( bytes + sizeof( block::block_header ) - 1 ) / sizeof( block::block_header );
-	}
+	procshared_mem_krmalloc( size_t mem_bytes );
+	procshared_mem_krmalloc( const procshared_mem_krmalloc& )            = delete;
+	procshared_mem_krmalloc( procshared_mem_krmalloc&& )                 = delete;
+	procshared_mem_krmalloc& operator=( const procshared_mem_krmalloc& ) = delete;
+	procshared_mem_krmalloc& operator=( procshared_mem_krmalloc&& )      = delete;
+
+	static constexpr size_t size_of_block_header( void );
+	static constexpr size_t bytes2blocksize( size_t bytes );
 
 	const size_t      mem_size_;
 	procshared_mutex  mtx_;

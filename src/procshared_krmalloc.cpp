@@ -29,6 +29,16 @@ procshared_mem_krmalloc::block::block( procshared_mem_krmalloc::block* p_next_ar
 {
 }
 
+constexpr size_t procshared_mem_krmalloc::size_of_block_header( void )
+{
+	return sizeof( block::block_header );
+}
+
+constexpr size_t procshared_mem_krmalloc::bytes2blocksize( size_t bytes )
+{
+	return ( bytes + sizeof( block::block_header ) - 1 ) / sizeof( block::block_header );
+}
+
 procshared_mem_krmalloc::procshared_mem_krmalloc( size_t mem_bytes )
   : mem_size_( mem_bytes )
   , mtx_()
