@@ -62,6 +62,11 @@ public:
 		orig.offset_ = calc_offset_as_nullptr( &orig );
 	}
 
+	constexpr offset_ptr( nullptr_t ) noexcept
+	  : offset_( calc_offset_as_nullptr( this ) )
+	{
+	}
+
 	offset_ptr& operator=( const offset_ptr& orig ) noexcept
 	{
 		// if( this == &orig ) return *this;

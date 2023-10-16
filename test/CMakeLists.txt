@@ -85,3 +85,11 @@ target_link_libraries(test_procshared_malloc procshared_mem test_procshared_comm
 add_dependencies(build-test test_procshared_malloc)
 add_test(NAME test_procshared_malloc COMMAND $<TARGET_FILE:test_procshared_malloc>)
 
+
+add_executable(test_offset_based_unique_ptr EXCLUDE_FROM_ALL test_offset_based_unique_ptr.cpp)
+target_include_directories(test_offset_based_unique_ptr  PUBLIC ../inc  )
+target_link_libraries(test_offset_based_unique_ptr gtest gtest_main )
+add_dependencies(build-test test_offset_based_unique_ptr)
+add_test(NAME test_offset_based_unique_ptr COMMAND $<TARGET_FILE:test_offset_based_unique_ptr>)
+target_compile_features(test_offset_based_unique_ptr PUBLIC cxx_std_20)
+target_compile_options(test_offset_based_unique_ptr PUBLIC -fconcepts-diagnostics-depth=2)
