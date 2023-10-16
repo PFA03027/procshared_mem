@@ -11,34 +11,34 @@
 
 #include "gtest/gtest.h"
 
-#include "procshared_krmalloc.hpp"
+#include "procshared_malloc.hpp"
 
 #include "test_procshared_common.hpp"
 
-TEST( ProcShared_KRmalloc_Cntr, CanConstruct )
+TEST( ProcShared_Malloc_Cntr, CanConstruct )
 {
 	// Arrange
-	void*                    p_mem       = malloc( 1024 );
-	procshared_mem_krmalloc* p_mem_alloc = nullptr;
+	void*                  p_mem       = malloc( 1024 );
+	procshared_mem_malloc* p_mem_alloc = nullptr;
 
 	// Act
-	ASSERT_NO_THROW( p_mem_alloc = procshared_mem_krmalloc::make( p_mem, 1024 ) );
+	ASSERT_NO_THROW( p_mem_alloc = new procshared_mem_malloc( p_mem, 1024 ) );
 
 	// Assert
 	EXPECT_NE( p_mem_alloc, nullptr );
 
 	// Clean-up
-	procshared_mem_krmalloc::teardown( p_mem_alloc );
+	delete p_mem_alloc;
 	free( p_mem );
 }
 
-TEST( ProcShared_KRmalloc_Cntr, FailConstruct1 )
+TEST( ProcShared_Malloc_Cntr, FailConstruct1 )
 {
 	// Arrange
-	void* p_mem = malloc( sizeof( procshared_mem_krmalloc ) + 10 );
+	void* p_mem = malloc( sizeof( procshared_mem_malloc ) + 10 );
 
 	// Act
-	EXPECT_ANY_THROW( procshared_mem_krmalloc::make( p_mem, sizeof( procshared_mem_krmalloc ) + 10 ) );
+	EXPECT_ANY_THROW( procshared_mem_malloc mm( p_mem, sizeof( procshared_mem_malloc ) + 10 ) );
 
 	// Assert
 
@@ -46,13 +46,13 @@ TEST( ProcShared_KRmalloc_Cntr, FailConstruct1 )
 	free( p_mem );
 }
 
-TEST( ProcShared_KRmalloc_Cntr, FailConstruct2 )
+TEST( ProcShared_Malloc_Cntr, FailConstruct2 )
 {
 	// Arrange
 	void* p_mem = malloc( 10 );
 
 	// Act
-	EXPECT_ANY_THROW( procshared_mem_krmalloc::make( p_mem, 20 ) );
+	EXPECT_ANY_THROW( procshared_mem_malloc mm( p_mem, 20 ) );
 
 	// Assert
 
@@ -74,17 +74,17 @@ public:
 		uintptr_t addr = reinterpret_cast<uintptr_t>( p_mem_ );
 		addr           = ( ( addr + 16 - 1 ) / 16 ) * 16;   // block::block_headerのサイズでアライメントを採る。
 
-		p_sut = procshared_mem_krmalloc::make( reinterpret_cast<void*>( addr ), alloc_mem_size_ );
+		p_sut = new procshared_mem_malloc( reinterpret_cast<void*>( addr ), alloc_mem_size_ );
 	}
 	void TearDown() override
 	{
 		// Clean-up
-		procshared_mem_krmalloc::teardown( p_sut );
+		delete ( p_sut );
 		free( p_mem_ );
 	}
 
-	void*                    p_mem_;
-	procshared_mem_krmalloc* p_sut;
+	void*                  p_mem_;
+	procshared_mem_malloc* p_sut;
 };
 
 TEST_F( ProcShared_Malloc, CanAllocateSmall )
@@ -154,18 +154,6 @@ TEST_F( ProcShared_Malloc, CanDeallocate1 )
 }
 
 TEST_F( ProcShared_Malloc, CanDeallocate2 )
-{
-	// Arrange
-	void* p_allc_mem = p_sut->allocate( alloc_mem_size_ - sizeof( procshared_mem_krmalloc ) - 48 /* procshared_mem_krmalloc::block::block_header */ );
-	ASSERT_NE( p_allc_mem, nullptr );
-
-	// Act
-	EXPECT_NO_THROW( p_sut->deallocate( p_allc_mem ) );
-
-	// Assert
-}
-
-TEST_F( ProcShared_Malloc, CanDeallocate3 )
 {
 	// Arrange
 	void* p_allc_mem1 = p_sut->allocate( 10 );

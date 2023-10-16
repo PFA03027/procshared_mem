@@ -74,7 +74,14 @@ target_compile_features(test_offset_ptr PUBLIC cxx_std_20)
 target_compile_options(test_offset_ptr PUBLIC -fconcepts-diagnostics-depth=2)
 
 add_executable(test_procshared_krmalloc EXCLUDE_FROM_ALL test_procshared_krmalloc.cpp)
+target_include_directories(test_procshared_krmalloc  PUBLIC ../src  )
 target_link_libraries(test_procshared_krmalloc procshared_mem test_procshared_common gtest gtest_main )
 add_dependencies(build-test test_procshared_krmalloc)
 add_test(NAME test_procshared_krmalloc COMMAND $<TARGET_FILE:test_procshared_krmalloc>)
+
+add_executable(test_procshared_malloc EXCLUDE_FROM_ALL test_procshared_malloc.cpp)
+target_include_directories(test_procshared_malloc  PUBLIC ../src  )
+target_link_libraries(test_procshared_malloc procshared_mem test_procshared_common gtest gtest_main )
+add_dependencies(build-test test_procshared_malloc)
+add_test(NAME test_procshared_malloc COMMAND $<TARGET_FILE:test_procshared_malloc>)
 
