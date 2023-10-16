@@ -47,6 +47,7 @@ public:
 	{
 	}
 
+#if ( __cplusplus >= 202002L )
 	template <class U = T, class E = D,
 	          typename std::enable_if<std::is_nothrow_convertible<typename offset_based_unique_ptr<U, E>::pointer, pointer>::value &&
 	                                  ( !std::is_array<U>::value ) &&
@@ -56,8 +57,22 @@ public:
 	  , deleter_( u.deleter_ )
 	{
 	}
+#else
+	template <class U = T, class E = D,
+	          typename std::enable_if<std::is_convertible<typename offset_based_unique_ptr<U, E>::pointer, pointer>::value &&
+	                                  ( !std::is_array<U>::value ) &&
+	                                  std::is_convertible<E, D>::value>::type* = nullptr>
+	offset_based_unique_ptr( offset_based_unique_ptr<U, E>&& u )
+	  : op_target_( u.release() )
+	  , deleter_( u.deleter_ )
+	{
+	}
+#endif
 
-	constexpr ~offset_based_unique_ptr()
+#if ( __cplusplus >= 202002L )
+	constexpr
+#endif
+		~offset_based_unique_ptr()
 	{
 		reset();
 	}

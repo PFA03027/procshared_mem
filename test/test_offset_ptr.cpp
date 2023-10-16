@@ -18,6 +18,7 @@
 
 #include "offset_ptr.hpp"
 
+#if ( __cpp_concepts >= 201907L )
 template <std::contiguous_iterator I>
 bool f( I x )
 {
@@ -41,6 +42,7 @@ TEST( OffsetPtr, CanDefaultConstruct )
 	EXPECT_EQ( op_a.get(), nullptr );
 	EXPECT_TRUE( f( op_a ) );
 }
+#endif
 
 TEST( OffsetPtr, CanConstruct )
 {
