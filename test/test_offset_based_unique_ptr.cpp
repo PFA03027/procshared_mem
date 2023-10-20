@@ -466,6 +466,26 @@ TEST( OffsetBasedUniquePtr, CanArrowOp )
 	EXPECT_EQ( oup_sut->y, 2 );
 }
 
+TEST( OffsetBasedUniquePtr, CanArrayOperator )
+{
+	// Arrange
+	ArrowOpTest* p_raw = new ArrowOpTest[10];
+	p_raw[0].x         = 1;
+	p_raw[0].y         = 2;
+	p_raw[1].x         = 3;
+	p_raw[1].y         = 4;
+
+	// Act
+	offset_based_unique_ptr<ArrowOpTest[]> oup_sut( p_raw );
+
+	// Assert
+	ASSERT_NE( oup_sut.get(), nullptr );
+	EXPECT_EQ( oup_sut[0].x, 1 );
+	EXPECT_EQ( oup_sut[0].y, 2 );
+	EXPECT_EQ( oup_sut[1].x, 3 );
+	EXPECT_EQ( oup_sut[1].y, 4 );
+}
+
 TEST( OffsetBasedUniquePtr, CanOperators )
 {
 	// Arrange
