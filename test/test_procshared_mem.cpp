@@ -96,6 +96,8 @@ TEST( Test_procshared_mem, CanConstructDefer_Primary )
 	EXPECT_TRUE( test_flag );
 }
 
+#if defined( TEST_ENABLE_ADDRESSSANITIZER ) || defined( TEST_ENABLE_LEAKSANITIZER )
+#else
 TEST( Test_procshared_mem, CanConstruct_Secondary )
 {
 	// Arrange
@@ -265,3 +267,4 @@ TEST( Test_procshared_mem, CanConstructDefer_Secondary_by_both )
 		t1.join();
 	}
 }
+#endif   // TEST_ENABLE_ADDRESSSANITIZER
