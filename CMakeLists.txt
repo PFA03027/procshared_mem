@@ -23,6 +23,6 @@ else()
   add_library(procshared_mem STATIC ${SOURCES} )
 endif()
 
-target_include_directories(procshared_mem  PUBLIC inc  )
+target_include_directories( procshared_mem  PUBLIC inc )
 
 add_subdirectory(test)

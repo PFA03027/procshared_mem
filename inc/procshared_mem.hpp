@@ -24,8 +24,8 @@
 #include <unistd.h>
 
 class semaphore_post_guard;
-class procshared_mem_defer_t {};
-extern procshared_mem_defer_t procshared_mem_defer;
+class procshared_mem_defer_t {};                      // tag type
+extern procshared_mem_defer_t procshared_mem_defer;   // tag object
 
 /**
  * @brief Async initialized shared memory

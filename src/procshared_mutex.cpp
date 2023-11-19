@@ -27,6 +27,9 @@ procshared_mutex_base::procshared_mutex_base( int kind )
 		std::error_code ec( ret, std::system_category() );
 		throw std::system_error( ec, " fail to set pthread kind by pthread_mutexattr_settype()" );
 	}
+
+	// TODO: should be set robust
+
 	ret = pthread_mutexattr_setpshared( &attr, PTHREAD_PROCESS_SHARED );
 	if ( ( ret != ENOSYS ) && ( ret != 0 ) ) {
 		std::error_code ec( ret, std::system_category() );
