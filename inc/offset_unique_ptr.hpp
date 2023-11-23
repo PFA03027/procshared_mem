@@ -465,9 +465,9 @@ constexpr void swap( offset_unique_ptr<T, D>& a, offset_unique_ptr<T, D>& b ) no
 }
 
 template <class T, class... Args>
-constexpr offset_unique_ptr<T> make_offset_based_unique( Args&&... args )
+constexpr offset_unique_ptr<T> make_offset_unique( Args&&... args )
 {
-	return offset_unique_ptr<T>( new T( args... ) );
+	return offset_unique_ptr<T>( new T( std::forward<Args>( args )... ) );
 }
 
 #endif   // OFFSET_BASED_UNIQUE_PTR_HPP

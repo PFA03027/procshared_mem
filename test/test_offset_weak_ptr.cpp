@@ -345,6 +345,258 @@ TEST( TestOffsetWeakPtr, CanDoCopyAssignmentWithValidToValidResource3 )
 	EXPECT_EQ( sp_t1.use_count(), 1 );
 }
 
+TEST( TestOffsetWeakPtr, CanDoCopyAssignmentFromSharedWithValidResource1 )
+{
+	// Arrange
+	ArrowOpTest*                   p = new ArrowOpTest;
+	offset_shared_ptr<ArrowOpTest> sp_t1( p );
+	offset_weak_ptr<ArrowOpTest>   wp_sut;
+
+	// Act
+	wp_sut = sp_t1;
+
+	// Assert
+	EXPECT_EQ( wp_sut.use_count(), 1 );
+	EXPECT_FALSE( wp_sut.expired() );
+}
+
+TEST( TestOffsetWeakPtr, CanDoCopyAssignmentFromSharedWithValidResource2 )
+{
+	// Arrange
+	DerivedArrowOpTest*                   p = new DerivedArrowOpTest;
+	offset_shared_ptr<DerivedArrowOpTest> sp_t1( p );
+	offset_weak_ptr<ArrowOpTest>          wp_sut;
+
+	// Act
+	wp_sut = sp_t1;
+
+	// Assert
+	EXPECT_EQ( wp_sut.use_count(), 1 );
+	EXPECT_FALSE( wp_sut.expired() );
+}
+
+TEST( TestOffsetWeakPtr, CanDoCopyAssignmentFromSharedWithValidToValidResource1 )
+{
+	// Arrange
+	ArrowOpTest*                   p1 = new ArrowOpTest;
+	ArrowOpTest*                   p2 = new ArrowOpTest;
+	offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
+	offset_shared_ptr<ArrowOpTest> sp_t2( p2 );
+	offset_weak_ptr<ArrowOpTest>   wp_sut( sp_t2 );
+
+	// Act
+	wp_sut = sp_t1;
+
+	// Assert
+	EXPECT_EQ( wp_sut.use_count(), 1 );
+	EXPECT_FALSE( wp_sut.expired() );
+	EXPECT_EQ( sp_t1.use_count(), 1 );
+}
+
+TEST( TestOffsetWeakPtr, CanDoCopyAssignmentFromSharedWithValidToValidResource2 )
+{
+	// Arrange
+	DerivedArrowOpTest*                   p1 = new DerivedArrowOpTest;
+	ArrowOpTest*                          p2 = new ArrowOpTest;
+	offset_shared_ptr<DerivedArrowOpTest> sp_t1( p1 );
+	offset_shared_ptr<ArrowOpTest>        sp_t2( p2 );
+	offset_weak_ptr<ArrowOpTest>          wp_sut( sp_t2 );
+
+	// Act
+	wp_sut = sp_t1;
+
+	// Assert
+	EXPECT_EQ( wp_sut.use_count(), 1 );
+	EXPECT_FALSE( wp_sut.expired() );
+	EXPECT_EQ( sp_t1.use_count(), 1 );
+}
+
+TEST( TestOffsetWeakPtr, CanDoMoveAssignmentWithValidResource1 )
+{
+	// Arrange
+	ArrowOpTest*                   p = new ArrowOpTest;
+	offset_shared_ptr<ArrowOpTest> sp_t1( p );
+	offset_weak_ptr<ArrowOpTest>   wp_t1( sp_t1 );
+	offset_weak_ptr<ArrowOpTest>   wp_sut;
+
+	// Act
+	wp_sut = std::move( wp_t1 );
+
+	// Assert
+	EXPECT_EQ( wp_sut.use_count(), 1 );
+	EXPECT_FALSE( wp_sut.expired() );
+	EXPECT_EQ( wp_t1.use_count(), 0 );
+	EXPECT_TRUE( wp_t1.expired() );
+	EXPECT_EQ( sp_t1.use_count(), 1 );
+}
+
+TEST( TestOffsetWeakPtr, CanDoMoveAssignmentWithValidResource2 )
+{
+	// Arrange
+	DerivedArrowOpTest*                   p = new DerivedArrowOpTest;
+	offset_shared_ptr<DerivedArrowOpTest> sp_t1( p );
+	offset_weak_ptr<ArrowOpTest>          wp_t1( sp_t1 );
+	offset_weak_ptr<ArrowOpTest>          wp_sut;
+
+	// Act
+	wp_sut = std::move( wp_t1 );
+
+	// Assert
+	EXPECT_EQ( wp_sut.use_count(), 1 );
+	EXPECT_FALSE( wp_sut.expired() );
+	EXPECT_EQ( wp_t1.use_count(), 0 );
+	EXPECT_TRUE( wp_t1.expired() );
+	EXPECT_EQ( sp_t1.use_count(), 1 );
+}
+
+TEST( TestOffsetWeakPtr, CanDoMoveAssignmentWithValidResource3 )
+{
+	// Arrange
+	DerivedArrowOpTest*                   p = new DerivedArrowOpTest;
+	offset_shared_ptr<DerivedArrowOpTest> sp_t1( p );
+	offset_weak_ptr<DerivedArrowOpTest>   wp_t1( sp_t1 );
+	offset_weak_ptr<ArrowOpTest>          wp_sut;
+
+	// Act
+	wp_sut = std::move( wp_t1 );
+
+	// Assert
+	EXPECT_EQ( wp_sut.use_count(), 1 );
+	EXPECT_FALSE( wp_sut.expired() );
+	EXPECT_EQ( wp_t1.use_count(), 0 );
+	EXPECT_TRUE( wp_t1.expired() );
+	EXPECT_EQ( sp_t1.use_count(), 1 );
+}
+
+TEST( TestOffsetWeakPtr, CanDoMoveAssignmentWithValidToValidResource1 )
+{
+	// Arrange
+	ArrowOpTest*                   p1 = new ArrowOpTest;
+	ArrowOpTest*                   p2 = new ArrowOpTest;
+	offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
+	offset_shared_ptr<ArrowOpTest> sp_t2( p2 );
+	offset_weak_ptr<ArrowOpTest>   wp_t1( sp_t1 );
+	offset_weak_ptr<ArrowOpTest>   wp_sut( sp_t2 );
+
+	// Act
+	wp_sut = std::move( wp_t1 );
+
+	// Assert
+	EXPECT_EQ( wp_sut.use_count(), 1 );
+	EXPECT_FALSE( wp_sut.expired() );
+	EXPECT_EQ( wp_t1.use_count(), 0 );
+	EXPECT_TRUE( wp_t1.expired() );
+	EXPECT_EQ( sp_t1.use_count(), 1 );
+}
+
+TEST( TestOffsetWeakPtr, CanDoMoveAssignmentWithValidToValidResource2 )
+{
+	// Arrange
+	DerivedArrowOpTest*                   p1 = new DerivedArrowOpTest;
+	ArrowOpTest*                          p2 = new ArrowOpTest;
+	offset_shared_ptr<DerivedArrowOpTest> sp_t1( p1 );
+	offset_shared_ptr<ArrowOpTest>        sp_t2( p2 );
+	offset_weak_ptr<ArrowOpTest>          wp_t1( sp_t1 );
+	offset_weak_ptr<ArrowOpTest>          wp_sut( sp_t2 );
+
+	// Act
+	wp_sut = std::move( wp_t1 );
+
+	// Assert
+	EXPECT_EQ( wp_sut.use_count(), 1 );
+	EXPECT_FALSE( wp_sut.expired() );
+	EXPECT_EQ( wp_t1.use_count(), 0 );
+	EXPECT_TRUE( wp_t1.expired() );
+	EXPECT_EQ( sp_t1.use_count(), 1 );
+}
+
+TEST( TestOffsetWeakPtr, CanDoMoveAssignmentWithValidToValidResource3 )
+{
+	// Arrange
+	DerivedArrowOpTest*                   p1 = new DerivedArrowOpTest;
+	ArrowOpTest*                          p2 = new ArrowOpTest;
+	offset_shared_ptr<DerivedArrowOpTest> sp_t1( p1 );
+	offset_shared_ptr<ArrowOpTest>        sp_t2( p2 );
+	offset_weak_ptr<DerivedArrowOpTest>   wp_t1( sp_t1 );
+	offset_weak_ptr<ArrowOpTest>          wp_sut( sp_t2 );
+
+	// Act
+	wp_sut = std::move( wp_t1 );
+
+	// Assert
+	EXPECT_EQ( wp_sut.use_count(), 1 );
+	EXPECT_FALSE( wp_sut.expired() );
+	EXPECT_EQ( wp_t1.use_count(), 0 );
+	EXPECT_TRUE( wp_t1.expired() );
+	EXPECT_EQ( sp_t1.use_count(), 1 );
+}
+
+TEST( TestOffsetWeakPtr, CanDoMoveAssignmentFromSharedWithValidResource1 )
+{
+	// Arrange
+	ArrowOpTest*                   p = new ArrowOpTest;
+	offset_shared_ptr<ArrowOpTest> sp_t1( p );
+	offset_weak_ptr<ArrowOpTest>   wp_sut;
+
+	// Act
+	wp_sut = std::move( sp_t1 );
+
+	// Assert
+	EXPECT_EQ( wp_sut.use_count(), 1 );
+	EXPECT_FALSE( wp_sut.expired() );
+}
+
+TEST( TestOffsetWeakPtr, CanDoMoveAssignmentFromSharedWithValidResource2 )
+{
+	// Arrange
+	DerivedArrowOpTest*                   p = new DerivedArrowOpTest;
+	offset_shared_ptr<DerivedArrowOpTest> sp_t1( p );
+	offset_weak_ptr<ArrowOpTest>          wp_sut;
+
+	// Act
+	wp_sut = std::move( sp_t1 );
+
+	// Assert
+	EXPECT_EQ( wp_sut.use_count(), 1 );
+	EXPECT_FALSE( wp_sut.expired() );
+}
+
+TEST( TestOffsetWeakPtr, CanDoMoveAssignmentFromSharedWithValidToValidResource1 )
+{
+	// Arrange
+	ArrowOpTest*                   p1 = new ArrowOpTest;
+	ArrowOpTest*                   p2 = new ArrowOpTest;
+	offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
+	offset_shared_ptr<ArrowOpTest> sp_t2( p2 );
+	offset_weak_ptr<ArrowOpTest>   wp_sut( sp_t2 );
+
+	// Act
+	wp_sut = std::move( sp_t1 );
+
+	// Assert
+	EXPECT_EQ( wp_sut.use_count(), 1 );
+	EXPECT_FALSE( wp_sut.expired() );
+	EXPECT_EQ( sp_t1.use_count(), 1 );
+}
+
+TEST( TestOffsetWeakPtr, CanDoMoveAssignmentFromSharedWithValidToValidResource2 )
+{
+	// Arrange
+	DerivedArrowOpTest*                   p1 = new DerivedArrowOpTest;
+	ArrowOpTest*                          p2 = new ArrowOpTest;
+	offset_shared_ptr<DerivedArrowOpTest> sp_t1( p1 );
+	offset_shared_ptr<ArrowOpTest>        sp_t2( p2 );
+	offset_weak_ptr<ArrowOpTest>          wp_sut( sp_t2 );
+
+	// Act
+	wp_sut = std::move( sp_t1 );
+
+	// Assert
+	EXPECT_EQ( wp_sut.use_count(), 1 );
+	EXPECT_FALSE( wp_sut.expired() );
+	EXPECT_EQ( sp_t1.use_count(), 1 );
+}
+
 TEST( TestOffsetWeakPtr, CanDoDefaultConstruct_Then_Lock )
 {
 	// Arrange

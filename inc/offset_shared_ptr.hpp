@@ -252,7 +252,7 @@ public:
 		p_        = nullptr;
 	}
 
-	offset_shared_ptr( void ) noexcept
+	constexpr offset_shared_ptr( void ) noexcept
 	  : p_r_impl_( nullptr )
 	  , p_( nullptr )
 	{
@@ -282,9 +282,21 @@ public:
 		using impl_alloc_traits = std::allocator_traits<impl_alloc>;
 
 		impl_alloc     cur_alloc;
-		concrete_type* p_tmp = impl_alloc_traits::allocate( cur_alloc, 1 );
-		impl_alloc_traits::construct( cur_alloc, p_tmp, p_arg, del, alc );
-		p_tmp->get_ascer().ref().shrd_refc_++;
+		concrete_type* p_tmp = nullptr;
+		try {
+			p_tmp = impl_alloc_traits::allocate( cur_alloc, 1 );
+		} catch ( ... ) {
+			del( p_arg );
+			throw;
+		}
+		try {
+			impl_alloc_traits::construct( cur_alloc, p_tmp, p_arg, del, alc );
+			p_tmp->get_ascer().ref().shrd_refc_++;
+		} catch ( ... ) {
+			impl_alloc_traits::deallocate( cur_alloc, p_tmp, 1 );
+			del( p_arg );
+			throw;
+		}
 		p_r_impl_ = p_tmp;
 	}
 
@@ -315,6 +327,9 @@ public:
 		ac.ref().shrd_refc_++;
 	}
 
+	template <typename Y>
+	offset_shared_ptr( const offset_weak_ptr<Y>& orig );
+
 	offset_shared_ptr( offset_shared_ptr&& orig )
 	  : p_r_impl_( nullptr )
 	  , p_( nullptr )
@@ -342,18 +357,22 @@ public:
 		orig.p_        = nullptr;
 	}
 
+	template <typename Y, typename Deleter>
+	offset_shared_ptr( offset_unique_ptr<Y, Deleter>&& orig )
+	  : p_r_impl_( nullptr )
+	  , p_( nullptr )
+	{
+		static_assert( std::is_convertible<Y*, T*>::value, "Y* should be convertible to T*" );
+
+		offset_shared_ptr( orig.release(), orig.get_deleter() ).swap( *this );
+	}
+
 	offset_shared_ptr& operator=( const offset_shared_ptr& orig )
 	{
 		if ( this == &orig ) return *this;
+		if ( p_r_impl_ == orig.p_r_impl_ ) return *this;
 
-		offset_shared_ptr_detail::offset_shared_ptr_impl_if::try_dispose_shared( p_r_impl_ );
-		p_r_impl_ = nullptr;
-		p_        = nullptr;
-
-		auto ac   = orig.p_r_impl_->get_ascer();
-		p_r_impl_ = orig.p_r_impl_;
-		p_        = orig.p_;
-		ac.ref().shrd_refc_++;
+		offset_shared_ptr( orig ).swap( *this );
 
 		return *this;
 	}
@@ -362,15 +381,9 @@ public:
 	offset_shared_ptr& operator=( const offset_shared_ptr<Y>& orig )
 	{
 		if ( this == &orig ) return *this;
+		if ( p_r_impl_ == orig.p_r_impl_ ) return *this;
 
-		offset_shared_ptr_detail::offset_shared_ptr_impl_if::try_dispose_shared( p_r_impl_ );
-		p_r_impl_ = nullptr;
-		p_        = nullptr;
-
-		auto ac   = orig.p_r_impl_->get_ascer();
-		p_r_impl_ = orig.p_r_impl_;
-		p_        = orig.p_;
-		ac.ref().shrd_refc_++;
+		offset_shared_ptr( orig ).swap( *this );
 
 		return *this;
 	}
@@ -378,15 +391,9 @@ public:
 	offset_shared_ptr& operator=( offset_shared_ptr&& orig )
 	{
 		if ( this == &orig ) return *this;
+		if ( p_r_impl_ == orig.p_r_impl_ ) return *this;
 
-		offset_shared_ptr_detail::offset_shared_ptr_impl_if::try_dispose_shared( p_r_impl_ );
-		p_r_impl_ = nullptr;
-		p_        = nullptr;
-
-		p_r_impl_      = orig.p_r_impl_;
-		p_             = orig.p_;
-		orig.p_r_impl_ = nullptr;
-		orig.p_        = nullptr;
+		offset_shared_ptr( std::move( orig ) ).swap( *this );
 
 		return *this;
 	}
@@ -395,21 +402,17 @@ public:
 	offset_shared_ptr& operator=( offset_shared_ptr<Y>&& orig )
 	{
 		if ( this == &orig ) return *this;
+		if ( p_r_impl_ == orig.p_r_impl_ ) return *this;
 
-		offset_shared_ptr_detail::offset_shared_ptr_impl_if::try_dispose_shared( p_r_impl_ );
-		p_r_impl_ = nullptr;
-		p_        = nullptr;
-
-		p_r_impl_      = orig.p_r_impl_;
-		p_             = orig.p_;
-		orig.p_r_impl_ = nullptr;
-		orig.p_        = nullptr;
+		offset_shared_ptr( std::move( orig ) ).swap( *this );
 
 		return *this;
 	}
 
-	element_type* swap( offset_shared_ptr& b ) noexcept
+	void swap( offset_shared_ptr& b ) noexcept
 	{
+		if ( this == &b ) return;
+
 		element_type* p_backup = p_;
 		p_                     = b.p_;
 		b.p_                   = p_backup;
@@ -418,14 +421,12 @@ public:
 		p_r_impl_                                                            = b.p_r_impl_;
 		b.p_r_impl_                                                          = p_r_impl_backup;
 
-		return p_;
+		return;
 	}
 
 	void reset( void ) noexcept
 	{
-		offset_shared_ptr_detail::offset_shared_ptr_impl_if::try_dispose_shared( p_r_impl_ );
-		p_r_impl_ = nullptr;
-		p_        = nullptr;
+		offset_shared_ptr().swap( *this );
 	}
 
 	template <typename Y>
@@ -504,6 +505,13 @@ class offset_weak_ptr {
 public:
 	using element_type = T;
 
+	~offset_weak_ptr()
+	{
+		offset_shared_ptr_detail::offset_shared_ptr_impl_if::try_dispose_weak( p_r_impl_ );
+		p_r_impl_ = nullptr;
+		p_        = nullptr;
+	}
+
 	constexpr offset_weak_ptr( void ) noexcept
 	  : p_r_impl_( nullptr )
 	  , p_( nullptr )
@@ -565,17 +573,9 @@ public:
 	offset_weak_ptr& operator=( const offset_weak_ptr& r ) noexcept
 	{
 		if ( this == &r ) return *this;
+		if ( p_r_impl_ == r.p_r_impl_ ) return *this;
 
-		offset_shared_ptr_detail::offset_shared_ptr_impl_if::try_dispose_weak( p_r_impl_ );
-		p_r_impl_ = nullptr;
-		p_        = nullptr;
-
-		if ( r.p_r_impl_ == nullptr ) return *this;
-
-		auto ac   = r.p_r_impl_->get_ascer();
-		p_r_impl_ = r.p_r_impl_;
-		p_        = r.p_;
-		ac.ref().weak_refc_++;
+		offset_weak_ptr( r ).swap( *this );
 
 		return *this;
 	}
@@ -583,18 +583,7 @@ public:
 	template <class Y>
 	offset_weak_ptr& operator=( const offset_weak_ptr<Y>& r ) noexcept
 	{
-		static_assert( std::is_convertible<Y*, T*>::value, "Y* should be convertible to T*" );
-
-		offset_shared_ptr_detail::offset_shared_ptr_impl_if::try_dispose_weak( p_r_impl_ );
-		p_r_impl_ = nullptr;
-		p_        = nullptr;
-
-		if ( r.p_r_impl_ == nullptr ) return *this;
-
-		auto ac   = r.p_r_impl_->get_ascer();
-		p_r_impl_ = r.p_r_impl_;
-		p_        = r.p_;
-		ac.ref().weak_refc_++;
+		offset_weak_ptr( r ).swap( *this );
 
 		return *this;
 	}
@@ -602,18 +591,7 @@ public:
 	template <class Y>
 	offset_weak_ptr& operator=( const offset_shared_ptr<Y>& r ) noexcept
 	{
-		static_assert( std::is_convertible<Y*, T*>::value, "Y* should be convertible to T*" );
-
-		offset_shared_ptr_detail::offset_shared_ptr_impl_if::try_dispose_weak( p_r_impl_ );
-		p_r_impl_ = nullptr;
-		p_        = nullptr;
-
-		if ( r.p_r_impl_ == nullptr ) return *this;
-
-		auto ac   = r.p_r_impl_->get_ascer();
-		p_r_impl_ = r.p_r_impl_;
-		p_        = r.p_;
-		ac.ref().weak_refc_++;
+		offset_weak_ptr( r ).swap( *this );
 
 		return *this;
 	}
@@ -621,18 +599,9 @@ public:
 	offset_weak_ptr& operator=( offset_weak_ptr&& r ) noexcept
 	{
 		if ( this == &r ) return *this;
+		if ( p_r_impl_ == r.p_r_impl_ ) return *this;
 
-		offset_shared_ptr_detail::offset_shared_ptr_impl_if::try_dispose_weak( p_r_impl_ );
-		p_r_impl_ = nullptr;
-		p_        = nullptr;
-
-		if ( r.p_r_impl_ == nullptr ) return *this;
-
-		p_r_impl_ = r.p_r_impl_;
-		p_        = r.p_;
-
-		r.p_r_impl_ = nullptr;
-		r.p_        = nullptr;
+		offset_weak_ptr( std::move( r ) ).swap( *this );
 
 		return *this;
 	}
@@ -640,19 +609,7 @@ public:
 	template <class Y>
 	offset_weak_ptr& operator=( offset_weak_ptr<Y>&& r ) noexcept
 	{
-		static_assert( std::is_convertible<Y*, T*>::value, "Y* should be convertible to T*" );
-
-		offset_shared_ptr_detail::offset_shared_ptr_impl_if::try_dispose_weak( p_r_impl_ );
-		p_r_impl_ = nullptr;
-		p_        = nullptr;
-
-		if ( r.p_r_impl_ == nullptr ) return *this;
-
-		p_r_impl_ = r.p_r_impl_;
-		p_        = r.p_;
-
-		r.p_r_impl_ = nullptr;
-		r.p_        = nullptr;
+		offset_weak_ptr( std::move( r ) ).swap( *this );
 
 		return *this;
 	}
@@ -673,9 +630,7 @@ public:
 
 	void reset( void ) noexcept
 	{
-		offset_shared_ptr_detail::offset_shared_ptr_impl_if::try_dispose_weak( p_r_impl_ );
-		p_r_impl_ = nullptr;
-		p_        = nullptr;
+		offset_weak_ptr().swap( *this );
 	}
 
 	long use_count( void ) const noexcept
@@ -725,6 +680,33 @@ private:
 
 	template <typename U>
 	friend class offset_weak_ptr;
+	template <typename U>
+	friend class offset_shared_ptr;
 };
+
+template <typename T, typename... Args>
+offset_shared_ptr<T> make_offset_shared( Args&&... args )
+{
+	// 仮実装
+	return offset_shared_ptr<T>( new T( std::forward<Args>( args )... ) );
+}
+
+template <typename T>
+template <typename Y>
+offset_shared_ptr<T>::offset_shared_ptr( const offset_weak_ptr<Y>& orig )
+  : p_r_impl_( nullptr )
+  , p_( nullptr )
+{
+	static_assert( std::is_convertible<Y*, T*>::value, "Y* should be convertible to T*" );
+
+	if ( orig.p_r_impl_ == nullptr ) throw std::bad_weak_ptr();
+
+	auto ac = orig.p_r_impl_->get_ascer();
+	if ( ac.ref().shrd_refc_ == 0 ) throw std::bad_weak_ptr();
+
+	p_r_impl_ = orig.p_r_impl_;
+	p_        = orig.p_;
+	ac.ref().shrd_refc_++;
+}
 
 #endif   // OFFSET_SHARED_PTR_HPP_

@@ -445,7 +445,7 @@ TEST( OffsetBasedUniquePtr, CanRefOp )
 	// Arrange
 
 	// Act
-	offset_unique_ptr<ArrowOpTest> oup_sut = make_offset_based_unique<ArrowOpTest>( ArrowOpTest { 1, 2 } );
+	offset_unique_ptr<ArrowOpTest> oup_sut = make_offset_unique<ArrowOpTest>( ArrowOpTest { 1, 2 } );
 
 	// Assert
 	ASSERT_NE( oup_sut.get(), nullptr );
@@ -458,7 +458,7 @@ TEST( OffsetBasedUniquePtr, CanArrowOp )
 	// Arrange
 
 	// Act
-	offset_unique_ptr<ArrowOpTest> oup_sut = make_offset_based_unique<ArrowOpTest>( ArrowOpTest { 1, 2 } );
+	offset_unique_ptr<ArrowOpTest> oup_sut = make_offset_unique<ArrowOpTest>( ArrowOpTest { 1, 2 } );
 
 	// Assert
 	ASSERT_NE( oup_sut.get(), nullptr );
