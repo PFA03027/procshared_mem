@@ -16,7 +16,7 @@
 
 namespace offset_shared_ptr_detail {
 
-void offset_shared_ptr_impl_if::try_dispose_com( offset_shared_ptr_impl_if* p, size_t offset_shared_ptr_impl_if::ctrl_data::*mp_tcnt )
+void offset_shared_ptr_impl_if::try_dispose_com( offset_ptr<offset_shared_ptr_impl_if>& p, size_t offset_shared_ptr_impl_if::ctrl_data::*mp_tcnt )
 {
 	if ( p == nullptr ) return;
 
@@ -31,7 +31,7 @@ void offset_shared_ptr_impl_if::try_dispose_com( offset_shared_ptr_impl_if* p, s
 			offset_shared_ptr_impl_if::ascer tmp( std::move( ac ) );
 			// 以降で、mutexのメモリ領域を解放するので、解放前に、ロックを解除し、acserとのコネクションを切る。
 		}
-		p_alloc_if->call_destroy_deallocate( p );
+		p_alloc_if->call_destroy_deallocate( p.get() );
 		delete p_alloc_if;
 	} else if ( ( ac.ref().shrd_refc_ <= 0 ) && ( ac.ref().weak_refc_ > 0 ) ) {
 		p->dispose_resource();

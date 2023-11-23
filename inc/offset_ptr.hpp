@@ -183,14 +183,21 @@ public:
 	friend typename offset_ptr<U>::difference_type operator-( const offset_ptr<U>& a, const offset_ptr<U>& b ) noexcept;
 
 #if ( __cpp_impl_three_way_comparison > 201907L )
-	constexpr bool
-	operator==( const offset_ptr& c ) const noexcept
+	constexpr bool operator==( const offset_ptr& c ) const noexcept
 	{
 		return ( calc_address() == c.calc_address() );
 	}
 	constexpr auto operator<=>( const offset_ptr& c ) const noexcept -> std::strong_ordering
 	{
 		return ( calc_address() <=> c.calc_address() );
+	}
+	constexpr bool operator==( const nullptr_t& c ) const noexcept
+	{
+		return ( calc_address() == nullptr );
+	}
+	constexpr auto operator<=>( const nullptr_t& c ) const noexcept -> std::strong_ordering
+	{
+		return ( calc_address() <=> nullptr );
 	}
 
 #else
@@ -206,6 +213,33 @@ public:
 	friend constexpr bool operator>( const offset_ptr<U>& a, const offset_ptr<U>& b ) noexcept;
 	template <typename U>
 	friend constexpr bool operator>=( const offset_ptr<U>& a, const offset_ptr<U>& b ) noexcept;
+
+	template <typename U>
+	friend constexpr bool operator==( const offset_ptr<U>& a, const nullptr_t& b ) noexcept;
+	template <typename U>
+	friend constexpr bool operator!=( const offset_ptr<U>& a, const nullptr_t& b ) noexcept;
+	template <typename U>
+	friend constexpr bool operator<( const offset_ptr<U>& a, const nullptr_t& b ) noexcept;
+	template <typename U>
+	friend constexpr bool operator<=( const offset_ptr<U>& a, const nullptr_t& b ) noexcept;
+	template <typename U>
+	friend constexpr bool operator>( const offset_ptr<U>& a, const nullptr_t& b ) noexcept;
+	template <typename U>
+	friend constexpr bool operator>=( const offset_ptr<U>& a, const nullptr_t& b ) noexcept;
+
+	template <typename U>
+	friend constexpr bool operator==( const nullptr_t& a, const offset_ptr<U>& b ) noexcept;
+	template <typename U>
+	friend constexpr bool operator!=( const nullptr_t& a, const offset_ptr<U>& b ) noexcept;
+	template <typename U>
+	friend constexpr bool operator<( const nullptr_t& a, const offset_ptr<U>& b ) noexcept;
+	template <typename U>
+	friend constexpr bool operator<=( const nullptr_t& a, const offset_ptr<U>& b ) noexcept;
+	template <typename U>
+	friend constexpr bool operator>( const nullptr_t& a, const offset_ptr<U>& b ) noexcept;
+	template <typename U>
+	friend constexpr bool operator>=( const nullptr_t& a, const offset_ptr<U>& b ) noexcept;
+
 #endif
 
 private:
@@ -262,6 +296,73 @@ constexpr bool operator>=( const offset_ptr<T>& a, const offset_ptr<T>& b ) noex
 {
 	return ( b < a ) || ( a == b );
 }
+
+////////////////////////
+
+template <typename U>
+constexpr bool operator==( const offset_ptr<U>& a, const nullptr_t& b ) noexcept
+{
+	return ( a == offset_ptr<U>( b ) );
+}
+template <typename U>
+constexpr bool operator!=( const offset_ptr<U>& a, const nullptr_t& b ) noexcept
+{
+	return ( a != offset_ptr<U>( b ) );
+}
+template <typename U>
+constexpr bool operator<( const offset_ptr<U>& a, const nullptr_t& b ) noexcept
+{
+	return ( a < offset_ptr<U>( b ) );
+}
+template <typename U>
+constexpr bool operator<=( const offset_ptr<U>& a, const nullptr_t& b ) noexcept
+{
+	return ( a <= offset_ptr<U>( b ) );
+}
+template <typename U>
+constexpr bool operator>( const offset_ptr<U>& a, const nullptr_t& b ) noexcept
+{
+	return ( a > offset_ptr<U>( b ) );
+}
+template <typename U>
+constexpr bool operator>=( const offset_ptr<U>& a, const nullptr_t& b ) noexcept
+{
+	return ( a >= offset_ptr<U>( b ) );
+}
+
+template <typename U>
+constexpr bool operator==( const nullptr_t& a, const offset_ptr<U>& b ) noexcept
+{
+	return ( offset_ptr<U>( a ) == b );
+}
+template <typename U>
+constexpr bool operator!=( const nullptr_t& a, const offset_ptr<U>& b ) noexcept
+{
+	return ( offset_ptr<U>( a ) != b );
+}
+template <typename U>
+constexpr bool operator<( const nullptr_t& a, const offset_ptr<U>& b ) noexcept
+{
+	return ( offset_ptr<U>( a ) < b );
+}
+template <typename U>
+constexpr bool operator<=( const nullptr_t& a, const offset_ptr<U>& b ) noexcept
+{
+	return ( offset_ptr<U>( a ) <= b );
+}
+template <typename U>
+constexpr bool operator>( const nullptr_t& a, const offset_ptr<U>& b ) noexcept
+{
+	return ( offset_ptr<U>( a ) > b );
+}
+template <typename U>
+constexpr bool operator>=( const nullptr_t& a, const offset_ptr<U>& b ) noexcept
+{
+	return ( offset_ptr<U>( a ) >= b );
+}
+
+////////////////////////
+
 #endif
 
 template <typename T>

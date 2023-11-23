@@ -135,17 +135,17 @@ public:
 		return const_ascer( *this );
 	}
 
-	static inline void try_dispose_shared( offset_shared_ptr_impl_if* p )
+	static inline void try_dispose_shared( offset_ptr<offset_shared_ptr_impl_if>& p )
 	{
 		try_dispose_com( p, &offset_shared_ptr_impl_if::ctrl_data::shrd_refc_ );
 	}
-	static inline void try_dispose_weak( offset_shared_ptr_impl_if* p )
+	static inline void try_dispose_weak( offset_ptr<offset_shared_ptr_impl_if>& p )
 	{
 		try_dispose_com( p, &offset_shared_ptr_impl_if::ctrl_data::weak_refc_ );
 	}
 
 private:
-	static void try_dispose_com( offset_shared_ptr_impl_if* p, size_t ctrl_data::*mp_tcnt );
+	static void try_dispose_com( offset_ptr<offset_shared_ptr_impl_if>& p, size_t ctrl_data::*mp_tcnt );
 
 	mutable procshared_mutex mtx_;   // mutex for exclusive access control
 	ctrl_data                ctrl_;
@@ -323,7 +323,7 @@ public:
 
 		auto ac   = orig.p_r_impl_->get_ascer();
 		p_r_impl_ = orig.p_r_impl_;
-		p_        = orig.p_;
+		p_        = orig.p_.get();
 		ac.ref().shrd_refc_++;
 	}
 
@@ -352,7 +352,7 @@ public:
 		if ( orig.p_r_impl_ == nullptr ) return;
 
 		p_r_impl_      = orig.p_r_impl_;
-		p_             = orig.p_;
+		p_             = orig.p_.get();
 		orig.p_r_impl_ = nullptr;
 		orig.p_        = nullptr;
 	}
@@ -455,17 +455,17 @@ public:
 
 	element_type* get( void ) const noexcept
 	{
-		return p_;
+		return p_.get();
 	}
 
 	element_type& operator*() const noexcept
 	{
-		return *p_;
+		return *( p_.get() );
 	}
 
 	element_type* operator->() const noexcept
 	{
-		return p_;
+		return p_.get();
 	}
 
 	element_type& operator[]( ptrdiff_t i ) const
@@ -491,8 +491,8 @@ public:
 	}
 
 private:
-	offset_shared_ptr_detail::offset_shared_ptr_impl_if* p_r_impl_;
-	element_type*                                        p_;
+	offset_ptr<offset_shared_ptr_detail::offset_shared_ptr_impl_if> p_r_impl_;
+	offset_ptr<element_type>                                        p_;
 
 	template <typename U>
 	friend class offset_shared_ptr;
@@ -530,7 +530,7 @@ public:
 	template <class Y>
 	offset_weak_ptr( const offset_weak_ptr<Y>& r ) noexcept
 	  : p_r_impl_( r.p_r_impl_ )
-	  , p_( r.p_ )   // Y*からT*への暗黙変換
+	  , p_( r.p_.get() )   // Y*からT*への暗黙変換
 	{
 		static_assert( std::is_convertible<Y*, T*>::value, "Y* should be convertible to T*" );
 
@@ -542,7 +542,7 @@ public:
 	template <class Y>
 	offset_weak_ptr( const offset_shared_ptr<Y>& r ) noexcept
 	  : p_r_impl_( r.p_r_impl_ )
-	  , p_( r.p_ )   // Y*からT*への暗黙変換
+	  , p_( r.p_.get() )   // Y*からT*への暗黙変換
 	{
 		static_assert( std::is_convertible<Y*, T*>::value, "Y* should be convertible to T*" );
 
@@ -562,7 +562,7 @@ public:
 	template <class Y>
 	offset_weak_ptr( offset_weak_ptr<Y>&& r ) noexcept
 	  : p_r_impl_( r.p_r_impl_ )
-	  , p_( r.p_ )   // Y*からT*への暗黙変換
+	  , p_( r.p_.get() )   // Y*からT*への暗黙変換
 	{
 		static_assert( std::is_convertible<Y*, T*>::value, "Y* should be convertible to T*" );
 
@@ -675,8 +675,8 @@ public:
 	}
 
 private:
-	offset_shared_ptr_detail::offset_shared_ptr_impl_if* p_r_impl_;
-	element_type*                                        p_;
+	offset_ptr<offset_shared_ptr_detail::offset_shared_ptr_impl_if> p_r_impl_;
+	offset_ptr<element_type>                                        p_;
 
 	template <typename U>
 	friend class offset_weak_ptr;
