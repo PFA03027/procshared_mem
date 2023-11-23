@@ -27,8 +27,8 @@ void make_shm_and_close( void )
 {
 	pid_t child_pid = fork();
 	if ( child_pid == 0 ) {
-		execl( "test_server_procshared_mem", "test_server_procshared_mem", (char*)NULL );
-		perror( "fail execl\n" );
+		execl( "build/test/test_procshared_mem_secondary_highload", "test_procshared_mem_secondary_highload", (char*)NULL );
+		perror( "fail execl to launch test_procshared_mem_secondary_highload\n" );
 		abort();
 	} else {
 		// parent process side
@@ -81,7 +81,9 @@ int main( void )
 	procshared_mem::debug_force_cleanup( p_shm_obj_name );   // to remove ghost data
 
 	for ( int i = 0; i < 10000; i++ ) {
-		printf( "count=%d\n", i );
+		if ( ( i == 0 ) || ( ( i % 1000 ) == 999 ) ) {
+			printf( "count=%d\n", i );
+		}
 		test_func();
 	}
 

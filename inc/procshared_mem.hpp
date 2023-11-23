@@ -91,6 +91,7 @@ public:
 	~procshared_mem();
 
 	off_t available_size( void ) const;
+	bool  is_primary( void ) const;
 
 	void* get( void );
 

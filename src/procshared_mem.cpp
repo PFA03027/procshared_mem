@@ -572,18 +572,24 @@ void procshared_mem::setup_as_secondary( void )
 		throw procshared_mem_error( cur_errno, buff );
 	}
 
-	p_mem_ = reinterpret_cast<procshared_mem_mem_header*>( p_header );
-	if ( p_mem_->inode_val_.load( std::memory_order_acquire ) != get_inode_of_fd( id_fd_ ) ) {
+	p_mem_             = reinterpret_cast<procshared_mem_mem_header*>( p_header );
+	ino_t my_cur_inode = get_inode_of_fd( id_fd_ );
+	ino_t mem_inode    = p_mem_->inode_val_.load( std::memory_order_acquire );
+	if ( mem_inode != my_cur_inode ) {
 		// ここに来た場合、コンストラクタの実行途中(sem_openからここに到達するまでの間)に、
 		// 共有メモリのエントリが削除され、その後さらに作成された状況となる。
 		// よって、最初からOpen手続きのやり直しが必要。
+		fprintf( stderr, "shared memory created by Primary is unmatch inode, p_mem->inode_val_=%lu, my expected inode value=%lu\n", mem_inode, my_cur_inode );
 		throw procshared_mem_retry();
 	}
-	if ( p_mem_->length_val_.load() < length_ ) {
+	off_t mem_len_val = p_mem_->length_val_.load();
+	if ( mem_len_val < length_ ) {
 		// ここに来た場合、メモリサイズが少なすぎる。
-		char buff[1024];
-		snprintf( buff, 1024, "shared memory created by Primary is too small. Secondary expectation size=%ld, actual=%ld", length_, p_mem_->length_val_.load( std::memory_order_acquire ) );
-		throw procshared_mem_error( buff );
+		// char buff[1024];
+		// snprintf( buff, 1024, "shared memory created by Primary is too small. Secondary expectation size=%ld, actual=%ld", length_, p_mem_->length_val_.load( std::memory_order_acquire ) );
+		// throw procshared_mem_error( buff );
+		fprintf( stderr, "shared memory created by Primary is too small. Secondary expectation my expected size=%ld, p_mem_->length_val_=%ld\n", length_, mem_len_val );
+		throw procshared_mem_retry();
 	}
 
 	// printf( "success\n" );
@@ -689,6 +695,10 @@ void procshared_mem::teardown( void )
 off_t procshared_mem::available_size( void ) const
 {
 	return length_ - sizeof( procshared_mem_mem_header );
+}
+bool procshared_mem::is_primary( void ) const
+{
+	return is_owner_;
 }
 
 void* procshared_mem::get( void )
