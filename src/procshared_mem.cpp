@@ -574,7 +574,7 @@ void procshared_mem::setup_as_secondary( void )
 
 	p_mem_             = reinterpret_cast<procshared_mem_mem_header*>( p_header );
 	ino_t my_cur_inode = get_inode_of_fd( id_fd_ );
-	ino_t mem_inode    = p_mem_->inode_val_.load( std::memory_order_acquire );
+	ino_t mem_inode    = p_mem_->inode_val_.load();
 	if ( mem_inode != my_cur_inode ) {
 		// ここに来た場合、コンストラクタの実行途中(sem_openからここに到達するまでの間)に、
 		// 共有メモリのエントリが削除され、その後さらに作成された状況となる。
@@ -586,7 +586,7 @@ void procshared_mem::setup_as_secondary( void )
 	if ( mem_len_val < length_ ) {
 		// ここに来た場合、メモリサイズが少なすぎる。
 		// char buff[1024];
-		// snprintf( buff, 1024, "shared memory created by Primary is too small. Secondary expectation size=%ld, actual=%ld", length_, p_mem_->length_val_.load( std::memory_order_acquire ) );
+		// snprintf( buff, 1024, "shared memory created by Primary is too small. Secondary expectation size=%ld, actual=%ld", length_, p_mem_->length_val_.load() );
 		// throw procshared_mem_error( buff );
 		fprintf( stderr, "shared memory created by Primary is too small. Secondary expectation my expected size=%ld, p_mem_->length_val_=%ld\n", length_, mem_len_val );
 		throw procshared_mem_retry();
@@ -793,7 +793,7 @@ void procshared_mem::allocate_shm_as_secondary( void )
 
 ino_t procshared_mem::debug_get_id_file_inode( void ) const
 {
-	return reinterpret_cast<procshared_mem_mem_header*>( p_mem_ )->inode_val_.load( std::memory_order_acquire );
+	return reinterpret_cast<procshared_mem_mem_header*>( p_mem_ )->inode_val_.load();
 }
 
 bool procshared_mem::debug_test_integrity( void ) const
@@ -801,7 +801,7 @@ bool procshared_mem::debug_test_integrity( void ) const
 	bool ans = false;
 	try {
 		ans = ( debug_get_id_file_inode() == get_inode_of_fd( id_fd_ ) ) &&
-		      ( length_ <= reinterpret_cast<procshared_mem_mem_header*>( p_mem_ )->length_val_.load( std::memory_order_acquire ) );
+		      ( length_ <= reinterpret_cast<procshared_mem_mem_header*>( p_mem_ )->length_val_.load() );
 
 	} catch ( procshared_mem_error& e ) {
 		ans = false;
