@@ -107,6 +107,24 @@ TEST( Test_procshared_mutex, CanRecoverByRobustnessViaTryLock )
 	sut.unlock();
 }
 
+#ifdef ENABLE_PTHREAD_MUTEX_ERRORTYPE
+TEST( Test_procshared_mutex, CanDetectDeadLock )
+{
+	// Arrange
+	procshared_mutex sut;
+	sut.lock();
+
+	// Act
+	EXPECT_THROW( sut.lock(), std::system_error );
+
+	// Assert
+
+	// Cleanup
+	sut.unlock();
+}
+#else
+#endif
+
 TEST( Test_procshared_recursive_mutex, CanConstruct_CanDestruct )
 {
 	ASSERT_NO_THROW( procshared_recursive_mutex sut );
@@ -248,20 +266,20 @@ TEST( Test_procshared_mutex_bw_proc, CanLock_CanTryLock_CanUnlock )
 {
 	// Arrange
 	procshared_mem::debug_force_cleanup( p_shm_obj_name );   // to remove ghost data
-	procshared_mem shm_obj( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, []( void* p_mem, off_t len ) {
-		if ( p_mem == nullptr ) {
-			return;
-		}
-		if ( len < 4096 ) {
-			return;
-		}
-		[[maybe_unused]] procshared_mutex* p_ps_mtx = new ( p_mem ) procshared_mutex();
-	} );
+	procshared_mem    shm_obj( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, []( void* p_mem, off_t len ) {
+        if ( p_mem == nullptr ) {
+            return;
+        }
+        if ( len < 4096 ) {
+            return;
+        }
+        [[maybe_unused]] procshared_mutex* p_ps_mtx = new ( p_mem ) procshared_mutex();
+    } );
 	procshared_mutex* p_ps_mtx = reinterpret_cast<procshared_mutex*>( shm_obj.get() );
 	p_ps_mtx->lock();
 
 	std::packaged_task<child_proc_return_t( std::function<int()> )> task1( call_pred_on_child_process );   // 非同期実行する関数を登録する
-	std::future<child_proc_return_t> f1 = task1.get_future();
+	std::future<child_proc_return_t>                                f1 = task1.get_future();
 
 	// Act
 	std::thread t1( std::move( task1 ), []() -> int {
@@ -293,20 +311,20 @@ TEST( Test_procshared_recursive_mutex_bw_proc, CanLock_CanTryLock_CanUnlock )
 {
 	// Arrange
 	procshared_mem::debug_force_cleanup( p_shm_obj_name );   // to remove ghost data
-	procshared_mem shm_obj( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, []( void* p_mem, off_t len ) {
-		if ( p_mem == nullptr ) {
-			return;
-		}
-		if ( len < 4096 ) {
-			return;
-		}
-		[[maybe_unused]] procshared_recursive_mutex* p_ps_mtx = new ( p_mem ) procshared_recursive_mutex();
-	} );
+	procshared_mem              shm_obj( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, []( void* p_mem, off_t len ) {
+        if ( p_mem == nullptr ) {
+            return;
+        }
+        if ( len < 4096 ) {
+            return;
+        }
+        [[maybe_unused]] procshared_recursive_mutex* p_ps_mtx = new ( p_mem ) procshared_recursive_mutex();
+    } );
 	procshared_recursive_mutex* p_ps_mtx = reinterpret_cast<procshared_recursive_mutex*>( shm_obj.get() );
 	p_ps_mtx->lock();
 
 	std::packaged_task<child_proc_return_t( std::function<int()> )> task1( call_pred_on_child_process );   // 非同期実行する関数を登録する
-	std::future<child_proc_return_t> f1 = task1.get_future();
+	std::future<child_proc_return_t>                                f1 = task1.get_future();
 
 	// Act
 	std::thread t1( std::move( task1 ), []() -> int {

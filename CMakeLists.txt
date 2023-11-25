@@ -9,6 +9,7 @@ set(BUILD_TARGET common CACHE STRING "Build target?")
 message("[BUILD] ${BUILD_TARGET}")
 include(${BUILD_TARGET}.cmake)
 
+include(debug_option.cmake)
 
 enable_testing()
 

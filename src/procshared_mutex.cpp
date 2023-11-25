@@ -71,11 +71,11 @@ void procshared_mutex_base::lock( void )
 		} else {
 			// fail to recover. this means mutex may corrupted.
 			std::error_code ec( ret, std::system_category() );
-			throw std::system_error( ec, " fail to call pthread_mutex_consistent() in pthread_mutex_lock()" );
+			throw std::system_error( ec, "Fail to call pthread_mutex_consistent() in pthread_mutex_lock()" );
 		}
 	} else {
 		std::error_code ec( ret, std::system_category() );
-		throw std::system_error( ec, " fail to call pthread_mutex_lock()" );
+		throw std::system_error( ec, "Fail to call pthread_mutex_lock()" );
 	}
 }
 bool procshared_mutex_base::try_lock( void )
@@ -84,7 +84,7 @@ bool procshared_mutex_base::try_lock( void )
 	int  ret = pthread_mutex_trylock( &fastmutex_ );
 	if ( ret == 0 ) {
 		ans = true;   // success to get lock
-	} else if ( ret == EBUSY ) {
+	} else if ( ( ret == EBUSY ) || ( ret == EDEADLK ) ) {
 		ans = false;   // fail to get lock
 	} else if ( ret == EOWNERDEAD ) {
 		// try recover
@@ -100,11 +100,11 @@ bool procshared_mutex_base::try_lock( void )
 		} else {
 			// fail to recover. this means mutex may corrupted.
 			std::error_code ec( ret, std::system_category() );
-			throw std::system_error( ec, " fail to call pthread_mutex_consistent() in pthread_mutex_trylock()" );
+			throw std::system_error( ec, "Fail to call pthread_mutex_consistent() in pthread_mutex_trylock()" );
 		}
 	} else {
 		std::error_code ec( ret, std::system_category() );
-		throw std::system_error( ec, " fail to call pthread_mutex_trylock()" );
+		throw std::system_error( ec, "Fail to call pthread_mutex_trylock()" );
 	}
 	return ans;
 }
@@ -118,12 +118,16 @@ void procshared_mutex_base::unlock( void )
 		fprintf( stderr, "Warning: caller thread is not mutex lock owner. caller side may have critical logic error\n" );
 	} else {
 		std::error_code ec( ret, std::system_category() );
-		throw std::system_error( ec, " fail to call pthread_mutex_unlock()" );
+		throw std::system_error( ec, "Fail to call pthread_mutex_unlock()" );
 	}
 }
 
 procshared_mutex::procshared_mutex( void )
+#ifdef ENABLE_PTHREAD_MUTEX_ERRORTYPE
+  : mtx_( PTHREAD_MUTEX_ERRORCHECK_NP )
+#else
   : mtx_( PTHREAD_MUTEX_FAST_NP )
+#endif
 {
 }
 
