@@ -9,6 +9,8 @@
  *
  */
 
+#include <cstdio>
+#include <cstdlib>
 #include <stdexcept>
 #include <system_error>
 
@@ -28,13 +30,18 @@ procshared_mutex_base::procshared_mutex_base( int kind )
 		throw std::system_error( ec, " fail to set pthread kind by pthread_mutexattr_settype()" );
 	}
 
-	// TODO: should be set robust
-
 	ret = pthread_mutexattr_setpshared( &attr, PTHREAD_PROCESS_SHARED );
 	if ( ( ret != ENOSYS ) && ( ret != 0 ) ) {
 		std::error_code ec( ret, std::system_category() );
 		throw std::system_error( ec, " fail to set PTHREAD_PROCESS_SHARED" );
 	}
+
+	ret = pthread_mutexattr_setrobust( &attr, PTHREAD_MUTEX_ROBUST );
+	if ( ret != 0 ) {
+		std::error_code ec( ret, std::system_category() );
+		throw std::system_error( ec, " fail to set PTHREAD_MUTEX_ROBUST" );
+	}
+
 	pthread_mutex_init( &fastmutex_, &attr );
 	pthread_mutexattr_destroy( &attr );
 }
@@ -51,7 +58,22 @@ procshared_mutex_base::~procshared_mutex_base()
 void procshared_mutex_base::lock( void )
 {
 	int ret = pthread_mutex_lock( &fastmutex_ );
-	if ( ret != 0 ) {
+	if ( ret == 0 ) {
+		// OK
+	} else if ( ret == EOWNERDEAD ) {
+		// try recover
+		ret = pthread_mutex_consistent( &fastmutex_ );
+		if ( ret == 0 ) {
+			// OK, recovered
+		} else if ( ret == EINVAL ) {
+			// not recovered, but not matter.
+			// fastmutex_ has already destroyed, or fastmutex_ is not inconsistent.
+		} else {
+			// fail to recover. this means mutex may corrupted.
+			std::error_code ec( ret, std::system_category() );
+			throw std::system_error( ec, " fail to call pthread_mutex_consistent() in pthread_mutex_lock()" );
+		}
+	} else {
 		std::error_code ec( ret, std::system_category() );
 		throw std::system_error( ec, " fail to call pthread_mutex_lock()" );
 	}
@@ -64,6 +86,22 @@ bool procshared_mutex_base::try_lock( void )
 		ans = true;   // success to get lock
 	} else if ( ret == EBUSY ) {
 		ans = false;   // fail to get lock
+	} else if ( ret == EOWNERDEAD ) {
+		// try recover
+		ret = pthread_mutex_consistent( &fastmutex_ );
+		if ( ret == 0 ) {
+			// OK, recovered
+			ans = true;   // success to get lock
+		} else if ( ret == EINVAL ) {
+			// not recovered, but not matter. but, fail to get lock anyway.
+			// fastmutex_ has already destroyed, or fastmutex_ is not inconsistent.
+			ans = false;   // fail to get lock
+			fprintf( stderr, "Warning: Fail to call pthread_mutex_consistent(). Has mutex alread destroyed ?\n" );
+		} else {
+			// fail to recover. this means mutex may corrupted.
+			std::error_code ec( ret, std::system_category() );
+			throw std::system_error( ec, " fail to call pthread_mutex_consistent() in pthread_mutex_trylock()" );
+		}
 	} else {
 		std::error_code ec( ret, std::system_category() );
 		throw std::system_error( ec, " fail to call pthread_mutex_trylock()" );
@@ -73,7 +111,12 @@ bool procshared_mutex_base::try_lock( void )
 void procshared_mutex_base::unlock( void )
 {
 	int ret = pthread_mutex_unlock( &fastmutex_ );
-	if ( ret != 0 ) {
+	if ( ret == 0 ) {
+		// OK
+	} else if ( ret == EPERM ) {
+		// caller thread is not lock owner thread
+		fprintf( stderr, "Warning: caller thread is not mutex lock owner. caller side may have critical logic error\n" );
+	} else {
 		std::error_code ec( ret, std::system_category() );
 		throw std::system_error( ec, " fail to call pthread_mutex_unlock()" );
 	}

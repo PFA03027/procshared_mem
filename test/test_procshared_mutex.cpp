@@ -69,6 +69,44 @@ TEST( Test_procshared_mutex, CanNativeHandle )
 	// Cleanup
 }
 
+TEST( Test_procshared_mutex, CanRecoverByRobustnessViaLock )
+{
+	// Arrange
+	procshared_mutex sut;
+	std::thread      lock_owner_terminating( [&sut]( void ) {
+        sut.lock();
+    } );
+	lock_owner_terminating.join();
+
+	// Act
+	EXPECT_NO_THROW( sut.lock() );
+
+	// Assert
+
+	// Cleanup
+	sut.unlock();
+}
+
+TEST( Test_procshared_mutex, CanRecoverByRobustnessViaTryLock )
+{
+	// Arrange
+	procshared_mutex sut;
+	std::thread      lock_owner_terminating( [&sut]( void ) {
+        sut.lock();
+    } );
+	lock_owner_terminating.join();
+	bool ret = false;
+
+	// Act
+	EXPECT_NO_THROW( ret = sut.try_lock() );
+
+	// Assert
+	EXPECT_TRUE( ret );
+
+	// Cleanup
+	sut.unlock();
+}
+
 TEST( Test_procshared_recursive_mutex, CanConstruct_CanDestruct )
 {
 	ASSERT_NO_THROW( procshared_recursive_mutex sut );
@@ -161,6 +199,44 @@ TEST( Test_procshared_recursive_mutex, CanNativeHandle )
 	EXPECT_NE( ret, nullptr );
 
 	// Cleanup
+}
+
+TEST( Test_procshared_recursive_mutex, CanRecoverByRobustnessViaLock )
+{
+	// Arrange
+	procshared_recursive_mutex sut;
+	std::thread                lock_owner_terminating( [&sut]( void ) {
+        sut.lock();
+    } );
+	lock_owner_terminating.join();
+
+	// Act
+	EXPECT_NO_THROW( sut.lock() );
+
+	// Assert
+
+	// Cleanup
+	sut.unlock();
+}
+
+TEST( Test_procshared_recursive_mutex, CanRecoverByRobustnessViaTryLock )
+{
+	// Arrange
+	procshared_recursive_mutex sut;
+	std::thread                lock_owner_terminating( [&sut]( void ) {
+        sut.lock();
+    } );
+	lock_owner_terminating.join();
+	bool ret = false;
+
+	// Act
+	EXPECT_NO_THROW( ret = sut.try_lock() );
+
+	// Assert
+	EXPECT_TRUE( ret );
+
+	// Cleanup
+	sut.unlock();
 }
 
 #if defined( TEST_ENABLE_ADDRESSSANITIZER ) || defined( TEST_ENABLE_LEAKSANITIZER )
