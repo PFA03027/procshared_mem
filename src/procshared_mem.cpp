@@ -101,7 +101,7 @@ constexpr semaphore_post_guard_try_to_acquire_t semaphore_post_guard_try_to_acqu
  */
 class semaphore_post_guard {
 public:
-	constexpr semaphore_post_guard( void )
+	constexpr semaphore_post_guard( void ) noexcept
 	  : p_sem_( SEM_FAILED )
 	  , owns_acquire_flag_( false )
 	{
@@ -111,7 +111,7 @@ public:
 	 * @brief sem_wait()することなく、owns_acquire() == true の状態で初期化するコンストラクタ
 	 *
 	 */
-	constexpr semaphore_post_guard( sem_t* p_sem_arg, const semaphore_post_guard_adopt_acquire_t& )
+	constexpr semaphore_post_guard( sem_t* p_sem_arg, const semaphore_post_guard_adopt_acquire_t& ) noexcept
 	  : p_sem_( p_sem_arg )
 	  , owns_acquire_flag_( true )
 	{
@@ -121,7 +121,7 @@ public:
 	 * @brief sem_wait()することなく、owns_acquire() == false の状態で初期化するコンストラクタ
 	 *
 	 */
-	constexpr semaphore_post_guard( sem_t* p_sem_arg, const semaphore_post_guard_defer_acquire_t& )
+	constexpr semaphore_post_guard( sem_t* p_sem_arg, const semaphore_post_guard_defer_acquire_t& ) noexcept
 	  : p_sem_( p_sem_arg )
 	  , owns_acquire_flag_( false )
 	{
@@ -151,7 +151,7 @@ public:
 		call_sem_wait();
 	}
 
-	semaphore_post_guard( semaphore_post_guard&& orig )
+	constexpr semaphore_post_guard( semaphore_post_guard&& orig ) noexcept
 	  : p_sem_( orig.p_sem_ )
 	  , owns_acquire_flag_( orig.owns_acquire_flag_ )
 	{
@@ -159,7 +159,7 @@ public:
 		orig.owns_acquire_flag_ = false;
 	}
 
-	semaphore_post_guard& operator=( semaphore_post_guard&& orig )
+	constexpr semaphore_post_guard& operator=( semaphore_post_guard&& orig ) noexcept
 	{
 		p_sem_             = orig.p_sem_;
 		owns_acquire_flag_ = orig.owns_acquire_flag_;
@@ -172,10 +172,14 @@ public:
 
 	~semaphore_post_guard()
 	{
+		if ( p_sem_ == SEM_FAILED ) {
+			return;
+		}
+
 		call_sem_post();
 	}
 
-	bool owns_acquire( void ) const
+	bool owns_acquire( void ) const noexcept
 	{
 		return owns_acquire_flag_;
 	}
@@ -192,10 +196,15 @@ public:
 
 	void release( void )
 	{
+		if ( p_sem_ == SEM_FAILED ) {
+			fprintf( stderr, "unexpected calling call_sem_post() by this=%p\n", this );
+			return;
+		}
+
 		call_sem_post();
 	}
 
-	void swap( semaphore_post_guard& u )
+	constexpr void swap( semaphore_post_guard& u ) noexcept
 	{
 		sem_t* p_sem_backup             = p_sem_;
 		bool   owns_acquire_flag_backup = owns_acquire_flag_;
@@ -215,7 +224,9 @@ private:
 	void call_sem_wait( void )
 	{
 		if ( p_sem_ == SEM_FAILED ) {
-			return;
+			char buff[1024];
+			snprintf( buff, 1024, "unexpected calling call_sem_wait() by this=%p", this );
+			throw procshared_mem_error( buff );
 		}
 
 		int ret = sem_wait( p_sem_ );
@@ -231,7 +242,9 @@ private:
 	bool call_sem_trywait( void )
 	{
 		if ( p_sem_ == SEM_FAILED ) {
-			return false;
+			char buff[1024];
+			snprintf( buff, 1024, "unexpected calling call_sem_wait() by this=%p", this );
+			throw procshared_mem_error( buff );
 		}
 
 		int ret = sem_trywait( p_sem_ );
@@ -245,15 +258,12 @@ private:
 				throw procshared_mem_error( cur_errno, buff );
 			}
 
-			printf( "sem_trywait(%p), but semaphore value is already 0(Zero)\n", p_sem_ );
+			fprintf( stderr, "sem_trywait(%p), but semaphore value is already 0(Zero)\n", p_sem_ );
 			owns_acquire_flag_ = false;
 		}
 	}
-	void call_sem_post( void )
+	void call_sem_post( void ) noexcept
 	{
-		if ( p_sem_ == SEM_FAILED ) {
-			return;
-		}
 		if ( not owns_acquire_flag_ ) {
 			return;
 		}
@@ -261,11 +271,12 @@ private:
 		int ret = sem_post( p_sem_ );
 		if ( ret != 0 ) {
 			auto cur_errno = errno;
-			char buff[1024];
-			snprintf( buff, 1024, " by sem_post(%p)", p_sem_ );
-			std::string errlog = make_strerror( cur_errno ) + buff;
-			fprintf( stderr, "%s\n", errlog.c_str() );
-			// throw procshared_mem_error( cur_errno, buff );
+			try {
+				std::string errlog = make_strerror( cur_errno );
+				fprintf( stderr, "Fail sem_post(%p): %s\n", p_sem_, errlog.c_str() );
+			} catch ( ... ) {
+				fprintf( stderr, "Fail sem_post(%p): errno=%d\n", p_sem_, cur_errno );
+			}
 		}
 		owns_acquire_flag_ = false;
 	}
@@ -441,7 +452,7 @@ void procshared_mem::setup_as_both( void )
 			retry_loop = false;
 		} catch ( procshared_mem_retry& e ) {
 			teardown_in_semaphore_lock( std::move( spg ) );
-			// printf( "asyn_shm do internal retry open\n" );
+			// fprintf( stderr, "asyn_shm do internal retry open\n" );
 		} catch ( ... ) {
 			teardown_in_semaphore_lock( std::move( spg ) );
 			throw;
@@ -456,14 +467,14 @@ void procshared_mem::setup_as_primary( void )
 		type_of_errno cur_errno = errno;
 		if ( cur_errno != ENOENT ) {
 			auto err_str = make_strerror( cur_errno );
-			printf( "Warning: fail to unlink(%s), errno(%d)=%s\n", id_fname_.c_str(), cur_errno, err_str.c_str() );
+			fprintf( stderr, "Warning: fail to unlink(%s), errno(%d)=%s\n", id_fname_.c_str(), cur_errno, err_str.c_str() );
 		}
 	}
 	id_fd_ = open( id_fname_.c_str(), O_CREAT | O_EXCL | O_CLOEXEC, mode_ );
 	if ( id_fd_ < 0 ) {
 		type_of_errno cur_errno = errno;
 		auto          err_str   = make_strerror( cur_errno );
-		printf( "Warning: fail to open(%s), errno(%d)=%s\n", id_fname_.c_str(), cur_errno, err_str.c_str() );
+		fprintf( stderr, "Warning: fail to open(%s), errno(%d)=%s\n", id_fname_.c_str(), cur_errno, err_str.c_str() );
 		char buff[1024];
 		snprintf( buff, 1024, " by open(%s, O_CREAT | O_EXCL, %x)", pathname_.c_str(), mode_ );
 		throw procshared_mem_error( cur_errno, buff );
@@ -473,7 +484,7 @@ void procshared_mem::setup_as_primary( void )
 	// 共有メモリの作成
 	int ret = shm_unlink( pathname_.c_str() );   // to avoid race condition
 	if ( ret == 0 ) {
-		printf( "Warning: race condition guard code works successfully for shm_unlink(%s)\n", pathname_.c_str() );
+		fprintf( stderr, "Warning: race condition guard code works successfully for shm_unlink(%s)\n", pathname_.c_str() );
 	}
 	shm_fd_ = shm_open( pathname_.c_str(), O_CREAT | O_EXCL | O_RDWR | O_CLOEXEC, mode_ );
 	if ( shm_fd_ < 0 ) {
@@ -523,7 +534,7 @@ void procshared_mem::setup_as_secondary( void )
 			throw procshared_mem_retry();
 		}
 		auto err_str = make_strerror( cur_errno );
-		printf( "Warning: fail to open(%s), errno(%d)=%s\n", id_fname_.c_str(), cur_errno, err_str.c_str() );
+		fprintf( stderr, "Warning: fail to open(%s), errno(%d)=%s\n", id_fname_.c_str(), cur_errno, err_str.c_str() );
 		char buff[1024];
 		snprintf( buff, 1024, " by open(%s, O_RDONLY | O_CLOEXEC, %x)", pathname_.c_str(), mode_ );
 		throw procshared_mem_error( cur_errno, buff );
@@ -554,7 +565,7 @@ void procshared_mem::setup_as_secondary( void )
 			throw procshared_mem_error( cur_errno, buff );
 		} else if ( static_cast<size_t>( epos ) < sizeof( procshared_mem_mem_header ) ) {
 			// 共有メモリのサイズがうまく反映されていないので、リトライする。
-			// printf( "Retry, because shared memory(%s) is too short. size by lseek()=%ld. expected size=%ld\n", pathname_.c_str(), epos, length_ );
+			// fprintf( stderr, "Retry, because shared memory(%s) is too short. size by lseek()=%ld. expected size=%ld\n", pathname_.c_str(), epos, length_ );
 			throw procshared_mem_retry();
 		} else if ( epos < length_ ) {
 			// 共有メモリのサイズが不足しているので、エラーとする
@@ -603,7 +614,7 @@ void procshared_mem::remove_resources( void )
 		if ( ret != 0 ) {
 			auto cur_errno = errno;
 			auto es        = make_strerror( cur_errno );
-			printf( "%s by shm_unlink(%s)\n", es.c_str(), pathname_.c_str() );
+			fprintf( stderr, "%s by shm_unlink(%s)\n", es.c_str(), pathname_.c_str() );
 		}
 	}
 	if ( id_fd_ != -1 ) {
@@ -612,7 +623,7 @@ void procshared_mem::remove_resources( void )
 		if ( ret != 0 ) {
 			auto cur_errno = errno;
 			auto es        = make_strerror( cur_errno );
-			printf( "%s by unlink(%s)\n", es.c_str(), id_fname_.c_str() );
+			fprintf( stderr, "%s by unlink(%s)\n", es.c_str(), id_fname_.c_str() );
 		}
 	}
 	if ( p_sem_ != SEM_FAILED ) {
@@ -621,7 +632,7 @@ void procshared_mem::remove_resources( void )
 		if ( ret != 0 ) {
 			auto cur_errno = errno;
 			auto es        = make_strerror( cur_errno );
-			printf( "%s by sem_unlink(%s)\n", es.c_str(), pathname_.c_str() );
+			fprintf( stderr, "%s by sem_unlink(%s)\n", es.c_str(), pathname_.c_str() );
 		}
 	}
 }
@@ -632,7 +643,7 @@ void procshared_mem::close_resources( void )
 		if ( ret != 0 ) {
 			auto cur_errno = errno;
 			auto es        = make_strerror( cur_errno );
-			printf( "%s by munmap(%p)\n", es.c_str(), p_sem_ );
+			fprintf( stderr, "%s by munmap(%p)\n", es.c_str(), p_mem_ );
 		}
 		p_mem_ = nullptr;
 	}
@@ -641,7 +652,7 @@ void procshared_mem::close_resources( void )
 		if ( ret != 0 ) {
 			auto cur_errno = errno;
 			auto es        = make_strerror( cur_errno );
-			printf( "%s by close(%d)\n", es.c_str(), shm_fd_ );
+			fprintf( stderr, "%s by close(%d)\n", es.c_str(), shm_fd_ );
 		}
 		shm_fd_ = -1;
 	}
@@ -650,7 +661,7 @@ void procshared_mem::close_resources( void )
 		if ( ret != 0 ) {
 			auto cur_errno = errno;
 			auto es        = make_strerror( cur_errno );
-			printf( "%s by close(%d) of id file %s\n", es.c_str(), id_fd_, id_fname_.c_str() );
+			fprintf( stderr, "%s by close(%d) of id file %s\n", es.c_str(), id_fd_, id_fname_.c_str() );
 		}
 		id_fd_ = -1;
 	}
@@ -659,7 +670,7 @@ void procshared_mem::close_resources( void )
 		if ( ret != 0 ) {
 			auto cur_errno = errno;
 			auto es        = make_strerror( cur_errno );
-			printf( "%s by sem_close(%p)\n", es.c_str(), p_sem_ );
+			fprintf( stderr, "%s by sem_close(%p)\n", es.c_str(), p_sem_ );
 		}
 		p_sem_ = SEM_FAILED;
 	}
@@ -716,61 +727,59 @@ void procshared_mem::allocate_shm_as_both( std::function<void( void*, off_t )> i
 void procshared_mem::allocate_shm_as_primary( std::function<void( void*, off_t )> initfunctor_arg )
 {
 	if ( p_sem_ != SEM_FAILED ) {
-		printf( "already allocated as %s\n", is_owner_ ? "primary" : "secondary" );
+		fprintf( stderr, "already allocated as %s\n", is_owner_ ? "primary" : "secondary" );
 		return;
 	}
 
-	initfunctor_    = initfunctor_arg;
-	bool retry_loop = true;
+	initfunctor_ = initfunctor_arg;
 
-	do {
-		semaphore_post_guard spg;
-		try {
-			p_sem_ = sem_open( pathname_.c_str(), O_CREAT | O_EXCL | O_RDWR | O_CLOEXEC, mode_, 0 );
-			if ( p_sem_ == SEM_FAILED ) {
-				auto cur_errno = errno;
-				char buff[1024];
-				snprintf( buff, 1024, " by sem_open(%s, O_CREAT | O_EXCL | O_RDWR | O_CLOEXEC, %x, 0) as primary", pathname_.c_str(), mode_ );
-				throw procshared_mem_error( cur_errno, buff );
-			}
-			// デストラクタで、sem_postを行う。このsem_postは、ほかのプロセス向けにpostを行う。
-			spg = semaphore_post_guard( p_sem_, semaphore_post_guard_adopt_acquire );
+	semaphore_post_guard spg;
+	p_sem_ = sem_open( pathname_.c_str(), O_CREAT | O_EXCL | O_RDWR | O_CLOEXEC, mode_, 0 );
+	if ( p_sem_ == SEM_FAILED ) {
+		auto cur_errno = errno;
+		char buff[1024];
+		snprintf( buff, 1024, " by sem_open(%s, O_CREAT | O_EXCL | O_RDWR | O_CLOEXEC, %x, 0) as primary", pathname_.c_str(), mode_ );
+		throw procshared_mem_error( cur_errno, buff );
+	}
+	try {
+		// デストラクタで、sem_postを行う。このsem_postは、ほかのプロセス向けにpostを行う。
+		spg = semaphore_post_guard( p_sem_, semaphore_post_guard_adopt_acquire );
 
-			// セマフォの作成に成功し、オーナー権を取得
-			is_owner_ = true;
-			setup_as_primary();
+		// セマフォの作成に成功し、オーナー権を取得
+		is_owner_ = true;
+		setup_as_primary();
 
-			retry_loop = false;
-		} catch ( procshared_mem_retry& e ) {
-			teardown_in_semaphore_lock( std::move( spg ) );
-			// printf( "asyn_shm do internal retry open\n" );
-		} catch ( ... ) {
-			teardown_in_semaphore_lock( std::move( spg ) );
-			throw;
-		}
-	} while ( retry_loop );
+	} catch ( procshared_mem_retry& e ) {
+		teardown_in_semaphore_lock( std::move( spg ) );
+		char buff[1024];
+		snprintf( buff, 1024, "unexpected procshared_mem_retry exception is thrown in allocate_shm_as_primary() for %s as %x", pathname_.c_str(), mode_ );
+		throw procshared_mem_error( buff );
+	} catch ( ... ) {
+		teardown_in_semaphore_lock( std::move( spg ) );
+		throw;
+	}
 }
 
 void procshared_mem::allocate_shm_as_secondary( void )
 {
 	if ( p_sem_ != SEM_FAILED ) {
-		printf( "already allocated as %s\n", is_owner_ ? "primary" : "secondary" );
+		fprintf( stderr, "already allocated as %s\n", is_owner_ ? "primary" : "secondary" );
 		return;
 	}
 
-	bool retry_loop = true;
+	p_sem_ = sem_open( pathname_.c_str(), O_RDWR | O_CLOEXEC );
+	if ( p_sem_ == SEM_FAILED ) {
+		auto cur_errno = errno;
+		char buff[1024];
+		snprintf( buff, 1024, " by sem_open(%s, O_RDWR | O_CLOEXEC) as secondary", pathname_.c_str() );
+		throw procshared_mem_error( cur_errno, buff );
+	}
 
+	bool retry_loop = true;
 	do {
 		semaphore_post_guard spg;
 		try {
 
-			p_sem_ = sem_open( pathname_.c_str(), O_RDWR | O_CLOEXEC );
-			if ( p_sem_ == SEM_FAILED ) {
-				auto cur_errno = errno;
-				char buff[1024];
-				snprintf( buff, 1024, " by sem_open(%s, O_RDWR | O_CLOEXEC) as secondary", pathname_.c_str() );
-				throw procshared_mem_error( cur_errno, buff );
-			}
 			// セマフォの取得をまつ。
 			// デストラクタで、sem_postを行う。このsem_postは、ほかのプロセス向けにpostを行う。
 			spg = semaphore_post_guard( p_sem_ );
@@ -783,7 +792,7 @@ void procshared_mem::allocate_shm_as_secondary( void )
 			retry_loop = false;
 		} catch ( procshared_mem_retry& e ) {
 			teardown_in_semaphore_lock( std::move( spg ) );
-			// printf( "asyn_shm do internal retry open\n" );
+			// fprintf( stderr, "asyn_shm do internal retry open\n" );
 		} catch ( ... ) {
 			teardown_in_semaphore_lock( std::move( spg ) );
 			throw;
@@ -815,18 +824,50 @@ void procshared_mem::debug_set_as_owner( void )
 	is_owner_ = true;
 }
 
+std::string procshared_mem::debug_dump_string( void ) const
+{
+	char buff[2048];
+
+	snprintf( buff, 2048,
+	          "pathname_   = %s\n"
+	          "id_dirname_ = %s\n"
+	          "id_fname_   = %s\n"
+	          "    ino_t   = %lu\n"
+	          "mode_       = 0x%x\n"
+	          "length_     = %ld\n"
+	          "is_owner_   = %s\n"
+	          "p_sem_      = %p\n"
+	          "id_fd_      = %d\n"
+	          "shm_fd_     = %d\n"
+	          "p_mem_      = %p\n",
+	          pathname_.c_str(),
+	          id_dirname_.c_str(),
+	          id_fname_.c_str(),
+	          get_inode_of_fd( id_fd_ ),
+	          mode_,
+	          length_,
+	          is_owner_ ? "true" : "false",
+	          p_sem_,
+	          id_fd_,
+	          shm_fd_,
+	          p_mem_ );
+
+	std::string ans( buff );
+	return ans;
+}
+
 void procshared_mem::debug_force_cleanup( const char* p_shm_name )
 {
 	int ret = shm_unlink( p_shm_name );
 	if ( ret != 0 ) {
 		auto cur_errno = errno;
 		auto es        = make_strerror( cur_errno );
-		printf( "%s by shm_unlink(%s)\n", es.c_str(), p_shm_name );
+		fprintf( stderr, "%s by shm_unlink(%s)\n", es.c_str(), p_shm_name );
 	}
 	ret = sem_unlink( p_shm_name );
 	if ( ret != 0 ) {
 		auto cur_errno = errno;
 		auto es        = make_strerror( cur_errno );
-		printf( "%s by sem_unlink(%s)\n", es.c_str(), p_shm_name );
+		fprintf( stderr, "%s by sem_unlink(%s)\n", es.c_str(), p_shm_name );
 	}
 }

@@ -34,7 +34,10 @@ int main( void )
 				std::atomic<unsigned char>* p_data = reinterpret_cast<std::atomic<unsigned char>*>( p_mem );
 				p_data->store( 122 );
 			} );
-			// std::cout << "inode: " << std::to_string( shm_obj.debug_get_id_file_inode() ) << std::endl;
+			// if ( shm_obj.is_primary() ) {
+			// 	// printf( "%s\n", shm_obj.debug_dump_string().c_str() );
+			// 	std::this_thread::sleep_for( std::chrono::milliseconds( 2 ) );
+			// }
 			if ( not shm_obj.debug_test_integrity() ) {
 				fprintf( stderr, "debug_test_integrity() return false\n" );
 				abort();

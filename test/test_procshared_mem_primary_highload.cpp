@@ -63,11 +63,6 @@ void test_func( void )
 {
 	std::thread thread_pool[num_of_threads];
 
-	// procshared_mem shm_obj( p_shm_obj_name, 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, []( void* p_mem, off_t len ) {
-	// 	std::atomic<unsigned char>* p_data = reinterpret_cast<std::atomic<unsigned char>*>( p_mem );
-	// 	p_data->store( 122 );
-	// } );
-
 	for ( int i = 0; i < num_of_threads; i++ ) {
 		thread_pool[i] = std::thread( make_shm_and_close );
 	}
@@ -80,9 +75,16 @@ int main( void )
 {
 	procshared_mem::debug_force_cleanup( p_shm_obj_name );   // to remove ghost data
 
+	// procshared_mem shm_obj( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, []( void* p_mem, off_t len ) {
+	// 	std::atomic<unsigned char>* p_data = reinterpret_cast<std::atomic<unsigned char>*>( p_mem );
+	// 	p_data->store( 122 );
+	// } );
+	// printf( "%s\n", shm_obj.debug_dump_string().c_str() );
+
 	for ( int i = 0; i < 10000; i++ ) {
 		if ( ( i == 0 ) || ( ( i % 1000 ) == 999 ) ) {
 			printf( "count=%d\n", i );
+			fflush( NULL );
 		}
 		test_func();
 	}

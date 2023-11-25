@@ -102,6 +102,7 @@ public:
 	ino_t       debug_get_id_file_inode( void ) const;
 	bool        debug_test_integrity( void ) const;
 	void        debug_set_as_owner( void );
+	std::string debug_dump_string( void ) const;
 	static void debug_force_cleanup( const char* p_shm_name );
 
 private:
