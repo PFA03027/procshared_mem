@@ -49,8 +49,8 @@ test: build-test
 	ctest -j ${JOBS} -v
 
 test2: test
-	build/test/test_procshared_mem_both_highload
 	build/test/test_procshared_mem_primary_highload
+	build/test/test_procshared_mem_both_highload
 
 build-test:
 	make BUILDIMPLTARGET=build-test all
@@ -81,15 +81,6 @@ coverage2: clean
 	lcov --rc lcov_branch_coverage=1 -b -c -d . -r tmp2.info  '*/test/*' -o output.info; \
 	genhtml --branch-coverage -o OUTPUT -p . -f output.info
 
-coverage-final:
-	set -e; \
-	cd ${BUILD_DIR}; \
-	find . -type f -name "*.gcda" | xargs -P${JOBS} -I@ gcov -l -b @; \
-	lcov --rc lcov_branch_coverage=1 -c -d . -o tmp.info; \
-	lcov --rc lcov_branch_coverage=1 -b -c -d . -r tmp.info  '/usr/include/*' -o tmp2.info; \
-	lcov --rc lcov_branch_coverage=1 -b -c -d . -r tmp2.info  '*/test/*' -o output.info; \
-	genhtml --branch-coverage -o OUTPUT -p . -f output.info
-
 profile: clean
 	set -e; \
 	make BUILDTARGET=gprof BUILDTYPE=Release test;  \
@@ -98,9 +89,9 @@ profile: clean
 
 sanitizer:
 	set -e; \
-	for i in `seq 1 21`; do \
+	for i in `seq 1 13`; do \
 		make sanitizer.$$i.sanitizer; \
-		echo $$i / 21 done; \
+		echo $$i / 13 done; \
 	done
 
 sanitizer.%.sanitizer: clean
