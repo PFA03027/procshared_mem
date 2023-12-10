@@ -29,7 +29,6 @@ void make_shm_and_close( void )
 	pid_t child_pid = fork();
 	if ( child_pid == 0 ) {
 		unsigned char exit_code = 1;
-		std::string   owner_status( "before_set" );
 		{
 			// child process side
 			try {
@@ -44,14 +43,12 @@ void make_shm_and_close( void )
 				}
 				std::atomic<unsigned char>* p_data = reinterpret_cast<std::atomic<unsigned char>*>( shm_obj.get() );
 				exit_code                          = p_data->load();
-				owner_status                       = shm_obj.is_primary() ? "primary" : "secondary";
 			} catch ( std::runtime_error& e ) {
 				fprintf( stderr, "procshared_mem throws std::runtime_error %s\n", e.what() );
 				abort();
 			}
 			if ( exit_code != 122 ) {
 				fprintf( stderr, "shared memory data is not expected %d\n", (int)exit_code );
-				fprintf( stderr, "shared memory data is %s\n", owner_status.c_str() );
 			}
 			// std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
 		}
@@ -135,7 +132,7 @@ void test_func( void )
 
 int main( void )
 {
-	procshared_mem::debug_force_cleanup( p_shm_obj_name );   // to remove ghost data
+	procshared_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
 
 	for ( int i = 0; i < 10000; i++ ) {
 		if ( ( i == 0 ) || ( ( i % 1000 ) == 999 ) ) {

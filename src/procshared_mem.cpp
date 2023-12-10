@@ -131,8 +131,8 @@ public:
 	  , fd_( src.fd_ )
 	  , inode_id_( src.inode_id_ )
 	{
-		src.fd_   = -1;
-		inode_id_ = 0;
+		src.fd_       = -1;
+		src.inode_id_ = 0;
 	}
 
 	id_file_resource_handler& operator=( id_file_resource_handler&& src )
@@ -467,24 +467,24 @@ public:
 
 	~shm_resource_handler()
 	{
-		if ( is_valid() ) {
-			if ( p_mem_ != nullptr ) {
-				int ret = munmap( p_mem_, length_ );
-				if ( ret != 0 ) {
-					auto cur_errno = errno;
-					auto es        = make_strerror( cur_errno );
-					fprintf( stderr, "%s by munmap(%p)\n", es.c_str(), p_mem_ );
-				}
-			}
-			if ( shm_fd_ != -1 ) {
-				int ret = close( shm_fd_ );
-				if ( ret != 0 ) {
-					auto cur_errno = errno;
-					auto es        = make_strerror( cur_errno );
-					fprintf( stderr, "%s by close(%d)\n", es.c_str(), shm_fd_ );
-				}
+		// if ( is_valid() ) {
+		if ( p_mem_ != nullptr ) {
+			int ret = munmap( p_mem_, length_ );
+			if ( ret != 0 ) {
+				auto cur_errno = errno;
+				auto es        = make_strerror( cur_errno );
+				fprintf( stderr, "%s by munmap(%p)\n", es.c_str(), p_mem_ );
 			}
 		}
+		if ( shm_fd_ >= 0 ) {
+			int ret = close( shm_fd_ );
+			if ( ret != 0 ) {
+				auto cur_errno = errno;
+				auto es        = make_strerror( cur_errno );
+				fprintf( stderr, "%s by close(%d)\n", es.c_str(), shm_fd_ );
+			}
+		}
+		// }
 
 		shm_name_.clear();
 		shm_fd_ = -1;
@@ -614,7 +614,7 @@ private:
 		}
 		length_ = length_arg;
 
-		void* p_mem_ = mmap( NULL, length_, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd_, 0 );
+		p_mem_ = mmap( NULL, length_, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd_, 0 );
 		if ( p_mem_ == MAP_FAILED ) {
 			auto cur_errno = errno;
 			char buff[1024];
@@ -937,6 +937,7 @@ public:
 	ino_t       debug_get_id_file_inode( void ) const;
 	bool        debug_test_integrity( void ) const;
 	std::string debug_dump_string( void ) const;
+	static void debug_force_cleanup( const char* p_shm_name, const char* p_id_dirname );
 
 private:
 	struct procshared_mem_mem_header;
@@ -960,7 +961,7 @@ private:
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct procshared_mem::impl::procshared_mem_mem_header {
 	std::atomic<off_t> length_val_;
-	std::atomic<int>   reference_count_;
+	std::atomic<long>  reference_count_;
 	std::atomic<ino_t> inode_val_;
 	unsigned char      shm_buff_[0];
 
@@ -1139,6 +1140,7 @@ bool procshared_mem::impl::try_setup_as_both( int role_type, const char* p_shm_n
 		} break;
 
 		default: {
+			// this is logic error
 			throw procshared_mem_error( "role type error" );
 		} break;
 	}
@@ -1181,7 +1183,7 @@ bool procshared_mem::impl::try_setup_as_both( int role_type, const char* p_shm_n
 	}
 
 	// 参照カウント+1
-	p_cur_mem->inode_val_.fetch_add( 1 );
+	p_cur_mem->reference_count_.fetch_add( 1 );
 
 	// メンバ変数へ設定。
 	id_res_  = std::move( cur_id_res );
@@ -1213,6 +1215,7 @@ bool procshared_mem::impl::debug_test_integrity( void ) const
 {
 	bool ans = false;
 	try {
+		// printf( "inode_val: %ld, id_file: %ld\n", debug_get_id_file_inode(), id_res_.get_inode_number() );
 		ans = ( debug_get_id_file_inode() == id_res_.get_inode_number() );
 
 	} catch ( procshared_mem_error& e ) {
@@ -1232,6 +1235,30 @@ std::string procshared_mem::impl::debug_dump_string( void ) const
 
 	std::string ans( buff );
 	return ans;
+}
+
+void procshared_mem::impl::debug_force_cleanup( const char* p_shm_name, const char* p_id_dirname )
+{
+	std::string id_fname = get_id_filename( p_shm_name, p_id_dirname );
+	int         ret      = unlink( id_fname.c_str() );
+	if ( ret != 0 ) {
+		auto cur_errno = errno;
+		auto es        = make_strerror( cur_errno );
+		fprintf( stderr, "%s by unlink(%s)\n", es.c_str(), id_fname.c_str() );
+	}
+
+	ret = shm_unlink( p_shm_name );   // 共有メモリオブジェクトの削除
+	if ( ret != 0 ) {
+		auto cur_errno = errno;
+		auto es        = make_strerror( cur_errno );
+		fprintf( stderr, "%s by shm_unlink(%s)\n", es.c_str(), p_shm_name );
+	}
+	ret = sem_unlink( p_shm_name );   // セマフォの削除
+	if ( ret != 0 ) {
+		auto cur_errno = errno;
+		auto es        = make_strerror( cur_errno );
+		fprintf( stderr, "%s by sem_unlink(%s)\n", es.c_str(), p_shm_name );
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -1301,18 +1328,7 @@ std::string procshared_mem::debug_dump_string( void ) const
 
 	return p_impl_->debug_dump_string();
 }
-void procshared_mem::debug_force_cleanup( const char* p_shm_name )
+void procshared_mem::debug_force_cleanup( const char* p_shm_name, const char* p_id_dirname )
 {
-	int ret = shm_unlink( p_shm_name );
-	if ( ret != 0 ) {
-		auto cur_errno = errno;
-		auto es        = make_strerror( cur_errno );
-		fprintf( stderr, "%s by shm_unlink(%s)\n", es.c_str(), p_shm_name );
-	}
-	ret = sem_unlink( p_shm_name );
-	if ( ret != 0 ) {
-		auto cur_errno = errno;
-		auto es        = make_strerror( cur_errno );
-		fprintf( stderr, "%s by sem_unlink(%s)\n", es.c_str(), p_shm_name );
-	}
+	procshared_mem::impl::debug_force_cleanup( p_shm_name, p_id_dirname );
 }

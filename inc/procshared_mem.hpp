@@ -115,7 +115,7 @@ public:
 	ino_t       debug_get_id_file_inode( void ) const;
 	bool        debug_test_integrity( void ) const;
 	std::string debug_dump_string( void ) const;
-	static void debug_force_cleanup( const char* p_shm_name );
+	static void debug_force_cleanup( const char* p_shm_name, const char* p_id_dirname );
 
 private:
 	class impl;
