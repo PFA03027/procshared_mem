@@ -67,5 +67,6 @@
         "sstream": "cpp",
         "variant": "cpp",
         "shared_mutex": "cpp"
-    }
+    },
+    "testMate.cpp.test.executables": "**/{build,Build,BUILD,out,Out,OUT}/**/{test,Test,TEST}*"
 }

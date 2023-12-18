@@ -33,16 +33,13 @@ int main( void )
 				std::atomic<unsigned char>* p_data = reinterpret_cast<std::atomic<unsigned char>*>( p_mem );
 				p_data->store( 122 );
 			} );
-			// if ( shm_obj.is_primary() ) {
-			// 	// printf( "%s\n", shm_obj.debug_dump_string().c_str() );
-			// 	std::this_thread::sleep_for( std::chrono::milliseconds( 2 ) );
-			// }
 			if ( not shm_obj.debug_test_integrity() ) {
 				fprintf( stderr, "debug_test_integrity() return false\n" );
 				abort();
 			}
 			std::atomic<unsigned char>* p_data = reinterpret_cast<std::atomic<unsigned char>*>( shm_obj.get() );
 			exit_code                          = p_data->load();
+			// std::this_thread::sleep_for( std::chrono::milliseconds( 10 ) );
 		} catch ( std::runtime_error& e ) {
 			fprintf( stderr, "procshared_mem throws std::runtime_error %s\n", e.what() );
 			abort();
@@ -50,7 +47,6 @@ int main( void )
 		if ( exit_code != 122 ) {
 			fprintf( stderr, "shared memory data is not expected %d\n", (int)exit_code );
 		}
-		// std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
 	}
 
 	return exit_code;

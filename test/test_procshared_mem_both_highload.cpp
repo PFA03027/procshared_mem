@@ -28,32 +28,9 @@ void make_shm_and_close( void )
 {
 	pid_t child_pid = fork();
 	if ( child_pid == 0 ) {
-		unsigned char exit_code = 1;
-		{
-			// child process side
-			try {
-				procshared_mem shm_obj( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, []( void* p_mem, off_t len ) {
-					std::atomic<unsigned char>* p_data = reinterpret_cast<std::atomic<unsigned char>*>( p_mem );
-					p_data->store( 122 );
-				} );
-				// std::cout << "inode: " << std::to_string( shm_obj.debug_get_id_file_inode() ) << std::endl;
-				if ( not shm_obj.debug_test_integrity() ) {
-					fprintf( stderr, "debug_test_integrity() return false\n" );
-					abort();
-				}
-				std::atomic<unsigned char>* p_data = reinterpret_cast<std::atomic<unsigned char>*>( shm_obj.get() );
-				exit_code                          = p_data->load();
-			} catch ( std::runtime_error& e ) {
-				fprintf( stderr, "procshared_mem throws std::runtime_error %s\n", e.what() );
-				abort();
-			}
-			if ( exit_code != 122 ) {
-				fprintf( stderr, "shared memory data is not expected %d\n", (int)exit_code );
-			}
-			// std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
-		}
-
-		exit( exit_code );
+		execl( "build/test/loadtest_procshared_mem_secondary_highload", "loadtest_procshared_mem_secondary_highload", (char*)NULL );
+		perror( "fail execl to launch loadtest_procshared_mem_secondary_highload\n" );
+		abort();
 	} else {
 		// parent process side
 		if ( child_pid < 0 ) {
@@ -132,11 +109,14 @@ void test_func( void )
 
 int main( void )
 {
+	pid_t my_pid = getpid();
+
 	procshared_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
 
 	for ( int i = 0; i < 10000; i++ ) {
-		if ( ( i == 0 ) || ( ( i % 1000 ) == 999 ) ) {
-			printf( "count=%d\n", i );
+		if ( ( i == 0 ) || ( ( i % 1000 ) == 999 ) || ( i < 999 ) ) {
+			printf( "count(%d)=%d\n", my_pid, i );
+			fflush( NULL );
 		}
 		test_func();
 	}

@@ -10,9 +10,11 @@
  */
 
 #include <atomic>
+#include <chrono>
 #include <functional>
 #include <stdexcept>
 #include <string>
+#include <thread>
 #include <tuple>
 #include <type_traits>
 
@@ -27,13 +29,9 @@
 #include <unistd.h>
 
 #include "procshared_mem.hpp"
+#include "procshared_mem_internal.hpp"
 
-#define TMP_DIR_FOR_ID_FILE "/tmp"
-
-static_assert( std::is_integral<ino_t>::value, "ino_t is not integral..." );
-static_assert( std::is_integral<off_t>::value, "off_t is not integral..." );
-
-const char* p_id_file_base_dir = TMP_DIR_FOR_ID_FILE;
+// const char* p_id_file_base_dir = TMP_DIR_FOR_ID_FILE;
 
 std::string make_strerror( type_of_errno e_v )
 {
@@ -68,6 +66,7 @@ ino_t get_inode_of_fd( int id_f_fd )
 		auto cur_errno = errno;
 		char buff[1024];
 		snprintf( buff, 1024, "Error: Fail to fstat(%d)", id_f_fd );
+		fprintf( stderr, "%s\n", buff );
 		throw procshared_mem_error( cur_errno, buff );
 	}
 
@@ -99,767 +98,6 @@ public:
 	  : std::runtime_error( "retry procshared_mem_impl construction" )
 	{
 	}
-};
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-class id_file_resource_handler {
-public:
-	id_file_resource_handler( void )
-	  : fname_()
-	  , fd_( -1 )
-	  , inode_id_( 0 )
-	{
-	}
-
-	~id_file_resource_handler()
-	{
-		if ( is_valid() ) {
-			if ( close( fd_ ) != 0 ) {
-				auto cur_errno = errno;
-				auto es        = make_strerror( cur_errno );
-				fprintf( stderr, "Warning: fail to close(%d) of id file %s, %s\n", fd_, fname_.c_str(), es.c_str() );
-			}
-		}
-
-		fname_.clear();
-		fd_       = -1;
-		inode_id_ = 0;
-	}
-
-	id_file_resource_handler( id_file_resource_handler&& src )
-	  : fname_( std::move( src.fname_ ) )
-	  , fd_( src.fd_ )
-	  , inode_id_( src.inode_id_ )
-	{
-		src.fd_       = -1;
-		src.inode_id_ = 0;
-	}
-
-	id_file_resource_handler& operator=( id_file_resource_handler&& src )
-	{
-		if ( this == &src ) return *this;
-
-		id_file_resource_handler( std::move( src ) ).swap( *this );
-
-		return *this;
-	}
-
-	id_file_resource_handler( const std::string& fname_str, mode_t mode_arg )
-	  : fname_( fname_str )
-	  , fd_( -1 )
-	  , inode_id_( 0 )
-	{
-		if ( fname_.empty() ) {
-			// same as default constructor
-			return;
-		}
-
-		try_create_or_open( mode_arg );
-	}
-
-	id_file_resource_handler( std::string&& fname_str, mode_t mode_arg )
-	  : fname_( std::move( fname_str ) )
-	  , fd_( -1 )
-	  , inode_id_( 0 )
-	{
-		if ( fname_.empty() ) {
-			// same as default constructor
-			return;
-		}
-
-		try_create_or_open( mode_arg );
-	}
-
-	explicit id_file_resource_handler( const std::string& fname_str )
-	  : fname_( fname_str )
-	  , fd_( -1 )
-	  , inode_id_( 0 )
-	{
-		if ( fname_.empty() ) {
-			// same as default constructor
-			return;
-		}
-
-		try_open();
-	}
-
-	explicit id_file_resource_handler( std::string&& fname_str )
-	  : fname_( std::move( fname_str ) )
-	  , fd_( -1 )
-	  , inode_id_( 0 )
-	{
-		if ( fname_.empty() ) {
-			// same as default constructor
-			return;
-		}
-
-		try_open();
-	}
-
-	void do_unlink( void ) noexcept
-	{
-		if ( !fname_.empty() ) {
-			if ( unlink( fname_.c_str() ) != 0 ) {
-				auto cur_errno = errno;
-				if ( cur_errno != ENOENT ) {
-					fprintf( stderr, "Warning: try to unlink(%s) for id file, but it has not existed already.\n", fname_.c_str() );
-				} else {
-					auto es = make_strerror( cur_errno );
-					fprintf( stderr, "Warning: fail to unlink(%s), %s\n", fname_.c_str(), es.c_str() );
-				}
-			}
-		} else {
-			fprintf( stderr, "Warning: id file is requested to unlink(), but fname_ is empty\n" );
-		}
-	}
-
-	ino_t get_inode_number( void ) const noexcept
-	{
-		return inode_id_;
-	}
-
-	bool is_valid( void ) const noexcept
-	{
-		return ( fd_ >= 0 );
-	}
-
-	const std::string& name( void ) const noexcept
-	{
-		return fname_;
-	}
-
-	void swap( id_file_resource_handler& b )
-	{
-		fname_.swap( b.fname_ );
-		std::swap( fd_, b.fd_ );
-		std::swap( inode_id_, b.inode_id_ );
-	}
-
-	void release_resource( void )
-	{
-		id_file_resource_handler().swap( *this );
-	}
-
-private:
-	id_file_resource_handler( const id_file_resource_handler& )            = delete;
-	id_file_resource_handler& operator=( const id_file_resource_handler& ) = delete;
-
-	void try_create_or_open( mode_t mode_arg )
-	{
-		fd_ = open( fname_.c_str(), O_CREAT | O_CLOEXEC, mode_arg );
-		if ( fd_ < 0 ) {
-			auto cur_errno = errno;
-			auto es        = make_strerror( cur_errno );
-			printf( "Debug: fail to open(%s, O_CREAT | O_CLOEXEC, %x): %s\n", fname_.c_str(), mode_arg, es.c_str() );
-			return;
-		}
-		try {
-			inode_id_ = get_inode_of_fd( fd_ );
-		} catch ( ... ) {
-			// ファイルの作り主なので、ファイルをunlinkする。
-			if ( unlink( fname_.c_str() ) != 0 ) {
-				type_of_errno cur_errno = errno;
-				if ( cur_errno != ENOENT ) {
-					auto err_str = make_strerror( cur_errno );
-					fprintf( stderr, "Warning: fail to unlink(%s): %s\n", fname_.c_str(), err_str.c_str() );
-				}
-			}
-			if ( close( fd_ ) != 0 ) {
-				auto cur_errno = errno;
-				auto es        = make_strerror( cur_errno );
-				fprintf( stderr, "Warning: fail to close(%d) of id file %s, %s\n", fd_, fname_.c_str(), es.c_str() );
-			}
-			fd_ = -1;
-
-			throw;   // inode番号が取れないのは致命傷なので、握りつぶさずに例外を再送する。
-		}
-	}
-
-	void try_open( void )
-	{
-		fd_ = open( fname_.c_str(), O_CLOEXEC );
-		if ( fd_ < 0 ) {
-			auto cur_errno = errno;
-			auto es        = make_strerror( cur_errno );
-			printf( "Debug: fail to open(%s, O_CLOEXEC): %s\n", fname_.c_str(), es.c_str() );
-			return;
-		}
-		try {
-			inode_id_ = get_inode_of_fd( fd_ );
-		} catch ( ... ) {
-			if ( close( fd_ ) != 0 ) {
-				auto cur_errno = errno;
-				auto es        = make_strerror( cur_errno );
-				fprintf( stderr, "Warning: fail to close(%d) of id file %s, %s\n", fd_, fname_.c_str(), es.c_str() );
-			}
-			fd_ = -1;
-
-			throw;   // inode番号が取れないのは致命傷なので、握りつぶさずに例外を再送する。
-		}
-	}
-
-	std::string fname_;      //!< 監視対象のIDファイルへのファイル名
-	int         fd_;         //!< 監視対象のIDファイルへのfd
-	ino_t       inode_id_;   //!< 監視対象のIDファイルのinode番号
-};
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-class semaphore_resource_handler {
-public:
-	using native_handle_type = sem_t*;
-
-	semaphore_resource_handler( void ) noexcept
-	  : sem_name_()
-	  , p_sem_( SEM_FAILED )
-	{
-	}
-
-	~semaphore_resource_handler()
-	{
-		if ( is_valid() ) {
-			if ( sem_close( p_sem_ ) != 0 ) {
-				auto cur_errno = errno;
-				auto es        = make_strerror( cur_errno );
-				fprintf( stderr, "Error: Fail to sem_close(%p), %s\n", p_sem_, es.c_str() );
-			}
-		}
-
-		sem_name_.clear();
-		p_sem_ = SEM_FAILED;
-	}
-
-	semaphore_resource_handler( semaphore_resource_handler&& src )
-	  : sem_name_( std::move( src.sem_name_ ) )
-	  , p_sem_( src.p_sem_ )
-	{
-		src.p_sem_ = SEM_FAILED;
-	}
-
-	semaphore_resource_handler& operator=( semaphore_resource_handler&& src )
-	{
-		if ( this == &src ) return *this;
-
-		semaphore_resource_handler( std::move( src ) ).swap( *this );
-
-		return *this;
-	}
-
-	// this constructor try to create and open with mode_arg
-	semaphore_resource_handler( const std::string& sem_name, mode_t mode_arg )
-	  : sem_name_( sem_name )
-	  , p_sem_( SEM_FAILED )
-	{
-		try_create( mode_arg );
-	}
-
-	// this constructor try to create and open with mode_arg
-	semaphore_resource_handler( std::string&& sem_name, mode_t mode_arg )
-	  : sem_name_( std::move( sem_name ) )
-	  , p_sem_( SEM_FAILED )
-	{
-		try_create( mode_arg );
-	}
-
-	// this constructor try to open
-	explicit semaphore_resource_handler( const std::string& sem_name )
-	  : sem_name_( sem_name )
-	  , p_sem_( SEM_FAILED )
-	{
-		try_open();
-	}
-
-	// this constructor try to open
-	explicit semaphore_resource_handler( std::string&& sem_name )
-	  : sem_name_( std::move( sem_name ) )
-	  , p_sem_( SEM_FAILED )
-	{
-		try_open();
-	}
-
-	constexpr native_handle_type native_handle( void ) const
-	{
-		return p_sem_;
-	}
-
-	void do_unlink( void ) noexcept
-	{
-		if ( !sem_name_.empty() ) {
-			if ( sem_unlink( sem_name_.c_str() ) != 0 ) {
-				auto cur_errno = errno;
-				auto es        = make_strerror( cur_errno );
-				fprintf( stderr, "Error: Fail to sem_unlink(%s), %s\n", sem_name_.c_str(), es.c_str() );
-			}
-		} else {
-			fprintf( stderr, "Warning: semaphore is requested to sem_unlink(), but sem_name_ is empty\n" );
-		}
-	}
-
-	bool is_valid( void ) const noexcept
-	{
-		return ( p_sem_ != SEM_FAILED );
-	}
-
-	const std::string& name( void ) const noexcept
-	{
-		return sem_name_;
-	}
-
-	void swap( semaphore_resource_handler& b )
-	{
-		sem_name_.swap( b.sem_name_ );
-		std::swap( p_sem_, b.p_sem_ );
-	}
-
-	void release_resource( void )
-	{
-		semaphore_resource_handler().swap( *this );
-	}
-
-private:
-	semaphore_resource_handler( const semaphore_resource_handler& )            = delete;
-	semaphore_resource_handler& operator=( const semaphore_resource_handler& ) = delete;
-
-	void try_create( mode_t mode_arg )
-	{
-		p_sem_ = sem_open( sem_name_.c_str(), O_CREAT | O_EXCL | O_RDWR | O_CLOEXEC, mode_arg, 0 );
-		if ( p_sem_ == SEM_FAILED ) {
-			if ( errno != EEXIST ) {
-				// 何らかの予期しない要因で、セマフォの作成に失敗したため、例外を投げる
-				auto cur_errno = errno;
-				char buff[1024];
-				snprintf( buff, 1024, "Error: Fail sem_open(%s, O_CREAT | O_EXCL | O_RDWR | O_CLOEXEC, %x, 0): ", sem_name_.c_str(), mode_arg );
-				throw procshared_mem_error( cur_errno, buff );
-			}
-		}
-	}
-
-	void try_open( void )
-	{
-		p_sem_ = sem_open( sem_name_.c_str(), O_RDWR | O_CLOEXEC );
-		if ( p_sem_ == SEM_FAILED ) {
-			if ( errno != ENOENT ) {
-				// 何らかの予期しない要因で、セマフォのオープンに失敗したため、例外を投げる
-				auto cur_errno = errno;
-				char buff[1024];
-				snprintf( buff, 1024, "Error: Fail sem_open(%s, O_RDWR | O_CLOEXEC)", sem_name_.c_str() );
-				throw procshared_mem_error( cur_errno, buff );
-			}
-		}
-	}
-
-	std::string        sem_name_;
-	native_handle_type p_sem_;
-};
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-class shm_resource_handler {
-public:
-	struct try_create_tag {};
-	struct try_open_tag {};
-
-	shm_resource_handler( void )
-	  : shm_name_()
-	  , shm_fd_( -1 )
-	  , length_( 0 )
-	  , p_mem_( nullptr )
-	{
-	}
-
-	~shm_resource_handler()
-	{
-		// if ( is_valid() ) {
-		if ( p_mem_ != nullptr ) {
-			int ret = munmap( p_mem_, length_ );
-			if ( ret != 0 ) {
-				auto cur_errno = errno;
-				auto es        = make_strerror( cur_errno );
-				fprintf( stderr, "%s by munmap(%p)\n", es.c_str(), p_mem_ );
-			}
-		}
-		if ( shm_fd_ >= 0 ) {
-			int ret = close( shm_fd_ );
-			if ( ret != 0 ) {
-				auto cur_errno = errno;
-				auto es        = make_strerror( cur_errno );
-				fprintf( stderr, "%s by close(%d)\n", es.c_str(), shm_fd_ );
-			}
-		}
-		// }
-
-		shm_name_.clear();
-		shm_fd_ = -1;
-		length_ = 0;
-		p_mem_  = nullptr;
-	}
-
-	shm_resource_handler( shm_resource_handler&& src )
-	  : shm_name_( std::move( src.shm_name_ ) )
-	  , shm_fd_( src.shm_fd_ )
-	  , length_( src.length_ )
-	  , p_mem_( src.p_mem_ )
-	{
-		src.shm_fd_ = -1;
-		src.length_ = 0;
-		src.p_mem_  = nullptr;
-	}
-
-	shm_resource_handler& operator=( shm_resource_handler&& src )
-	{
-		if ( this == &src ) return *this;
-		shm_resource_handler( std::move( src ) ).swap( *this );
-		return *this;
-	}
-
-	shm_resource_handler( const try_create_tag, const std::string& shm_name_arg, size_t length_arg, mode_t mode_arg )
-	  : shm_name_( shm_name_arg )
-	  , shm_fd_( -1 )
-	  , length_( 0 )
-	  , p_mem_( nullptr )
-	{
-		try_create( length_arg, mode_arg );
-	}
-
-	shm_resource_handler( const try_open_tag, const std::string& shm_name_arg, size_t length_arg, mode_t mode_arg )
-	  : shm_name_( shm_name_arg )
-	  , shm_fd_( -1 )
-	  , length_( 0 )
-	  , p_mem_( nullptr )
-	{
-		try_open( length_arg, mode_arg );
-	}
-
-	void do_unlink( void ) noexcept
-	{
-		if ( !shm_name_.empty() ) {
-			if ( shm_unlink( shm_name_.c_str() ) != 0 ) {
-				auto cur_errno = errno;
-				auto es        = make_strerror( cur_errno );
-				fprintf( stderr, "Error: Fail shm_unlink(%s), %s", shm_name_.c_str(), es.c_str() );
-			}
-		}
-	}
-
-	bool is_valid( void ) const noexcept
-	{
-		return ( shm_fd_ >= 0 ) && ( p_mem_ != nullptr );
-	}
-
-	const std::string& name( void ) const noexcept
-	{
-		return shm_name_;
-	}
-
-	void* get_shm_pointer( void ) const noexcept
-	{
-		return p_mem_;
-	}
-
-	size_t allocated_size( void ) const noexcept
-	{
-		return length_;
-	}
-
-	void swap( shm_resource_handler& b )
-	{
-		shm_name_.swap( b.shm_name_ );
-		std::swap( shm_fd_, b.shm_fd_ );
-		std::swap( length_, b.length_ );
-		std::swap( p_mem_, b.p_mem_ );
-	}
-
-	void release_resource( void )
-	{
-		shm_resource_handler().swap( *this );
-	}
-
-private:
-	shm_resource_handler( const shm_resource_handler& )            = delete;
-	shm_resource_handler& operator=( const shm_resource_handler& ) = delete;
-
-	void try_common_create_or_open( int oflags_arg, size_t length_arg, mode_t mode_arg )
-	{
-		// 共有メモリの作成
-		shm_fd_ = shm_open( shm_name_.c_str(), oflags_arg, mode_arg );
-		if ( shm_fd_ < 0 ) {
-			auto cur_errno = errno;
-			char buff[1024];
-			auto es2 = make_strerror( cur_errno );
-			snprintf( buff, 1024, "Fail shm_open(%s, %x, %x), %s", shm_name_.c_str(), oflags_arg, mode_arg, es2.c_str() );
-			return;
-		}
-		if ( ftruncate( shm_fd_, length_arg ) != 0 ) {
-			auto cur_errno = errno;
-			char buff[1024];
-			auto es = make_strerror( cur_errno );
-			snprintf( buff, 1024, "Fail ftruncate(%d, %ld), %s", shm_fd_, length_arg, es.c_str() );
-			std::string err_log = buff;
-
-			if ( shm_unlink( shm_name_.c_str() ) != 0 ) {
-				auto cur_errno = errno;
-				char buff[1024];
-				auto es2 = make_strerror( cur_errno );
-				snprintf( buff, 1024, ", then fail shm_unlink(%s), %s", shm_name_.c_str(), es2.c_str() );
-				err_log += buff;
-			}
-			if ( close( shm_fd_ ) != 0 ) {
-				auto cur_errno2 = errno;
-				char buff[1024];
-				auto es2 = make_strerror( cur_errno2 );
-				snprintf( buff, 1024, ", then fail close(%d), %s\n", shm_fd_, es2.c_str() );
-				err_log += buff;
-			}
-
-			shm_fd_ = -1;
-			throw procshared_mem_error( err_log.c_str() );
-		}
-		length_ = length_arg;
-
-		p_mem_ = mmap( NULL, length_, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd_, 0 );
-		if ( p_mem_ == MAP_FAILED ) {
-			auto cur_errno = errno;
-			char buff[1024];
-			auto es2 = make_strerror( cur_errno );
-			snprintf( buff, 1024, "Fail mmap(NULL, %ld, PROT_READ | PROT_WRITE, MAP_SHARED, %d, 0), %s", length_, shm_fd_, es2.c_str() );
-			std::string err_log = buff;
-
-			if ( shm_unlink( shm_name_.c_str() ) != 0 ) {
-				auto cur_errno = errno;
-				char buff[1024];
-				auto es2 = make_strerror( cur_errno );
-				snprintf( buff, 1024, ", then fail shm_unlink(%s), %s", shm_name_.c_str(), es2.c_str() );
-				err_log += buff;
-			}
-			if ( close( shm_fd_ ) != 0 ) {
-				auto cur_errno2 = errno;
-				char buff[1024];
-				auto es2 = make_strerror( cur_errno2 );
-				snprintf( buff, 1024, ", then fail close(%d), %s\n", shm_fd_, es2.c_str() );
-				err_log += buff;
-			}
-
-			shm_fd_ = -1;
-			length_ = 0;
-			p_mem_  = nullptr;
-			throw procshared_mem_error( err_log.c_str() );
-		}
-
-		return;
-	}
-
-	void try_create( size_t length_arg, mode_t mode_arg )
-	{
-		if ( shm_unlink( shm_name_.c_str() ) == 0 ) {
-			fprintf( stderr, "Warning: race condition guard code works successfully for shm_unlink(%s)\n", shm_name_.c_str() );
-		}
-
-		try_common_create_or_open( O_CREAT | O_EXCL | O_RDWR | O_CLOEXEC, length_arg, mode_arg );
-	}
-
-	void try_open( size_t length_arg, mode_t mode_arg )
-	{
-		try_common_create_or_open( O_RDWR | O_CLOEXEC, length_arg, mode_arg );
-	}
-
-	std::string shm_name_;   //!< 共有メモリの名称
-	int         shm_fd_;     //!< 共有メモリのfd
-	size_t      length_;     //!< 共有メモリのサイズ
-	void*       p_mem_;      //!< 共有メモリへのポインタ
-};
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-class semaphore_post_guard_adopt_acquire_t {};
-constexpr semaphore_post_guard_adopt_acquire_t semaphore_post_guard_adopt_acquire;
-class semaphore_post_guard_defer_acquire_t {};
-constexpr semaphore_post_guard_defer_acquire_t semaphore_post_guard_defer_acquire;
-class semaphore_post_guard_try_to_acquire_t {};
-constexpr semaphore_post_guard_try_to_acquire_t semaphore_post_guard_try_to_acquire;
-
-/**
- * @brief owns_acquire() == trueの場合に、デストラクタでsemaphoreにpostを行うクラス
- *
- */
-class semaphore_post_guard {
-public:
-	constexpr semaphore_post_guard( void ) noexcept
-	  : p_sem_( SEM_FAILED )
-	  , owns_acquire_flag_( false )
-	{
-	}
-
-	~semaphore_post_guard()
-	{
-		if ( p_sem_ == SEM_FAILED ) {
-			return;
-		}
-
-		call_sem_post();
-	}
-
-	constexpr semaphore_post_guard( semaphore_post_guard&& orig ) noexcept
-	  : p_sem_( orig.p_sem_ )
-	  , owns_acquire_flag_( orig.owns_acquire_flag_ )
-	{
-		orig.p_sem_             = SEM_FAILED;
-		orig.owns_acquire_flag_ = false;
-	}
-
-	constexpr semaphore_post_guard& operator=( semaphore_post_guard&& orig ) noexcept
-	{
-		if ( this == &orig ) return *this;
-
-		semaphore_post_guard( std::move( orig ) ).swap( *this );
-
-		return *this;
-	}
-
-	/**
-	 * @brief sem_wait()することなく、owns_acquire() == true の状態で初期化するコンストラクタ
-	 *
-	 */
-	constexpr semaphore_post_guard( semaphore_resource_handler& sem_arg, const semaphore_post_guard_adopt_acquire_t& ) noexcept
-	  : p_sem_( sem_arg.native_handle() )
-	  , owns_acquire_flag_( true )
-	{
-	}
-
-	/**
-	 * @brief sem_wait()することなく、owns_acquire() == false の状態で初期化するコンストラクタ
-	 *
-	 */
-	constexpr semaphore_post_guard( semaphore_resource_handler& sem_arg, const semaphore_post_guard_defer_acquire_t& ) noexcept
-	  : p_sem_( sem_arg.native_handle() )
-	  , owns_acquire_flag_( false )
-	{
-	}
-
-	/**
-	 * @brief sem_trywait()を行って初期化するコンストラクタ
-	 *
-	 * sem_trywait()が成功した場合、owns_acquire() == true となる。そうでない場合は、owns_acquire() == false となる。
-	 *
-	 */
-	semaphore_post_guard( semaphore_resource_handler& sem_arg, const semaphore_post_guard_try_to_acquire_t& )
-	  : p_sem_( sem_arg.native_handle() )
-	  , owns_acquire_flag_( false )
-	{
-		call_sem_trywait();
-	}
-
-	/**
-	 * @brief sem_wait()を行い、owns_acquire() == true の状態で初期化するコンストラクタ
-	 *
-	 */
-	explicit semaphore_post_guard( const semaphore_resource_handler& sem_arg )
-	  : p_sem_( sem_arg.native_handle() )
-	  , owns_acquire_flag_( false )
-	{
-		call_sem_wait();
-	}
-
-	bool owns_acquire( void ) const noexcept
-	{
-		return owns_acquire_flag_;
-	}
-
-	void acquire( void )
-	{
-		call_sem_wait();
-	}
-
-	bool try_acquire( void )
-	{
-		return call_sem_trywait();
-	}
-
-	void release( void )
-	{
-		if ( p_sem_ == SEM_FAILED ) {
-			fprintf( stderr, "unexpected calling call_sem_post() by this=%p\n", this );
-			return;
-		}
-
-		call_sem_post();
-	}
-
-	constexpr void swap( semaphore_post_guard& u ) noexcept
-	{
-		sem_t* p_sem_backup             = p_sem_;
-		bool   owns_acquire_flag_backup = owns_acquire_flag_;
-
-		p_sem_             = u.p_sem_;
-		owns_acquire_flag_ = u.owns_acquire_flag_;
-
-		u.p_sem_             = p_sem_backup;
-		u.owns_acquire_flag_ = owns_acquire_flag_backup;
-	}
-
-private:
-	// コピーは許可しない
-	semaphore_post_guard( const semaphore_post_guard& )           = delete;
-	semaphore_post_guard operator=( const semaphore_post_guard& ) = delete;
-
-	void call_sem_wait( void )
-	{
-		if ( p_sem_ == SEM_FAILED ) {
-			char buff[1024];
-			snprintf( buff, 1024, "unexpected calling call_sem_wait() by this=%p", this );
-			throw procshared_mem_error( buff );
-		}
-
-		int ret = sem_wait( p_sem_ );
-		if ( ret != 0 ) {
-			auto cur_errno = errno;
-			char buff[1024];
-			snprintf( buff, 1024, " by sem_wait(%p)", p_sem_ );
-			throw procshared_mem_error( cur_errno, buff );
-		}
-
-		owns_acquire_flag_ = true;
-	}
-	bool call_sem_trywait( void )
-	{
-		if ( p_sem_ == SEM_FAILED ) {
-			char buff[1024];
-			snprintf( buff, 1024, "unexpected calling call_sem_wait() by this=%p", this );
-			throw procshared_mem_error( buff );
-		}
-
-		int ret = sem_trywait( p_sem_ );
-		if ( ret == 0 ) {
-			owns_acquire_flag_ = true;
-		} else {
-			auto cur_errno = errno;
-			if ( cur_errno != EAGAIN ) {
-				char buff[1024];
-				snprintf( buff, 1024, " by sem_trywait(%p)\n", p_sem_ );
-				throw procshared_mem_error( cur_errno, buff );
-			}
-
-			fprintf( stderr, "sem_trywait(%p), but semaphore value is already 0(Zero)\n", p_sem_ );
-			owns_acquire_flag_ = false;
-		}
-	}
-	void call_sem_post( void ) noexcept
-	{
-		if ( not owns_acquire_flag_ ) {
-			return;
-		}
-
-		int ret = sem_post( p_sem_ );
-		if ( ret != 0 ) {
-			auto cur_errno = errno;
-			try {
-				std::string errlog = make_strerror( cur_errno );
-				fprintf( stderr, "Fail sem_post(%p): %s\n", p_sem_, errlog.c_str() );
-			} catch ( ... ) {
-				fprintf( stderr, "Fail sem_post(%p): errno=%d\n", p_sem_, cur_errno );
-			}
-		}
-		owns_acquire_flag_ = false;
-	}
-
-	sem_t* p_sem_;
-	bool   owns_acquire_flag_;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1030,9 +268,9 @@ procshared_mem::impl::impl( void )
 procshared_mem::impl::~impl()
 {
 	try {
-		semaphore_resource_handler cur_sem( sem_name_ );   // セマフォを再オープン & セマフォの取得をまつ。
+		semaphore_resource_handler cur_sem( sem_name_ );   // セマフォを再オープン
 
-		semaphore_post_guard spg( cur_sem, semaphore_post_guard_adopt_acquire_t() );
+		semaphore_post_guard spg( cur_sem );   // セマフォの取得をまつ。
 		// デストラクタで、sem_postを行う。このsem_postは、ほかのプロセス向けにpostを行う。
 
 		int final_ref_c = p_mem_->reference_count_.fetch_sub( 1 ) - 1;
@@ -1087,6 +325,7 @@ procshared_mem::impl::impl( const construct_as_secondary_tag, const char* p_shm_
 void procshared_mem::impl::setup_as_both( const char* p_shm_name_arg, const char* p_id_dirname_arg, mode_t mode_arg, size_t length_arg, std::function<void( void*, off_t )> initfunctor_arg )
 {
 	while ( !try_setup_as_both( 0, p_shm_name_arg, p_id_dirname_arg, mode_arg, length_arg, initfunctor_arg ) ) {
+		std::this_thread::sleep_for( std::chrono::milliseconds( 2 ) );
 	}
 }
 
@@ -1097,8 +336,7 @@ void procshared_mem::impl::setup_as_primary( const char* p_shm_name_arg, const c
 
 void procshared_mem::impl::setup_as_secondary( const char* p_shm_name_arg, const char* p_id_dirname_arg, mode_t mode_arg, size_t length_arg )
 {
-	while ( !try_setup_as_both( 2, p_shm_name_arg, p_id_dirname_arg, mode_arg, length_arg, std::function<void( void*, off_t )>() ) ) {
-	}
+	try_setup_as_both( 2, p_shm_name_arg, p_id_dirname_arg, mode_arg, length_arg, std::function<void( void*, off_t )>() );
 }
 
 bool procshared_mem::impl::try_setup_as_both( int role_type, const char* p_shm_name_arg, const char* p_id_dirname_arg, mode_t mode_arg, size_t length_arg, std::function<void( void*, off_t )> initfunctor_arg )
@@ -1111,32 +349,42 @@ bool procshared_mem::impl::try_setup_as_both( int role_type, const char* p_shm_n
 
 	bool                       is_primary = true;
 	semaphore_resource_handler cur_sem_res;
+	semaphore_post_guard       spg;
 	switch ( role_type ) {
 		case 0: /* both role */ {
 			cur_sem_res = semaphore_resource_handler( p_shm_name_arg, mode_arg );
 			if ( !cur_sem_res.is_valid() ) {
 				// 作成オープンできなかったので、secondary扱いとして、オープンを再トライする。
-				is_primary  = false;
 				cur_sem_res = semaphore_resource_handler( p_shm_name_arg );
 				if ( !cur_sem_res.is_valid() ) {
+					// fprintf( stderr, "Info: Fail semaphore open(%s) as cooperative\n", p_shm_name_arg );
 					return false;
 				}
+				is_primary = false;
+				spg        = semaphore_post_guard( cur_sem_res );   // セマフォ取得まで待つ。
+			} else {
+				// fprintf( stderr, "Debug: success semaphore creation, %s\n", p_shm_name_arg );
+				spg = semaphore_post_guard( cur_sem_res, semaphore_post_guard_adopt_acquire_t() );   // セマフォ作成をしたので、セマフォ取得済みとする。
 			}
 		} break;
 
 		case 1: /* primary */ {
 			cur_sem_res = semaphore_resource_handler( p_shm_name_arg, mode_arg );
 			if ( !cur_sem_res.is_valid() ) {
+				fprintf( stderr, "Warning: Fail semaphore open(%s) as primary\n", p_shm_name_arg );
 				return false;
 			}
+			spg = semaphore_post_guard( cur_sem_res, semaphore_post_guard_adopt_acquire_t() );   // セマフォ作成をしたので、セマフォ取得済みとする。
 		} break;
 
 		case 2: /* secondary */ {
 			cur_sem_res = semaphore_resource_handler( p_shm_name_arg );
 			if ( !cur_sem_res.is_valid() ) {
+				fprintf( stderr, "Warning: Fail semaphore open(%s) as secondary\n", p_shm_name_arg );
 				return false;
 			}
 			is_primary = false;
+			spg        = semaphore_post_guard( cur_sem_res );   // セマフォ取得まで待つ。
 		} break;
 
 		default: {
@@ -1144,13 +392,24 @@ bool procshared_mem::impl::try_setup_as_both( int role_type, const char* p_shm_n
 			throw procshared_mem_error( "role type error" );
 		} break;
 	}
-	semaphore_post_guard( cur_sem_res, semaphore_post_guard_adopt_acquire_t() );
 
 	id_file_resource_handler tmp_id_file = id_file_resource_handler( id_fname );
 	if ( !tmp_id_file.is_valid() ) {
+		// fprintf( stderr, "Info: ID file open fail, try again\n" );
+		if ( is_primary ) {
+			// セマフォ作成者だが、IDファイルの不一致を検出したので、ファイルやセマフォを削除してやり直す。
+			cur_id_res.do_unlink();
+			cur_sem_res.do_unlink();
+		}
 		return false;
 	}
 	if ( cur_id_res.get_inode_number() != tmp_id_file.get_inode_number() ) {
+		// fprintf( stderr, "Info: ID file inode is mismatch, try again\n" );
+		if ( is_primary ) {
+			// セマフォ作成者だが、IDファイルの不一致を検出したので、ファイルやセマフォを削除してやり直す。
+			cur_id_res.do_unlink();
+			cur_sem_res.do_unlink();
+		}
 		return false;
 	}
 
@@ -1160,6 +419,7 @@ bool procshared_mem::impl::try_setup_as_both( int role_type, const char* p_shm_n
 		// primary
 		cur_shm_res = shm_resource_handler( shm_resource_handler::try_create_tag(), p_shm_name_arg, length_arg, mode_arg );
 		if ( !cur_shm_res.is_valid() ) {
+			fprintf( stderr, "shared memory open fail as primary, role_type=%d\n", role_type );
 			return false;
 		}
 
@@ -1170,14 +430,21 @@ bool procshared_mem::impl::try_setup_as_both( int role_type, const char* p_shm_n
 		// secondary
 		cur_shm_res = shm_resource_handler( shm_resource_handler::try_open_tag(), p_shm_name_arg, length_arg, mode_arg );
 		if ( !cur_shm_res.is_valid() ) {
+			if ( role_type == 0 ) {
+				fprintf( stderr, "Info: shared memory open fail as secondary, role_type=%d\n", role_type );
+			} else {
+				fprintf( stderr, "Warning: shared memory open fail as secondary, role_type=%d\n", role_type );
+			}
 			return false;
 		}
 
 		p_cur_mem = reinterpret_cast<procshared_mem_mem_header*>( cur_shm_res.get_shm_pointer() );
 		if ( cur_id_res.get_inode_number() != p_cur_mem->inode_val_.load() ) {
+			fprintf( stderr, "inode number mis-match, cur_id_res %lu, inode_val_ %lu\n", cur_id_res.get_inode_number(), p_cur_mem->inode_val_.load() );
 			return false;
 		}
 		if ( p_cur_mem->inode_val_.load() < 1 ) {
+			fprintf( stderr, "inode number is out of range, inode_val_ %lu\n", p_cur_mem->inode_val_.load() );
 			return false;
 		}
 	}
@@ -1244,20 +511,27 @@ void procshared_mem::impl::debug_force_cleanup( const char* p_shm_name, const ch
 	if ( ret != 0 ) {
 		auto cur_errno = errno;
 		auto es        = make_strerror( cur_errno );
-		fprintf( stderr, "%s by unlink(%s)\n", es.c_str(), id_fname.c_str() );
+		printf( "%s by unlink(%s)\n", es.c_str(), id_fname.c_str() );
+	} else {
+		printf( "success to unlink id file: %s\n", id_fname.c_str() );
 	}
 
 	ret = shm_unlink( p_shm_name );   // 共有メモリオブジェクトの削除
 	if ( ret != 0 ) {
 		auto cur_errno = errno;
 		auto es        = make_strerror( cur_errno );
-		fprintf( stderr, "%s by shm_unlink(%s)\n", es.c_str(), p_shm_name );
+		printf( "%s by shm_unlink(%s)\n", es.c_str(), p_shm_name );
+	} else {
+		printf( "success to unlink shared memory: %s\n", p_shm_name );
 	}
+
 	ret = sem_unlink( p_shm_name );   // セマフォの削除
 	if ( ret != 0 ) {
 		auto cur_errno = errno;
 		auto es        = make_strerror( cur_errno );
-		fprintf( stderr, "%s by sem_unlink(%s)\n", es.c_str(), p_shm_name );
+		printf( "%s by sem_unlink(%s)\n", es.c_str(), p_shm_name );
+	} else {
+		printf( "success to unlink semaphore: %s\n", p_shm_name );
 	}
 }
 

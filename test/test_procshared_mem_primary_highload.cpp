@@ -27,8 +27,8 @@ void make_shm_and_close( void )
 {
 	pid_t child_pid = fork();
 	if ( child_pid == 0 ) {
-		execl( "build/test/test_procshared_mem_secondary_highload", "test_procshared_mem_secondary_highload", (char*)NULL );
-		perror( "fail execl to launch test_procshared_mem_secondary_highload\n" );
+		execl( "build/test/loadtest_procshared_mem_secondary_highload", "loadtest_procshared_mem_secondary_highload", (char*)NULL );
+		perror( "fail execl to launch loadtest_procshared_mem_secondary_highload\n" );
 		abort();
 	} else {
 		// parent process side
@@ -65,6 +65,7 @@ void test_func( void )
 
 	for ( int i = 0; i < num_of_threads; i++ ) {
 		thread_pool[i] = std::thread( make_shm_and_close );
+		// printf( "thread_pool[%d]\n", i );
 	}
 	for ( int i = 0; i < num_of_threads; i++ ) {
 		thread_pool[i].join();
@@ -75,14 +76,14 @@ int main( void )
 {
 	procshared_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
 
-	// procshared_mem shm_obj( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, []( void* p_mem, off_t len ) {
-	// 	std::atomic<unsigned char>* p_data = reinterpret_cast<std::atomic<unsigned char>*>( p_mem );
-	// 	p_data->store( 122 );
-	// } );
-	// printf( "%s\n", shm_obj.debug_dump_string().c_str() );
+	procshared_mem shm_obj( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, []( void* p_mem, off_t len ) {
+		std::atomic<unsigned char>* p_data = reinterpret_cast<std::atomic<unsigned char>*>( p_mem );
+		p_data->store( 122 );
+	} );
+	printf( "%s\n", shm_obj.debug_dump_string().c_str() );
 
 	for ( int i = 0; i < 10000; i++ ) {
-		if ( ( i == 0 ) || ( ( i % 1000 ) == 999 ) ) {
+		if ( ( i == 0 ) || ( ( i % 1000 ) == 999 ) || ( i < 999 ) ) {
 			printf( "count=%d\n", i );
 			fflush( NULL );
 		}
