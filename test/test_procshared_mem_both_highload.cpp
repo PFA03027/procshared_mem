@@ -23,11 +23,21 @@
 const char*   p_shm_obj_name = "/my_test_shm_obj";
 constexpr int num_of_threads = 100;
 
+void closeall_except_stdinouterr( void )
+{
+	int maxfd = sysconf( _SC_OPEN_MAX );
+	for ( int fd = 0; fd < maxfd; ++fd ) {
+		if ( ( fd == STDIN_FILENO ) || ( fd == STDOUT_FILENO ) || ( fd == STDERR_FILENO ) ) continue;
+		close( fd );
+	}
+}
+
 #if 1
 void make_shm_and_close( void )
 {
 	pid_t child_pid = fork();
 	if ( child_pid == 0 ) {
+		// closeall_except_stdinouterr();
 		execl( "build/test/loadtest_procshared_mem_secondary_highload", "loadtest_procshared_mem_secondary_highload", (char*)NULL );
 		perror( "fail execl to launch loadtest_procshared_mem_secondary_highload\n" );
 		abort();
