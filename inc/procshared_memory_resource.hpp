@@ -15,7 +15,7 @@
 #include <cstddef>
 #include <memory_resource>
 
-#include "procshared_malloc.hpp"
+#include "offset_mem_allocator.hpp"
 
 class procshared_memory_resource : public std::pmr::memory_resource {
 public:
@@ -58,7 +58,7 @@ private:
 		return ( p_malloc_ == p_other->p_malloc_ );
 	}
 
-	procshared_mem_malloc* p_malloc_;
+	offset_mem_allocator* p_malloc_;
 };
 
 #endif   // PROCSHARED_MEMORY_RESOURCE_HPP

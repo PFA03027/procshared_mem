@@ -12,34 +12,34 @@
 #include <cstddef>
 #include <mutex>
 
-#include "procshared_krmalloc.hpp"
+#include "offset_krmalloc.hpp"
 
 #include "offset_ptr.hpp"
 
-// static_assert( std::is_standard_layout<procshared_mem_krmalloc::block>::value, "procshared_mem_krmalloc::block should be standard layout" );
+// static_assert( std::is_standard_layout<offset_mem_krmalloc::block>::value, "offset_mem_krmalloc::block should be standard layout" );
 
-procshared_mem_krmalloc::block::block_header::block_header( procshared_mem_krmalloc::block* p_next_arg, std::size_t this_block_size )
+offset_mem_krmalloc::block::block_header::block_header( offset_mem_krmalloc::block* p_next_arg, std::size_t this_block_size )
   : op_next_block_( p_next_arg )
   , size_of_this_block_( this_block_size )
 {
 }
 
-procshared_mem_krmalloc::block::block( procshared_mem_krmalloc::block* p_next_arg, std::size_t this_block_size )
+offset_mem_krmalloc::block::block( offset_mem_krmalloc::block* p_next_arg, std::size_t this_block_size )
   : active_header_( p_next_arg, this_block_size )
 {
 }
 
-constexpr size_t procshared_mem_krmalloc::size_of_block_header( void )
+constexpr size_t offset_mem_krmalloc::size_of_block_header( void )
 {
 	return sizeof( block::block_header );
 }
 
-constexpr size_t procshared_mem_krmalloc::bytes2blocksize( size_t bytes )
+constexpr size_t offset_mem_krmalloc::bytes2blocksize( size_t bytes )
 {
 	return ( bytes + sizeof( block::block_header ) - 1 ) / sizeof( block::block_header );
 }
 
-procshared_mem_krmalloc::procshared_mem_krmalloc( size_t mem_bytes )
+offset_mem_krmalloc::offset_mem_krmalloc( size_t mem_bytes )
   : mem_size_( mem_bytes )
   , mtx_()
   , op_freep_( nullptr )
@@ -49,11 +49,11 @@ procshared_mem_krmalloc::procshared_mem_krmalloc( size_t mem_bytes )
 	uintptr_t addr_top  = ( ( addr_buff + size_of_block_header() - 1 ) / size_of_block_header() ) * size_of_block_header();
 	uintptr_t diff      = addr_top - addr_buff;
 
-	if ( mem_bytes <= ( diff + sizeof( procshared_mem_krmalloc ) ) ) {
+	if ( mem_bytes <= ( diff + sizeof( offset_mem_krmalloc ) ) ) {
 		throw std::bad_alloc();
 	}
 
-	size_t num_of_blocks = ( mem_bytes - ( diff + sizeof( procshared_mem_krmalloc ) ) ) / size_of_block_header();
+	size_t num_of_blocks = ( mem_bytes - ( diff + sizeof( offset_mem_krmalloc ) ) ) / size_of_block_header();
 	if ( num_of_blocks < 2 ) {
 		throw std::bad_alloc();
 	}
@@ -64,7 +64,7 @@ procshared_mem_krmalloc::procshared_mem_krmalloc( size_t mem_bytes )
 	op_freep_ = &base_blk_;
 }
 
-void* procshared_mem_krmalloc::allocate( size_t req_bytes, size_t alignment )
+void* offset_mem_krmalloc::allocate( size_t req_bytes, size_t alignment )
 {
 	const size_t real_alignment  = ( alignment == 0 ) ? 1 : alignment;
 	const size_t additional_size = ( alignment <= size_of_block_header() ) ? 0 : ( alignment - size_of_block_header() );
@@ -137,7 +137,7 @@ void* procshared_mem_krmalloc::allocate( size_t req_bytes, size_t alignment )
 	return nullptr;
 }
 
-void procshared_mem_krmalloc::deallocate( void* p, size_t alignment )
+void offset_mem_krmalloc::deallocate( void* p, size_t alignment )
 {
 	uintptr_t addr_p   = reinterpret_cast<uintptr_t>( p );
 	uintptr_t addr_top = reinterpret_cast<uintptr_t>( base_blk_.block_body_ );
@@ -199,20 +199,26 @@ void procshared_mem_krmalloc::deallocate( void* p, size_t alignment )
 	throw std::logic_error( "fail to free" );
 }
 
-procshared_mem_krmalloc* procshared_mem_krmalloc::make( void* p_mem, size_t mem_bytes )
+offset_mem_krmalloc* offset_mem_krmalloc::make( void* p_mem, size_t mem_bytes )
 {
-	if ( mem_bytes <= sizeof( procshared_mem_krmalloc ) ) {
+	if ( p_mem == nullptr ) {
 		throw std::bad_alloc();
 	}
-	return new ( p_mem ) procshared_mem_krmalloc( mem_bytes );
+	if ( mem_bytes <= sizeof( offset_mem_krmalloc ) ) {
+		throw std::bad_alloc();
+	}
+	return new ( p_mem ) offset_mem_krmalloc( mem_bytes );
 }
 
-void procshared_mem_krmalloc::teardown( procshared_mem_krmalloc* p_mem )
+void offset_mem_krmalloc::teardown( offset_mem_krmalloc* p_mem )
 {
-	p_mem->~procshared_mem_krmalloc();
+	p_mem->~offset_mem_krmalloc();
 }
 
-procshared_mem_krmalloc* procshared_mem_krmalloc::bind( void* p_mem )
+offset_mem_krmalloc* offset_mem_krmalloc::bind( void* p_mem )
 {
-	return reinterpret_cast<procshared_mem_krmalloc*>( p_mem );
+	if ( p_mem == nullptr ) {
+		throw std::bad_alloc();
+	}
+	return reinterpret_cast<offset_mem_krmalloc*>( p_mem );
 }

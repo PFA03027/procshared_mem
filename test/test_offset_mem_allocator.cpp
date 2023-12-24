@@ -1,5 +1,5 @@
 /**
- * @file test_procshared_krmalloc.cpp
+ * @file test_offset_krmalloc.cpp
  * @author Teruaki Ata (PFA03027@nifty.com)
  * @brief
  * @version 0.1
@@ -11,18 +11,18 @@
 
 #include "gtest/gtest.h"
 
-#include "procshared_malloc.hpp"
+#include "offset_mem_allocator.hpp"
 
 #include "test_procshared_common.hpp"
 
-TEST( ProcShared_Malloc_Cntr, CanConstruct )
+TEST( Offset_MemAllocator_Cntr, CanConstruct )
 {
 	// Arrange
-	void*                  p_mem       = malloc( 1024 );
-	procshared_mem_malloc* p_mem_alloc = nullptr;
+	void*                 p_mem       = malloc( 1024 );
+	offset_mem_allocator* p_mem_alloc = nullptr;
 
 	// Act
-	ASSERT_NO_THROW( p_mem_alloc = new procshared_mem_malloc( p_mem, 1024 ) );
+	ASSERT_NO_THROW( p_mem_alloc = new offset_mem_allocator( p_mem, 1024 ) );
 
 	// Assert
 	EXPECT_NE( p_mem_alloc, nullptr );
@@ -32,13 +32,13 @@ TEST( ProcShared_Malloc_Cntr, CanConstruct )
 	free( p_mem );
 }
 
-TEST( ProcShared_Malloc_Cntr, FailConstruct1 )
+TEST( Offset_MemAllocator_Cntr, FailConstruct1 )
 {
 	// Arrange
-	void* p_mem = malloc( sizeof( procshared_mem_malloc ) + 10 );
+	void* p_mem = malloc( sizeof( offset_mem_allocator ) + 10 );
 
 	// Act
-	EXPECT_ANY_THROW( procshared_mem_malloc mm( p_mem, sizeof( procshared_mem_malloc ) + 10 ) );
+	EXPECT_ANY_THROW( offset_mem_allocator mm( p_mem, sizeof( offset_mem_allocator ) + 10 ) );
 
 	// Assert
 
@@ -46,13 +46,13 @@ TEST( ProcShared_Malloc_Cntr, FailConstruct1 )
 	free( p_mem );
 }
 
-TEST( ProcShared_Malloc_Cntr, FailConstruct2 )
+TEST( Offset_MemAllocator_Cntr, FailConstruct2 )
 {
 	// Arrange
 	void* p_mem = malloc( 10 );
 
 	// Act
-	EXPECT_ANY_THROW( procshared_mem_malloc mm( p_mem, 20 ) );
+	EXPECT_ANY_THROW( offset_mem_allocator mm( p_mem, 20 ) );
 
 	// Assert
 
@@ -74,7 +74,7 @@ public:
 		uintptr_t addr = reinterpret_cast<uintptr_t>( p_mem_ );
 		addr           = ( ( addr + 16 - 1 ) / 16 ) * 16;   // block::block_headerのサイズでアライメントを採る。
 
-		p_sut = new procshared_mem_malloc( reinterpret_cast<void*>( addr ), alloc_mem_size_ );
+		p_sut = new offset_mem_allocator( reinterpret_cast<void*>( addr ), alloc_mem_size_ );
 	}
 	void TearDown() override
 	{
@@ -83,8 +83,8 @@ public:
 		free( p_mem_ );
 	}
 
-	void*                  p_mem_;
-	procshared_mem_malloc* p_sut;
+	void*                 p_mem_;
+	offset_mem_allocator* p_sut;
 };
 
 TEST_F( ProcShared_Malloc, CanAllocateSmall )

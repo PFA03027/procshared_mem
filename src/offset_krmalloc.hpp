@@ -1,5 +1,5 @@
 /**
- * @file procshared_krmalloc.hpp
+ * @file offset_krmalloc.hpp
  * @author Teruaki Ata (PFA03027@nifty.com)
  * @brief process sharable malloc based on K&R malloc algorithm
  * @version 0.1
@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef PROCSHARED_KRMALLOC_HPP_
-#define PROCSHARED_KRMALLOC_HPP_
+#ifndef OFFSET_KRMALLOC_HPP_
+#define OFFSET_KRMALLOC_HPP_
 
 #include <cstddef>
 
@@ -18,11 +18,11 @@
 #include "procshared_logger.hpp"
 #include "procshared_mutex.hpp"
 
-class procshared_mem_krmalloc {
+class offset_mem_krmalloc {
 public:
-	static procshared_mem_krmalloc* make( void* p_mem, size_t mem_bytes );
-	static void                     teardown( procshared_mem_krmalloc* p_mem );
-	static procshared_mem_krmalloc* bind( void* p_mem );
+	static offset_mem_krmalloc* make( void* p_mem, size_t mem_bytes );
+	static void                 teardown( offset_mem_krmalloc* p_mem );
+	static offset_mem_krmalloc* bind( void* p_mem );
 
 #if __has_cpp_attribute( nodiscard )
 	[[nodiscard]]
@@ -108,11 +108,11 @@ private:
 		block_header block_body_[0];   // ブロック本体。ブロックをブロックヘッダー単位で分割管理するので、block_header型の配列としてアクセスできるように定義
 	};
 
-	procshared_mem_krmalloc( size_t mem_bytes );
-	procshared_mem_krmalloc( const procshared_mem_krmalloc& )            = delete;
-	procshared_mem_krmalloc( procshared_mem_krmalloc&& )                 = delete;
-	procshared_mem_krmalloc& operator=( const procshared_mem_krmalloc& ) = delete;
-	procshared_mem_krmalloc& operator=( procshared_mem_krmalloc&& )      = delete;
+	offset_mem_krmalloc( size_t mem_bytes );
+	offset_mem_krmalloc( const offset_mem_krmalloc& )            = delete;
+	offset_mem_krmalloc( offset_mem_krmalloc&& )                 = delete;
+	offset_mem_krmalloc& operator=( const offset_mem_krmalloc& ) = delete;
+	offset_mem_krmalloc& operator=( offset_mem_krmalloc&& )      = delete;
 
 	static constexpr size_t size_of_block_header( void );
 	static constexpr size_t bytes2blocksize( size_t bytes );
@@ -123,6 +123,6 @@ private:
 	block             base_blk_;
 };
 
-static_assert( std::is_standard_layout<procshared_mem_krmalloc>::value, "procshared_mem_krmalloc should be standard layout" );
+static_assert( std::is_standard_layout<offset_mem_krmalloc>::value, "offset_mem_krmalloc should be standard layout" );
 
-#endif   // PROCSHARED_KRMALLOC_HPP_
+#endif   // OFFSET_KRMALLOC_HPP_
