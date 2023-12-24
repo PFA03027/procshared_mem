@@ -325,6 +325,7 @@ procshared_mem::impl::impl( const construct_as_secondary_tag, const char* p_shm_
 void procshared_mem::impl::setup_as_both( const char* p_shm_name_arg, const char* p_id_dirname_arg, mode_t mode_arg, size_t length_arg, std::function<void( void*, off_t )> initfunctor_arg )
 {
 	while ( !try_setup_as_both( 0, p_shm_name_arg, p_id_dirname_arg, mode_arg, length_arg, initfunctor_arg ) ) {
+		fprintf( stderr, "Debug: retry shared memory setup\n" );
 		std::this_thread::sleep_for( std::chrono::milliseconds( 2 ) );
 	}
 }
