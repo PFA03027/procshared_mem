@@ -548,6 +548,23 @@ procshared_mem::~procshared_mem()
 	delete p_impl_;
 }
 
+procshared_mem::procshared_mem( procshared_mem&& src )
+  : p_impl_( src.p_impl_ )
+{
+	src.p_impl_ = nullptr;
+}
+
+procshared_mem& procshared_mem::operator=( procshared_mem&& src )
+{
+	if ( this == &src ) return *this;
+
+	delete p_impl_;
+	p_impl_     = src.p_impl_;
+	src.p_impl_ = nullptr;
+
+	return *this;
+}
+
 procshared_mem::procshared_mem( const char* p_shm_name, const char* p_id_dirname, off_t length, mode_t mode, std::function<void( void*, off_t )> initfunctor_arg )
   : p_impl_( nullptr )
 {

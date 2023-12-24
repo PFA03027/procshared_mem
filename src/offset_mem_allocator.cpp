@@ -38,6 +38,26 @@ private:
 	offset_mem_krmalloc* p_mem_allocator_;
 };
 
+offset_mem_allocator::offset_mem_allocator( void )
+  : p_impl_( nullptr )
+{
+}
+offset_mem_allocator::offset_mem_allocator( offset_mem_allocator&& src )
+  : p_impl_( src.p_impl_ )
+{
+	src.p_impl_ = nullptr;
+}
+offset_mem_allocator& offset_mem_allocator::operator=( offset_mem_allocator&& src )
+{
+	if ( this == &src ) return *this;
+
+	delete p_impl_;
+	p_impl_     = src.p_impl_;
+	src.p_impl_ = nullptr;
+
+	return *this;
+}
+
 offset_mem_allocator::offset_mem_allocator( void* p_mem, size_t mem_bytes )
   : p_impl_( new offset_mem_malloc_impl( p_mem, mem_bytes ) )
 {
@@ -51,9 +71,13 @@ offset_mem_allocator::~offset_mem_allocator()
 
 void* offset_mem_allocator::allocate( size_t req_bytes, size_t alignment )
 {
+	if ( p_impl_ == nullptr ) return nullptr;
+
 	return p_impl_->allocate( req_bytes, alignment );
 }
 void offset_mem_allocator::deallocate( void* p, size_t alignment )
 {
+	if ( p_impl_ == nullptr ) return;
+
 	p_impl_->deallocate( p, alignment );
 }

@@ -13,6 +13,7 @@
 #define PROCSHARED_MEM_HPP_
 
 #include <functional>
+#include <stdexcept>
 #include <string>
 
 #include <sys/stat.h> /* For mode constants */
@@ -46,6 +47,10 @@ public:
 	procshared_mem( void );
 
 	~procshared_mem();
+
+	procshared_mem( procshared_mem&& src );
+
+	procshared_mem& operator=( procshared_mem&& src );
 
 	/**
 	 * @brief Construct and allocate a new cooperative startup shared memory object
@@ -118,6 +123,9 @@ public:
 	static void debug_force_cleanup( const char* p_shm_name, const char* p_id_dirname );
 
 private:
+	procshared_mem( const procshared_mem& )            = delete;
+	procshared_mem& operator=( const procshared_mem& ) = delete;
+
 	class impl;
 	impl* p_impl_;
 };

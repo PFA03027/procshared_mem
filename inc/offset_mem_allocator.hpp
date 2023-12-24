@@ -16,8 +16,12 @@
 
 class offset_mem_allocator {
 public:
-	offset_mem_allocator( void* p_mem, size_t mem_bytes );
+	offset_mem_allocator( void );
 	~offset_mem_allocator();
+	offset_mem_allocator( offset_mem_allocator&& src );
+	offset_mem_allocator& operator=( offset_mem_allocator&& src );
+
+	offset_mem_allocator( void* p_mem, size_t mem_bytes );
 
 #if __has_cpp_attribute( nodiscard )
 	[[nodiscard]]
@@ -27,12 +31,10 @@ public:
 	void deallocate( void* p, size_t alignment = alignof( std::max_align_t ) );
 
 private:
-	class offset_mem_malloc_impl;
+	offset_mem_allocator( const offset_mem_allocator& src )            = delete;
+	offset_mem_allocator& operator=( const offset_mem_allocator& src ) = delete;
 
-	offset_mem_allocator( const offset_mem_allocator& )            = delete;
-	offset_mem_allocator( offset_mem_allocator&& )                 = delete;
-	offset_mem_allocator& operator=( const offset_mem_allocator& ) = delete;
-	offset_mem_allocator& operator=( offset_mem_allocator&& )      = delete;
+	class offset_mem_malloc_impl;
 
 	offset_mem_malloc_impl* p_impl_;
 };
