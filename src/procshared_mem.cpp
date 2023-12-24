@@ -28,6 +28,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "procshared_logger.hpp"
 #include "procshared_mem.hpp"
 #include "procshared_mem_internal.hpp"
 
@@ -66,7 +67,7 @@ ino_t get_inode_of_fd( int id_f_fd )
 		auto cur_errno = errno;
 		char buff[1024];
 		snprintf( buff, 1024, "Error: Fail to fstat(%d)", id_f_fd );
-		fprintf( stderr, "%s\n", buff );
+		psm_logoutput( psm_log_lv::kErr, "Error: %s", buff );
 		throw procshared_mem_error( cur_errno, buff );
 	}
 
@@ -282,7 +283,7 @@ procshared_mem::impl::~impl()
 
 	} catch ( ... ) {
 		// 握りつぶす
-		fprintf( stderr, "procshared_mem::impl destructor catch exception\n" );
+		psm_logoutput( psm_log_lv::kErr, "Error: procshared_mem::impl destructor catch exception" );
 	}
 }
 
@@ -325,7 +326,7 @@ procshared_mem::impl::impl( const construct_as_secondary_tag, const char* p_shm_
 void procshared_mem::impl::setup_as_both( const char* p_shm_name_arg, const char* p_id_dirname_arg, mode_t mode_arg, size_t length_arg, std::function<void( void*, off_t )> initfunctor_arg )
 {
 	while ( !try_setup_as_both( 0, p_shm_name_arg, p_id_dirname_arg, mode_arg, length_arg, initfunctor_arg ) ) {
-		fprintf( stderr, "Debug: retry shared memory setup\n" );
+		psm_logoutput( psm_log_lv::kDebug, "Debug: retry shared memory setup" );
 		std::this_thread::sleep_for( std::chrono::milliseconds( 2 ) );
 	}
 }
@@ -358,13 +359,13 @@ bool procshared_mem::impl::try_setup_as_both( int role_type, const char* p_shm_n
 				// 作成オープンできなかったので、secondary扱いとして、オープンを再トライする。
 				cur_sem_res = semaphore_resource_handler( p_shm_name_arg );
 				if ( !cur_sem_res.is_valid() ) {
-					// fprintf( stderr, "Info: Fail semaphore open(%s) as cooperative\n", p_shm_name_arg );
+					// psm_logoutput( psm_log_lv::kInfo, "Info: Fail semaphore open(%s) as cooperative", p_shm_name_arg );
 					return false;
 				}
 				is_primary = false;
 				spg        = semaphore_post_guard( cur_sem_res );   // セマフォ取得まで待つ。
 			} else {
-				// fprintf( stderr, "Debug: success semaphore creation, %s\n", p_shm_name_arg );
+				// psm_logoutput( psm_log_lv::kDebug, "Debug: success semaphore creation, %s", p_shm_name_arg );
 				spg = semaphore_post_guard( cur_sem_res, semaphore_post_guard_adopt_acquire_t() );   // セマフォ作成をしたので、セマフォ取得済みとする。
 			}
 		} break;
@@ -372,7 +373,7 @@ bool procshared_mem::impl::try_setup_as_both( int role_type, const char* p_shm_n
 		case 1: /* primary */ {
 			cur_sem_res = semaphore_resource_handler( p_shm_name_arg, mode_arg );
 			if ( !cur_sem_res.is_valid() ) {
-				fprintf( stderr, "Warning: Fail semaphore open(%s) as primary\n", p_shm_name_arg );
+				psm_logoutput( psm_log_lv::kWarn, "Warning: Fail semaphore open(%s) as primary", p_shm_name_arg );
 				return false;
 			}
 			spg = semaphore_post_guard( cur_sem_res, semaphore_post_guard_adopt_acquire_t() );   // セマフォ作成をしたので、セマフォ取得済みとする。
@@ -381,7 +382,7 @@ bool procshared_mem::impl::try_setup_as_both( int role_type, const char* p_shm_n
 		case 2: /* secondary */ {
 			cur_sem_res = semaphore_resource_handler( p_shm_name_arg );
 			if ( !cur_sem_res.is_valid() ) {
-				fprintf( stderr, "Warning: Fail semaphore open(%s) as secondary\n", p_shm_name_arg );
+				psm_logoutput( psm_log_lv::kWarn, "Warning: Fail semaphore open(%s) as secondary", p_shm_name_arg );
 				return false;
 			}
 			is_primary = false;
@@ -396,7 +397,7 @@ bool procshared_mem::impl::try_setup_as_both( int role_type, const char* p_shm_n
 
 	id_file_resource_handler tmp_id_file = id_file_resource_handler( id_fname );
 	if ( !tmp_id_file.is_valid() ) {
-		// fprintf( stderr, "Info: ID file open fail, try again\n" );
+		// psm_logoutput( psm_log_lv::kInfo, "Info: ID file open fail, try again" );
 		if ( is_primary ) {
 			// セマフォ作成者だが、IDファイルの不一致を検出したので、ファイルやセマフォを削除してやり直す。
 			cur_id_res.do_unlink();
@@ -405,7 +406,7 @@ bool procshared_mem::impl::try_setup_as_both( int role_type, const char* p_shm_n
 		return false;
 	}
 	if ( cur_id_res.get_inode_number() != tmp_id_file.get_inode_number() ) {
-		// fprintf( stderr, "Info: ID file inode is mismatch, try again\n" );
+		// psm_logoutput( psm_log_lv::kInfo, "Info: ID file inode is mismatch, try again" );
 		if ( is_primary ) {
 			// セマフォ作成者だが、IDファイルの不一致を検出したので、ファイルやセマフォを削除してやり直す。
 			cur_id_res.do_unlink();
@@ -420,7 +421,7 @@ bool procshared_mem::impl::try_setup_as_both( int role_type, const char* p_shm_n
 		// primary
 		cur_shm_res = shm_resource_handler( shm_resource_handler::try_create_tag(), p_shm_name_arg, length_arg, mode_arg );
 		if ( !cur_shm_res.is_valid() ) {
-			fprintf( stderr, "shared memory open fail as primary, role_type=%d\n", role_type );
+			psm_logoutput( psm_log_lv::kInfo, "Info: shared memory open fail as primary, role_type=%d", role_type );
 			return false;
 		}
 
@@ -432,20 +433,20 @@ bool procshared_mem::impl::try_setup_as_both( int role_type, const char* p_shm_n
 		cur_shm_res = shm_resource_handler( shm_resource_handler::try_open_tag(), p_shm_name_arg, length_arg, mode_arg );
 		if ( !cur_shm_res.is_valid() ) {
 			if ( role_type == 0 ) {
-				fprintf( stderr, "Info: shared memory open fail as secondary, role_type=%d\n", role_type );
+				psm_logoutput( psm_log_lv::kInfo, "Info: shared memory open fail as secondary, role_type=%d", role_type );
 			} else {
-				fprintf( stderr, "Warning: shared memory open fail as secondary, role_type=%d\n", role_type );
+				psm_logoutput( psm_log_lv::kWarn, "Warning: shared memory open fail as secondary, role_type=%d", role_type );
 			}
 			return false;
 		}
 
 		p_cur_mem = reinterpret_cast<procshared_mem_mem_header*>( cur_shm_res.get_shm_pointer() );
 		if ( cur_id_res.get_inode_number() != p_cur_mem->inode_val_.load() ) {
-			fprintf( stderr, "inode number mis-match, cur_id_res %lu, inode_val_ %lu\n", cur_id_res.get_inode_number(), p_cur_mem->inode_val_.load() );
+			psm_logoutput( psm_log_lv::kInfo, "Info: inode number mis-match, cur_id_res %lu, inode_val_ %lu", cur_id_res.get_inode_number(), p_cur_mem->inode_val_.load() );
 			return false;
 		}
 		if ( p_cur_mem->inode_val_.load() < 1 ) {
-			fprintf( stderr, "inode number is out of range, inode_val_ %lu\n", p_cur_mem->inode_val_.load() );
+			psm_logoutput( psm_log_lv::kInfo, "Info: inode number is out of range, inode_val_ %lu", p_cur_mem->inode_val_.load() );
 			return false;
 		}
 	}

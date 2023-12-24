@@ -18,6 +18,7 @@
 #include <pthread.h>
 
 #include "procshared_condition_variable.hpp"
+#include "procshared_logger.hpp"
 
 procshared_condition_variable::procshared_condition_variable( void )
 {
@@ -41,7 +42,7 @@ procshared_condition_variable::~procshared_condition_variable()
 {
 	int ret = pthread_cond_destroy( &cond_steady_ );
 	if ( ret == EBUSY ) {
-		fprintf( stderr, "fail pthread_cond_destroy(), caused by EBUSY(other thread/s are still waiting.)\n" );
+		psm_logoutput( psm_log_lv::kErr, "Error: fail pthread_cond_destroy(), caused by EBUSY(other thread/s are still waiting.)" );
 	}
 }
 

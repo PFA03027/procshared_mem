@@ -16,6 +16,7 @@
 
 #include <pthread.h>
 
+#include "procshared_logger.hpp"
 #include "procshared_mutex.hpp"
 #include "procshared_mutex_base.hpp"
 #include "procshared_recursive_mutex.hpp"
@@ -96,7 +97,7 @@ bool procshared_mutex_base::try_lock( void )
 			// not recovered, but not matter. but, fail to get lock anyway.
 			// fastmutex_ has already destroyed, or fastmutex_ is not inconsistent.
 			ans = false;   // fail to get lock
-			fprintf( stderr, "Warning: Fail to call pthread_mutex_consistent(). Has mutex alread destroyed ?\n" );
+			psm_logoutput( psm_log_lv::kWarn, "Warning: Fail to call pthread_mutex_consistent(). Has mutex alread destroyed ?" );
 		} else {
 			// fail to recover. this means mutex may corrupted.
 			std::error_code ec( ret, std::system_category() );
@@ -115,7 +116,7 @@ void procshared_mutex_base::unlock( void )
 		// OK
 	} else if ( ret == EPERM ) {
 		// caller thread is not lock owner thread
-		fprintf( stderr, "Warning: caller thread is not mutex lock owner. caller side may have critical logic error\n" );
+		psm_logoutput( psm_log_lv::kWarn, "Warning: caller thread is not mutex lock owner. caller side may have critical logic error" );
 	} else {
 		std::error_code ec( ret, std::system_category() );
 		throw std::system_error( ec, "Fail to call pthread_mutex_unlock()" );

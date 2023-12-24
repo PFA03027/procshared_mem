@@ -31,6 +31,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "procshared_logger.hpp"
 #include "procshared_mem.hpp"
 
 #define TMP_DIR_FOR_ID_FILE "/tmp"
@@ -60,7 +61,7 @@ public:
 			if ( close( fd_ ) != 0 ) {
 				auto cur_errno = errno;
 				auto es        = make_strerror( cur_errno );
-				fprintf( stderr, "Warning: fail to close(%d) of id file %s, %s\n", fd_, fname_.c_str(), es.c_str() );
+				psm_logoutput( psm_log_lv::kWarn, "Warning: fail to close(%d) of id file %s, %s", fd_, fname_.c_str(), es.c_str() );
 			}
 		}
 
@@ -142,17 +143,17 @@ public:
 	void do_unlink( void ) noexcept
 	{
 		if ( fname_.empty() ) {
-			fprintf( stderr, "Warning: id file is requested to unlink(), but fname_ is empty\n" );
+			psm_logoutput( psm_log_lv::kWarn, "Warning: id file is requested to unlink(), but fname_ is empty" );
 			return;
 		}
-		// fprintf( stderr, "Debug: id file deletion is requested, %s\n", fname_.c_str() );
+		// psm_logoutput( psm_log_lv::kDebug, "Debug: id file deletion is requested, %s", fname_.c_str() );
 		if ( unlink( fname_.c_str() ) != 0 ) {
 			auto cur_errno = errno;
 			if ( cur_errno == ENOENT ) {
-				// fprintf( stderr, "Info: try to unlink(%s) for id file, but it has not existed already.\n", fname_.c_str() );
+				// psm_logoutput( psm_log_lv::kInfo, "Info: try to unlink(%s) for id file, but it has not existed already.", fname_.c_str() );
 			} else {
 				auto es = make_strerror( cur_errno );
-				fprintf( stderr, "Error: fail to unlink(%s), %s\n", fname_.c_str(), es.c_str() );
+				psm_logoutput( psm_log_lv::kErr, "Error: fail to unlink(%s), %s", fname_.c_str(), es.c_str() );
 			}
 		} else {
 			// printf( "DEBUG: id file is unlink(%s)\n", fname_.c_str() );
@@ -206,12 +207,12 @@ private:
 			if ( unlink( fname_.c_str() ) != 0 ) {
 				type_of_errno cur_errno = errno;
 				auto          err_str   = make_strerror( cur_errno );
-				fprintf( stderr, "Error: fail to unlink(%s): %s\n", fname_.c_str(), err_str.c_str() );
+				psm_logoutput( psm_log_lv::kErr, "Error: fail to unlink(%s): %s", fname_.c_str(), err_str.c_str() );
 			}
 			if ( close( fd_ ) != 0 ) {
 				auto cur_errno = errno;
 				auto es        = make_strerror( cur_errno );
-				fprintf( stderr, "Warning: fail to close(%d) of id file %s, %s\n", fd_, fname_.c_str(), es.c_str() );
+				psm_logoutput( psm_log_lv::kWarn, "Warning: fail to close(%d) of id file %s, %s", fd_, fname_.c_str(), es.c_str() );
 			}
 			fd_ = -1;
 
@@ -234,7 +235,7 @@ private:
 			if ( close( fd_ ) != 0 ) {
 				auto cur_errno = errno;
 				auto es        = make_strerror( cur_errno );
-				fprintf( stderr, "Warning: fail to close(%d) of id file %s, %s\n", fd_, fname_.c_str(), es.c_str() );
+				psm_logoutput( psm_log_lv::kWarn, "Warning: fail to close(%d) of id file %s, %s", fd_, fname_.c_str(), es.c_str() );
 			}
 			fd_ = -1;
 
@@ -264,7 +265,7 @@ public:
 			if ( sem_close( p_sem_ ) != 0 ) {
 				auto cur_errno = errno;
 				auto es        = make_strerror( cur_errno );
-				fprintf( stderr, "Error: Fail to sem_close(%p), %s\n", p_sem_, es.c_str() );
+				psm_logoutput( psm_log_lv::kErr, "Error: Fail to sem_close(%p), %s", p_sem_, es.c_str() );
 			}
 		}
 
@@ -328,15 +329,15 @@ public:
 	void do_unlink( void ) noexcept
 	{
 		if ( sem_name_.empty() ) {
-			fprintf( stderr, "Warning: semaphore is requested to sem_unlink(), but sem_name_ is empty\n" );
+			psm_logoutput( psm_log_lv::kWarn, "Warning: semaphore is requested to sem_unlink(), but sem_name_ is empty" );
 			return;
 		}
-		// fprintf( stderr, "Debug: semaphore deletion is requested, %s\n", sem_name_.c_str() );
+		// psm_logoutput( psm_log_lv::kDebug, "Debug: semaphore deletion is requested, %s", sem_name_.c_str() );
 
 		if ( sem_unlink( sem_name_.c_str() ) != 0 ) {
 			auto cur_errno = errno;
 			auto es        = make_strerror( cur_errno );
-			fprintf( stderr, "Error: Fail to sem_unlink(%s), %s\n", sem_name_.c_str(), es.c_str() );
+			psm_logoutput( psm_log_lv::kErr, "Error: Fail to sem_unlink(%s), %s", sem_name_.c_str(), es.c_str() );
 		} else {
 			// printf( "DEBUG: semaphore is sem_unlink(%s)\n", sem_name_.c_str() );
 		}
@@ -421,7 +422,7 @@ public:
 			if ( ret != 0 ) {
 				auto cur_errno = errno;
 				auto es        = make_strerror( cur_errno );
-				fprintf( stderr, "%s by munmap(%p)\n", es.c_str(), p_mem_ );
+				psm_logoutput( psm_log_lv::kErr, "Error: %s by munmap(%p)", es.c_str(), p_mem_ );
 			}
 		}
 		if ( shm_fd_ >= 0 ) {
@@ -429,7 +430,7 @@ public:
 			if ( ret != 0 ) {
 				auto cur_errno = errno;
 				auto es        = make_strerror( cur_errno );
-				fprintf( stderr, "%s by close(%d)\n", es.c_str(), shm_fd_ );
+				psm_logoutput( psm_log_lv::kErr, "Error: %s by close(%d)", es.c_str(), shm_fd_ );
 			}
 		}
 		// }
@@ -479,14 +480,14 @@ public:
 	void do_unlink( void ) noexcept
 	{
 		if ( shm_name_.empty() ) {
-			fprintf( stderr, "Warning: Fail shm_unlink(), shm name is empty\n" );
+			psm_logoutput( psm_log_lv::kWarn, "Warning: Fail shm_unlink(), shm name is empty" );
 			return;
 		}
-		// fprintf( stderr, "Debug: shared memory deletion is requested, %s\n", shm_name_.c_str() );
+		// psm_logoutput( psm_log_lv::kDebug, "Debug: shared memory deletion is requested, %s", shm_name_.c_str() );
 		if ( shm_unlink( shm_name_.c_str() ) != 0 ) {
 			auto cur_errno = errno;
 			auto es        = make_strerror( cur_errno );
-			fprintf( stderr, "Error: Fail shm_unlink(%s), %s\n", shm_name_.c_str(), es.c_str() );
+			psm_logoutput( psm_log_lv::kErr, "Error: Fail shm_unlink(%s), %s", shm_name_.c_str(), es.c_str() );
 		} else {
 			// printf( "DEBUG: shared memory is shm_unlink(%s)\n", shm_name_.c_str() );
 		}
@@ -541,7 +542,7 @@ private:
 		if ( shm_fd_ < 0 ) {
 			auto cur_errno = errno;
 			auto es2       = make_strerror( cur_errno );
-			fprintf( stderr, "Info: Fail shm_open(%s, %x, %x), %s\n", shm_name_.c_str(), oflags_arg, mode_arg, es2.c_str() );
+			psm_logoutput( psm_log_lv::kInfo, "Info: Fail shm_open(%s, %x, %x), %s", shm_name_.c_str(), oflags_arg, mode_arg, es2.c_str() );
 			return;
 		}
 		if ( ftruncate( shm_fd_, length_arg ) != 0 ) {
@@ -606,7 +607,7 @@ private:
 	void try_create( size_t length_arg, mode_t mode_arg )
 	{
 		try_common_create_or_open( O_CREAT | O_EXCL | O_RDWR | O_CLOEXEC, length_arg, mode_arg );
-		// fprintf( stderr, "Debug: shared memory creation is requested, %s\n", shm_name_.c_str() );
+		// psm_logoutput( psm_log_lv::kDebug, "Debug: shared memory creation is requested, %s", shm_name_.c_str() );
 	}
 
 	void try_open( size_t length_arg, mode_t mode_arg )
@@ -729,7 +730,7 @@ public:
 	void post( void )
 	{
 		if ( p_sem_ == SEM_FAILED ) {
-			fprintf( stderr, "unexpected calling call_sem_post() by this=%p\n", this );
+			psm_logoutput( psm_log_lv::kErr, "Error: unexpected calling call_sem_post() by this=%p", this );
 			return;
 		}
 
@@ -790,7 +791,7 @@ private:
 				throw procshared_mem_error( cur_errno, buff );
 			}
 
-			fprintf( stderr, "sem_trywait(%p), but semaphore value is already 0(Zero)\n", p_sem_ );
+			psm_logoutput( psm_log_lv::kErr, "Error: sem_trywait(%p), but semaphore value is already 0(Zero)", p_sem_ );
 			owns_acquire_flag_ = false;
 		}
 	}
@@ -805,9 +806,9 @@ private:
 			auto cur_errno = errno;
 			try {
 				std::string errlog = make_strerror( cur_errno );
-				fprintf( stderr, "Fail sem_post(%p): %s\n", p_sem_, errlog.c_str() );
+				psm_logoutput( psm_log_lv::kErr, "Error: Fail sem_post(%p): %s", p_sem_, errlog.c_str() );
 			} catch ( ... ) {
-				fprintf( stderr, "Fail sem_post(%p): errno=%d\n", p_sem_, cur_errno );
+				psm_logoutput( psm_log_lv::kErr, "Error: Fail sem_post(%p): errno=%d", p_sem_, cur_errno );
 			}
 		}
 		owns_acquire_flag_ = false;

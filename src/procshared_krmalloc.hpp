@@ -15,6 +15,7 @@
 #include <cstddef>
 
 #include "offset_ptr.hpp"
+#include "procshared_logger.hpp"
 #include "procshared_mutex.hpp"
 
 class procshared_mem_krmalloc {
@@ -86,13 +87,13 @@ private:
 			// if ( active_header_.size_of_this_block_ <= ( 1 + ans ) ) {
 			// 	// 計算結果とsize_of_this_block_との間で整合性が取れていない。
 			// 	// 不具合のが発生している可能性があるので、サイズの最適化を行わないような戻り値にする。
-			// 	fprintf( stderr, "BBBBBBBBBBBooooooooooooooo active_header_.size_of_this_block_= %zd, ans=%zd\n",
+			// 	psm_logoutput( psm_log_lv::kErr, "Error: BBBBBBBBBBBooooooooooooooo active_header_.size_of_this_block_= %zd, ans=%zd",
 			// 	         active_header_.size_of_this_block_,
 			// 	         ans );
 			// 	ans = 0;
 			// }
 			// if ( ans != 0 ) {
-			// 	fprintf( stderr, "xxxxxxxxxxxxxxx ans=%zd\n", ans );
+			// 	psm_logoutput( psm_log_lv::kErr, "Error: xxxxxxxxxxxxxxx ans=%zd", ans );
 			// }
 
 			return ans;
