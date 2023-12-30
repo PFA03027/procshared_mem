@@ -538,6 +538,10 @@ private:
 	void try_common_create_or_open( int oflags_arg, size_t length_arg, mode_t mode_arg )
 	{
 		// 共有メモリの作成
+		if ( std::numeric_limits<off_t>::max() < length_arg ) {
+			psm_logoutput( psm_log_lv::kInfo, "Error: too big memory is required, length_arg=%zu", length_arg );
+			return;
+		}
 		shm_fd_ = shm_open( shm_name_.c_str(), oflags_arg, mode_arg );
 		if ( shm_fd_ < 0 ) {
 			auto cur_errno = errno;
@@ -545,7 +549,7 @@ private:
 			psm_logoutput( psm_log_lv::kInfo, "Info: Fail shm_open(%s, %x, %x), %s", shm_name_.c_str(), oflags_arg, mode_arg, es2.c_str() );
 			return;
 		}
-		if ( ftruncate( shm_fd_, length_arg ) != 0 ) {
+		if ( ftruncate( shm_fd_, static_cast<off_t>( length_arg ) ) != 0 ) {
 			auto cur_errno = errno;
 			char buff[1024];
 			auto es = make_strerror( cur_errno );

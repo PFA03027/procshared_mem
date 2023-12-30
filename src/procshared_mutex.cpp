@@ -69,6 +69,7 @@ void procshared_mutex_base::lock( void )
 		} else if ( ret == EINVAL ) {
 			// not recovered, but not matter.
 			// fastmutex_ has already destroyed, or fastmutex_ is not inconsistent.
+			psm_logoutput( psm_log_lv::kWarn, "Warning: Fail to call pthread_mutex_consistent(). Has mutex alread destroyed ?" );
 		} else {
 			// fail to recover. this means mutex may corrupted.
 			std::error_code ec( ret, std::system_category() );

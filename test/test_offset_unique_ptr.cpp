@@ -151,7 +151,7 @@ TEST( OffsetBasedUniquePtr, CanConstructByOffsetUp1 )
 	offset_unique_ptr<int> oup_sut( std::move( oup_tt ) );
 
 	// Assert
-	EXPECT_EQ( oup_tt, nullptr );
+	EXPECT_EQ( oup_tt, nullptr );   // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move)
 	EXPECT_EQ( oup_sut.get(), p );
 	EXPECT_EQ( p, oup_sut.get() );
 }
@@ -167,7 +167,7 @@ TEST( OffsetBasedUniquePtr, CanConstructByOffsetUp2 )
 	offset_unique_ptr<int, test_deleter<int>> oup_sut( std::move( oup_tt ) );
 
 	// Assert
-	EXPECT_EQ( oup_tt, nullptr );
+	EXPECT_EQ( oup_tt, nullptr );   // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move)
 	EXPECT_EQ( oup_sut.get(), p );
 	EXPECT_EQ( p, oup_sut.get() );
 	EXPECT_EQ( 1, oup_sut.get_deleter().test_mark_ );
@@ -196,7 +196,7 @@ TEST( OffsetBasedUniquePtr, CanMoveConstruct1 )
 	offset_unique_ptr<int> oup_sut( std::move( oup_tt ) );
 
 	// Assert
-	EXPECT_EQ( oup_tt, nullptr );
+	EXPECT_EQ( oup_tt, nullptr );   // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move)
 	EXPECT_EQ( oup_sut.get(), p );
 	EXPECT_EQ( p, oup_sut.get() );
 }
@@ -216,7 +216,7 @@ TEST( OffsetBasedUniquePtr, CanMoveConstruct2 )
 	offset_unique_ptr<int, test_deleter<int>> oup_sut( std::move( oup_tt ) );
 
 	// Assert
-	EXPECT_EQ( oup_tt, nullptr );
+	EXPECT_EQ( oup_tt, nullptr );   // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move)
 	EXPECT_EQ( oup_sut.get(), p );
 	EXPECT_EQ( p, oup_sut.get() );
 	EXPECT_EQ( 1, oup_sut.get_deleter().test_mark_ );
@@ -247,7 +247,7 @@ TEST( OffsetBasedUniquePtr, CanMoveAssign1 )
 	oup_sut = std::move( oup_tt );
 
 	// Assert
-	EXPECT_EQ( oup_tt, nullptr );
+	EXPECT_EQ( oup_tt, nullptr );   // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move)
 	EXPECT_EQ( oup_sut.get(), p );
 	EXPECT_EQ( p, oup_sut.get() );
 }
@@ -269,7 +269,7 @@ TEST( OffsetBasedUniquePtr, CanMoveAssign2 )
 	oup_sut = std::move( oup_tt );
 
 	// Assert
-	EXPECT_EQ( oup_tt, nullptr );
+	EXPECT_EQ( oup_tt, nullptr );   // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move)
 	EXPECT_EQ( oup_sut.get(), p );
 	EXPECT_EQ( p, oup_sut.get() );
 	EXPECT_EQ( 1, oup_sut.get_deleter().test_mark_ );
@@ -421,7 +421,7 @@ TEST( OffsetBasedUniquePtr, CanCastBool1 )
 	EXPECT_EQ( oup_sut.get(), p );
 
 	// Act
-	bool test_ret = (bool)oup_sut;
+	bool test_ret = static_cast<bool>( oup_sut );
 
 	// Assert
 	EXPECT_TRUE( test_ret );
@@ -434,7 +434,7 @@ TEST( OffsetBasedUniquePtr, CanCastBool2 )
 	EXPECT_EQ( oup_sut.get(), nullptr );
 
 	// Act
-	bool test_ret = (bool)oup_sut;
+	bool test_ret = static_cast<bool>( oup_sut );
 
 	// Assert
 	EXPECT_FALSE( test_ret );

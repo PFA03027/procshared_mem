@@ -428,7 +428,7 @@ TEST( TestOffsetSharedPtr, CanDoMoveConstructedByConstructedWithDerivedTPtr )
 	EXPECT_EQ( sp_sut.use_count(), 1 );
 	EXPECT_TRUE( static_cast<bool>( sp_sut ) );
 
-	EXPECT_EQ( sp_t1.get(), nullptr );
+	EXPECT_EQ( sp_t1.get(), nullptr );   // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move)
 	EXPECT_EQ( sp_t1.use_count(), 0 );
 	EXPECT_FALSE( static_cast<bool>( sp_t1 ) );
 }
@@ -443,7 +443,7 @@ TEST( TestOffsetSharedPtr, CanDoMoveConstruct )
 	offset_shared_ptr<ArrowOpTest> sp_sut( std::move( sp_t1 ) );
 
 	// Assert
-	EXPECT_EQ( sp_t1.get(), nullptr );
+	EXPECT_EQ( sp_t1.get(), nullptr );   // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move)
 	EXPECT_EQ( sp_t1.use_count(), 0 );
 	EXPECT_EQ( sp_sut.get(), p1 );
 	EXPECT_EQ( sp_sut.use_count(), 1 );
@@ -495,7 +495,7 @@ TEST( TestOffsetSharedPtr, CanDoMoveAssignmentFromNullToValid )
 	sp_sut = std::move( sp_t1 );
 
 	// Assert
-	EXPECT_EQ( sp_t1.get(), nullptr );
+	EXPECT_EQ( sp_t1.get(), nullptr );   // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move)
 	EXPECT_EQ( sp_t1.use_count(), 0 );
 	EXPECT_EQ( sp_sut.get(), p1 );
 	EXPECT_EQ( sp_sut.use_count(), 1 );
@@ -513,7 +513,7 @@ TEST( TestOffsetSharedPtr, CanDoMoveAssignmentFromValidToValid )
 	sp_sut = std::move( sp_t1 );
 
 	// Assert
-	EXPECT_EQ( sp_t1.get(), nullptr );
+	EXPECT_EQ( sp_t1.get(), nullptr );   // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move)
 	EXPECT_EQ( sp_t1.use_count(), 0 );
 	EXPECT_EQ( sp_sut.get(), p1 );
 	EXPECT_EQ( sp_sut.use_count(), 1 );

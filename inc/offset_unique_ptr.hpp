@@ -354,7 +354,7 @@ constexpr bool operator==( const offset_unique_ptr<T1, D1>& a, const offset_uniq
 template <class T, class D>
 constexpr bool operator==( const offset_unique_ptr<T, D>& x, std::nullptr_t ) noexcept
 {
-	return ( x.get() == nullptr );
+	return ( x.get() == nullptr );   // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move)
 }
 
 template <class T, class D>

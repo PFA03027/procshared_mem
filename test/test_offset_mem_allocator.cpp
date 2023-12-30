@@ -18,7 +18,7 @@
 TEST( Offset_MemAllocator_Cntr, CanConstruct )
 {
 	// Arrange
-	void*                 p_mem       = malloc( 1024 );
+	void*          p_mem       = malloc( 1024 );
 	offset_malloc* p_mem_alloc = nullptr;
 
 	// Act
@@ -83,7 +83,7 @@ public:
 		free( p_mem_ );
 	}
 
-	void*                 p_mem_;
+	void*          p_mem_;
 	offset_malloc* p_sut_;
 };
 

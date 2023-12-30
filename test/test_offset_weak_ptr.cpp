@@ -184,7 +184,7 @@ TEST( TestOffsetWeakPtr, CanDoMoveConstructWithValidResource1 )
 	// Assert
 	EXPECT_EQ( wp_sut.use_count(), 1 );
 	EXPECT_FALSE( wp_sut.expired() );
-	EXPECT_EQ( wp_t1.use_count(), 0 );
+	EXPECT_EQ( wp_t1.use_count(), 0 );   // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move)
 	EXPECT_TRUE( wp_t1.expired() );
 	EXPECT_EQ( sp_t1.use_count(), 1 );
 }
@@ -202,7 +202,7 @@ TEST( TestOffsetWeakPtr, CanDoMoveConstructWithValidResource2 )
 	// Assert
 	EXPECT_EQ( wp_sut.use_count(), 1 );
 	EXPECT_FALSE( wp_sut.expired() );
-	EXPECT_EQ( wp_t1.use_count(), 0 );
+	EXPECT_EQ( wp_t1.use_count(), 0 );   // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move)
 	EXPECT_TRUE( wp_t1.expired() );
 	EXPECT_EQ( sp_t1.use_count(), 1 );
 }
@@ -220,7 +220,7 @@ TEST( TestOffsetWeakPtr, CanDoMoveConstructWithValidResource3 )
 	// Assert
 	EXPECT_EQ( wp_sut.use_count(), 1 );
 	EXPECT_FALSE( wp_sut.expired() );
-	EXPECT_EQ( wp_t1.use_count(), 0 );
+	EXPECT_EQ( wp_t1.use_count(), 0 );   // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move)
 	EXPECT_TRUE( wp_t1.expired() );
 	EXPECT_EQ( sp_t1.use_count(), 1 );
 }
@@ -425,7 +425,7 @@ TEST( TestOffsetWeakPtr, CanDoMoveAssignmentWithValidResource1 )
 	// Assert
 	EXPECT_EQ( wp_sut.use_count(), 1 );
 	EXPECT_FALSE( wp_sut.expired() );
-	EXPECT_EQ( wp_t1.use_count(), 0 );
+	EXPECT_EQ( wp_t1.use_count(), 0 );   // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move)
 	EXPECT_TRUE( wp_t1.expired() );
 	EXPECT_EQ( sp_t1.use_count(), 1 );
 }
@@ -444,7 +444,7 @@ TEST( TestOffsetWeakPtr, CanDoMoveAssignmentWithValidResource2 )
 	// Assert
 	EXPECT_EQ( wp_sut.use_count(), 1 );
 	EXPECT_FALSE( wp_sut.expired() );
-	EXPECT_EQ( wp_t1.use_count(), 0 );
+	EXPECT_EQ( wp_t1.use_count(), 0 );   // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move)
 	EXPECT_TRUE( wp_t1.expired() );
 	EXPECT_EQ( sp_t1.use_count(), 1 );
 }
@@ -463,7 +463,7 @@ TEST( TestOffsetWeakPtr, CanDoMoveAssignmentWithValidResource3 )
 	// Assert
 	EXPECT_EQ( wp_sut.use_count(), 1 );
 	EXPECT_FALSE( wp_sut.expired() );
-	EXPECT_EQ( wp_t1.use_count(), 0 );
+	EXPECT_EQ( wp_t1.use_count(), 0 );   // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move)
 	EXPECT_TRUE( wp_t1.expired() );
 	EXPECT_EQ( sp_t1.use_count(), 1 );
 }
@@ -484,7 +484,7 @@ TEST( TestOffsetWeakPtr, CanDoMoveAssignmentWithValidToValidResource1 )
 	// Assert
 	EXPECT_EQ( wp_sut.use_count(), 1 );
 	EXPECT_FALSE( wp_sut.expired() );
-	EXPECT_EQ( wp_t1.use_count(), 0 );
+	EXPECT_EQ( wp_t1.use_count(), 0 );   // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move)
 	EXPECT_TRUE( wp_t1.expired() );
 	EXPECT_EQ( sp_t1.use_count(), 1 );
 }
@@ -505,7 +505,7 @@ TEST( TestOffsetWeakPtr, CanDoMoveAssignmentWithValidToValidResource2 )
 	// Assert
 	EXPECT_EQ( wp_sut.use_count(), 1 );
 	EXPECT_FALSE( wp_sut.expired() );
-	EXPECT_EQ( wp_t1.use_count(), 0 );
+	EXPECT_EQ( wp_t1.use_count(), 0 );   // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move)
 	EXPECT_TRUE( wp_t1.expired() );
 	EXPECT_EQ( sp_t1.use_count(), 1 );
 }
@@ -526,7 +526,7 @@ TEST( TestOffsetWeakPtr, CanDoMoveAssignmentWithValidToValidResource3 )
 	// Assert
 	EXPECT_EQ( wp_sut.use_count(), 1 );
 	EXPECT_FALSE( wp_sut.expired() );
-	EXPECT_EQ( wp_t1.use_count(), 0 );
+	EXPECT_EQ( wp_t1.use_count(), 0 );   // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move)
 	EXPECT_TRUE( wp_t1.expired() );
 	EXPECT_EQ( sp_t1.use_count(), 1 );
 }

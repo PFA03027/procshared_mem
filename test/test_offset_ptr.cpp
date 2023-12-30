@@ -79,7 +79,7 @@ TEST( OffsetPtr, CanMoveConstruct )
 	offset_ptr<int> op_b( std::move( op_a ) );
 
 	// Assert
-	EXPECT_NE( op_a.get(), op_b.get() );
+	EXPECT_NE( op_a.get(), op_b.get() );   // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move)
 	EXPECT_EQ( op_a.get(), nullptr );
 	EXPECT_EQ( op_b.get(), &a );
 }
@@ -111,7 +111,7 @@ TEST( OffsetPtr, CanMoveAssingment )
 	op_b = std::move( op_a );
 
 	// Assert
-	EXPECT_NE( op_a.get(), op_b.get() );
+	EXPECT_NE( op_a.get(), op_b.get() );   // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move)
 	EXPECT_EQ( op_a.get(), nullptr );
 	EXPECT_EQ( op_b.get(), &a );
 }

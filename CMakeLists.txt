@@ -25,5 +25,6 @@ else()
 endif()
 
 target_include_directories( procshared_mem  PUBLIC inc )
+target_compile_options( procshared_mem  PRIVATE "-Werror" )
 
 add_subdirectory(test)

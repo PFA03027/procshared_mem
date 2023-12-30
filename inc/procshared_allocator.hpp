@@ -44,22 +44,22 @@ public:
 	{
 	}
 
-	constexpr explicit procshared_mem_allocator( std::shared_ptr<offset_malloc> sp ) noexcept
+	constexpr explicit procshared_mem_allocator( const std::shared_ptr<offset_malloc>& sp ) noexcept
 	  : p_malloc_( sp.get() )
 	  , sp_malloc_( sp )
 	{
 	}
 
-	constexpr procshared_mem_allocator( const allocator& ) noexcept = default;
+	constexpr procshared_mem_allocator( const procshared_mem_allocator& ) noexcept = default;
 
 	template <class U>
-	constexpr allocator( const allocator<U>& orig ) noexcept
+	constexpr procshared_mem_allocator( const procshared_mem_allocator<U>& orig ) noexcept
 	  : p_malloc_( orig.p_malloc_ )
 	  , sp_malloc_( orig.sp_malloc_ )
 	{
 	}
 
-	constexpr allocator& operator=( const allocator& ) = default;
+	constexpr procshared_mem_allocator& operator=( const procshared_mem_allocator& ) = default;
 
 #if __has_cpp_attribute( nodiscard )
 	[[nodiscard]]

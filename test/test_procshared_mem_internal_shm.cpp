@@ -75,7 +75,7 @@ TEST( Test_shm_resource_handler, CanMoveConstruct )
 	} );
 
 	// Assert
-	EXPECT_FALSE( sut_src.is_valid() );
+	EXPECT_FALSE( sut_src.is_valid() );   // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move)
 }
 
 TEST( Test_shm_resource_handler, CanMoveAssignment )

@@ -20,8 +20,7 @@
 
 #include "procshared_mem.hpp"
 
-const char*   p_shm_obj_name = "/my_test_shm_obj";
-constexpr int num_of_threads = 100;
+const char* p_shm_obj_name = "/my_test_shm_obj";
 
 int main( void )
 {

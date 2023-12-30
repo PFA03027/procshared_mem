@@ -38,7 +38,7 @@ void make_shm_and_close( void )
 	pid_t child_pid = fork();
 	if ( child_pid == 0 ) {
 		// closeall_except_stdinouterr();
-		execl( "build/test/loadtest_procshared_mem_secondary_highload", "loadtest_procshared_mem_secondary_highload", (char*)NULL );
+		execl( "build/test/loadtest_procshared_mem_secondary_highload", "loadtest_procshared_mem_secondary_highload", reinterpret_cast<char*>( NULL ) );
 		perror( "fail execl to launch loadtest_procshared_mem_secondary_highload\n" );
 		abort();
 	} else {

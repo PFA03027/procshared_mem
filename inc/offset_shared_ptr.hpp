@@ -551,13 +551,7 @@ public:
 		p_r_impl_->get_ascer().ref().weak_refc_++;
 	}
 
-	offset_weak_ptr( offset_weak_ptr&& r ) noexcept
-	  : p_r_impl_( r.p_r_impl_ )
-	  , p_( r.p_ )
-	{
-		r.p_r_impl_ = nullptr;
-		r.p_        = nullptr;
-	}
+	offset_weak_ptr( offset_weak_ptr&& r ) noexcept = default;
 
 	template <class Y>
 	offset_weak_ptr( offset_weak_ptr<Y>&& r ) noexcept

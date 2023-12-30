@@ -170,8 +170,8 @@ public:
 	 */
 	impl( const construct_as_secondary_tag, const char* p_shm_name, const char* p_id_dirname, off_t length, mode_t mode );
 
-	void* get( void );
-	off_t available_size( void ) const;
+	void*  get( void );
+	size_t available_size( void ) const;
 
 	ino_t       debug_get_id_file_inode( void ) const;
 	bool        debug_test_integrity( void ) const;
@@ -182,14 +182,14 @@ private:
 	struct procshared_mem_mem_header;
 
 	void check_path_name( const char* p_shm_name );
-	void setup_as_both( const char* p_shm_name_arg, const char* p_id_dirname_arg, mode_t mode_arg, size_t length_arg, std::function<void( void*, off_t )> initfunctor_arg );
-	void setup_as_primary( const char* p_shm_name_arg, const char* p_id_dirname_arg, mode_t mode_arg, size_t length_arg, std::function<void( void*, off_t )> initfunctor_arg );
+	void setup_as_both( const char* p_shm_name_arg, const char* p_id_dirname_arg, mode_t mode_arg, size_t length_arg, std::function<void( void*, size_t )> initfunctor_arg );
+	void setup_as_primary( const char* p_shm_name_arg, const char* p_id_dirname_arg, mode_t mode_arg, size_t length_arg, std::function<void( void*, size_t )> initfunctor_arg );
 	void setup_as_secondary( const char* p_shm_name_arg, const char* p_id_dirname_arg, mode_t mode_arg, size_t length_arg );
-	bool try_setup_as_both( int role_type, const char* p_shm_name_arg, const char* p_id_dirname_arg, mode_t mode_arg, size_t length_arg, std::function<void( void*, off_t )> initfunctor_arg );
+	bool try_setup_as_both( int role_type, const char* p_shm_name_arg, const char* p_id_dirname_arg, mode_t mode_arg, size_t length_arg, std::function<void( void*, size_t )> initfunctor_arg );
 
 	static std::string get_id_filename( const char* p_path_name_arg, const char* p_id_dirname_arg );
 	static off_t       calc_total_neccesary_len( off_t requested_length );
-	static off_t       calc_available_size( off_t allocated_shm_length );
+	static size_t      calc_available_size( size_t allocated_shm_length );
 
 	std::string                sem_name_;
 	id_file_resource_handler   id_res_;
@@ -199,12 +199,12 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct procshared_mem::impl::procshared_mem_mem_header {
-	std::atomic<off_t> length_val_;
-	std::atomic<long>  reference_count_;
-	std::atomic<ino_t> inode_val_;
-	unsigned char      shm_buff_[0];
+	std::atomic<size_t> length_val_;
+	std::atomic<long>   reference_count_;
+	std::atomic<ino_t>  inode_val_;
+	unsigned char       shm_buff_[0];
 
-	procshared_mem_mem_header( ino_t inode_v, off_t len_v )
+	procshared_mem_mem_header( ino_t inode_v, size_t len_v )
 	  : length_val_( len_v )    // constructor of atomic is not atomic operation
 	  , reference_count_( 0 )   // constructor of atomic is not atomic operation
 	  , inode_val_( inode_v )   // constructor of atomic is not atomic operation
@@ -218,7 +218,7 @@ struct procshared_mem::impl::procshared_mem_mem_header {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 off_t procshared_mem::impl::calc_total_neccesary_len( off_t requested_length )
 {
-	off_t total_length = sizeof( procshared_mem_mem_header ) + requested_length;
+	off_t total_length = static_cast<off_t>( sizeof( procshared_mem_mem_header ) ) + requested_length;
 	off_t page_len     = sysconf( _SC_PAGE_SIZE );
 	off_t mx           = total_length / page_len;
 	off_t rx           = total_length % page_len;
@@ -253,7 +253,7 @@ std::string procshared_mem::impl::get_id_filename( const char* p_shm_name_arg, c
 	return ans + std::string( p_shm_name_arg );
 }
 
-off_t procshared_mem::impl::calc_available_size( off_t allocated_shm_length )
+size_t procshared_mem::impl::calc_available_size( size_t allocated_shm_length )
 {
 	return allocated_shm_length - sizeof( procshared_mem_mem_header );
 }
@@ -274,7 +274,7 @@ procshared_mem::impl::~impl()
 		semaphore_post_guard spg( cur_sem );   // セマフォの取得をまつ。
 		// デストラクタで、sem_postを行う。このsem_postは、ほかのプロセス向けにpostを行う。
 
-		int final_ref_c = p_mem_->reference_count_.fetch_sub( 1 ) - 1;
+		auto final_ref_c = p_mem_->reference_count_.fetch_sub( 1 ) - 1;
 		if ( final_ref_c == 0 ) {
 			id_res_.do_unlink();
 			shm_res_.do_unlink();
@@ -323,7 +323,7 @@ procshared_mem::impl::impl( const construct_as_secondary_tag, const char* p_shm_
 	sem_name_ = p_shm_name;
 }
 
-void procshared_mem::impl::setup_as_both( const char* p_shm_name_arg, const char* p_id_dirname_arg, mode_t mode_arg, size_t length_arg, std::function<void( void*, off_t )> initfunctor_arg )
+void procshared_mem::impl::setup_as_both( const char* p_shm_name_arg, const char* p_id_dirname_arg, mode_t mode_arg, size_t length_arg, std::function<void( void*, size_t )> initfunctor_arg )
 {
 	while ( !try_setup_as_both( 0, p_shm_name_arg, p_id_dirname_arg, mode_arg, length_arg, initfunctor_arg ) ) {
 		psm_logoutput( psm_log_lv::kDebug, "Debug: retry shared memory setup" );
@@ -331,7 +331,7 @@ void procshared_mem::impl::setup_as_both( const char* p_shm_name_arg, const char
 	}
 }
 
-void procshared_mem::impl::setup_as_primary( const char* p_shm_name_arg, const char* p_id_dirname_arg, mode_t mode_arg, size_t length_arg, std::function<void( void*, off_t )> initfunctor_arg )
+void procshared_mem::impl::setup_as_primary( const char* p_shm_name_arg, const char* p_id_dirname_arg, mode_t mode_arg, size_t length_arg, std::function<void( void*, size_t )> initfunctor_arg )
 {
 	try_setup_as_both( 1, p_shm_name_arg, p_id_dirname_arg, mode_arg, length_arg, initfunctor_arg );
 }
@@ -341,7 +341,7 @@ void procshared_mem::impl::setup_as_secondary( const char* p_shm_name_arg, const
 	try_setup_as_both( 2, p_shm_name_arg, p_id_dirname_arg, mode_arg, length_arg, std::function<void( void*, off_t )>() );
 }
 
-bool procshared_mem::impl::try_setup_as_both( int role_type, const char* p_shm_name_arg, const char* p_id_dirname_arg, mode_t mode_arg, size_t length_arg, std::function<void( void*, off_t )> initfunctor_arg )
+bool procshared_mem::impl::try_setup_as_both( int role_type, const char* p_shm_name_arg, const char* p_id_dirname_arg, mode_t mode_arg, size_t length_arg, std::function<void( void*, size_t )> initfunctor_arg )
 {
 	std::string              id_fname = get_id_filename( p_shm_name_arg, p_id_dirname_arg );
 	id_file_resource_handler cur_id_res( id_fname, mode_arg );
@@ -468,7 +468,7 @@ void* procshared_mem::impl::get( void )
 	return reinterpret_cast<void*>( p_header->shm_buff_ );
 }
 
-off_t procshared_mem::impl::available_size( void ) const
+size_t procshared_mem::impl::available_size( void ) const
 {
 	if ( !shm_res_.is_valid() ) return 0;
 
@@ -589,7 +589,7 @@ void procshared_mem::allocate_shm_as_secondary( const char* p_shm_name, const ch
 	p_impl_ = new impl( procshared_mem::impl::construct_as_secondary_tag(), p_shm_name, p_id_dirname, length, mode );
 }
 
-off_t procshared_mem::available_size( void ) const
+size_t procshared_mem::available_size( void ) const
 {
 	if ( p_impl_ == nullptr ) return 0;
 

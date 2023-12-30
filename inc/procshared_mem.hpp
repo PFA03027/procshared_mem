@@ -113,7 +113,7 @@ public:
 	 */
 	void allocate_shm_as_secondary( const char* p_shm_name, const char* p_id_dirname, off_t length, mode_t mode );
 
-	off_t available_size( void ) const;
+	size_t available_size( void ) const;
 
 	void* get( void );
 
