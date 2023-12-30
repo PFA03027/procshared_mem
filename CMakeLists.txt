@@ -16,9 +16,9 @@ enable_testing()
 file(GLOB SOURCES src/*.cpp )
 
 # GREETINGS_BUILD_SHARED_LIBSというオプションを作成。デフォルトをOFFに設定。
-option(ALCONCURRENT_BUILD_SHARED_LIBS "build procshared_mem as a shared library" OFF)
+option(PROCSHARED_BUILD_SHARED_LIBS "build procshared_mem as a shared library" OFF)
 
-if (ALCONCURRENT_BUILD_SHARED_LIBS)
+if (PROCSHARED_BUILD_SHARED_LIBS)
   add_library(procshared_mem SHARED ${SOURCES} )
 else()
   add_library(procshared_mem STATIC ${SOURCES} )

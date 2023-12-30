@@ -30,7 +30,7 @@ add_custom_target(build-test)
 
 add_subdirectory(googletest)
 
-if (ALCONCURRENT_BUILD_SHARED_LIBS)
+if (PROCSHARED_BUILD_SHARED_LIBS)
   add_library(test_procshared_common SHARED test_procshared_common.cpp )
 else()
   add_library(test_procshared_common STATIC test_procshared_common.cpp )

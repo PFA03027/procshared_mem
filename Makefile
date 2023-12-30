@@ -19,9 +19,9 @@ BUILDTARGET?=common
 BUILDTYPE?=Release
 
 # Select build library type
-# ALCONCURRENT_BUILD_SHARED_LIBS=OFF -> static library
-# ALCONCURRENT_BUILD_SHARED_LIBS=ON -> shared library
-ALCONCURRENT_BUILD_SHARED_LIBS?=OFF
+# PROCSHARED_BUILD_SHARED_LIBS=OFF -> static library
+# PROCSHARED_BUILD_SHARED_LIBS=ON -> shared library
+PROCSHARED_BUILD_SHARED_LIBS?=OFF
 
 # Sanitizer test option:
 # SANITIZER_TYPE= 1 ~ 20 or ""
