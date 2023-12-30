@@ -78,11 +78,11 @@ TEST( Test_procshared_condition_variable, CanWait_CanNotifyAll )
 TEST( Test_procshared_condition_variable, CanWaitFor_Timeout )
 {
 	// Arrange
-	bool                          shared_state_flag = false;
+	// bool                          shared_state_flag = false;
 	procshared_mutex              mtx;
 	procshared_condition_variable sut1;
 
-	std::packaged_task<std::cv_status()> task1( [&sut1, &mtx, &shared_state_flag]() {
+	std::packaged_task<std::cv_status()> task1( [&sut1, &mtx]() {
 		std::unique_lock<procshared_mutex> lk( mtx );
 		return sut1.wait_for( lk, std::chrono::milliseconds( 10 ) );
 	} );   // 非同期実行する関数を登録する
@@ -116,7 +116,7 @@ TEST( Test_procshared_condition_variable, CanWaitFor_NoTimeout )
 	procshared_mutex              mtx;
 	procshared_condition_variable sut1;
 
-	std::packaged_task<std::cv_status()> task1( [&sut1, &mtx, &shared_state_flag]() {
+	std::packaged_task<std::cv_status()> task1( [&sut1, &mtx]() {
 		std::unique_lock<procshared_mutex> lk( mtx );
 		return sut1.wait_for( lk, std::chrono::milliseconds( 20 ) );
 	} );   // 非同期実行する関数を登録する
@@ -135,6 +135,7 @@ TEST( Test_procshared_condition_variable, CanWaitFor_NoTimeout )
 	std::cv_status ret = std::cv_status::timeout;
 	ASSERT_NO_THROW( ret = f1.get() );
 	EXPECT_EQ( ret, std::cv_status::no_timeout );
+	EXPECT_TRUE( shared_state_flag );
 
 	// Cleanup
 	if ( t1.joinable() ) {

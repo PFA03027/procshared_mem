@@ -111,11 +111,11 @@ void* offset_mem_krmalloc::allocate( size_t req_bytes, size_t alignment )
 				// 補正は必要ないので、そのままブロックリストから外す
 				p_pre_blk->set_next_ptr( p_nxt_blk );
 
-				block* p_ans = p_cur_blk;
+				p_ans = p_cur_blk;
 				p_ans->set_next_ptr( nullptr );
 			} else {
 				// 補正分だけ、返す位置を変える
-				block* p_ans = reinterpret_cast<block*>( &( p_cur_blk->block_body_[opt_val - 1] ) );
+				p_ans = reinterpret_cast<block*>( &( p_cur_blk->block_body_[opt_val - 1] ) );
 				req_num_of_blocks_w_header -= opt_val;
 				p_ans->set_next_ptr( nullptr );
 				p_ans->set_blk_size( req_num_of_blocks_w_header );

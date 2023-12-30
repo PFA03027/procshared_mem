@@ -40,7 +40,7 @@ JOBS=$(shell expr ${CPUS} + ${CPUS} / 2)
 all: build
 	set -e; \
 	cd ${BUILD_DIR}; \
-	cmake -DCMAKE_BUILD_TYPE=${BUILDTYPE} -DBUILD_TARGET=${BUILDTARGET} -DSANITIZER_TYPE=${SANITIZER_TYPE} -DALCONCURRENT_BUILD_SHARED_LIBS=${ALCONCURRENT_BUILD_SHARED_LIBS} -G "Unix Makefiles" ../; \
+	cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=${BUILDTYPE} -DBUILD_TARGET=${BUILDTARGET} -DSANITIZER_TYPE=${SANITIZER_TYPE} -DPROCSHARED_BUILD_SHARED_LIBS=${PROCSHARED_BUILD_SHARED_LIBS} -G "Unix Makefiles" ../; \
 	cmake --build . -j ${JOBS} -v --target ${BUILDIMPLTARGET}
 
 test: build-test
@@ -97,6 +97,11 @@ sanitizer:
 sanitizer.%.sanitizer: clean
 	make BUILDTARGET=common BUILDTYPE=Debug SANITIZER_TYPE=$* test
 
+tidy-fix:
+	find ./ -name '*.cpp'|xargs -t -P${JOBS} -n1 clang-tidy -p=build --fix
+
+tidy:
+	find ./ -name '*.cpp'|xargs -t -P${JOBS} -n1 clang-tidy -p=build
 
 .PHONY: test build sanitizer
 

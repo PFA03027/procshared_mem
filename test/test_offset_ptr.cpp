@@ -149,8 +149,8 @@ TEST( OffsetPtr, CanSwap2 )
 }
 
 struct ArrowOpTest {
-	int x;
-	int y;
+	int x_;
+	int y_;
 };
 
 TEST( OffsetPtr, CanArrowOperator )
@@ -162,7 +162,7 @@ TEST( OffsetPtr, CanArrowOperator )
 	offset_ptr<ArrowOpTest> op_a( &a );
 
 	// Assert
-	EXPECT_EQ( &( op_a->x ), &( a.x ) );
+	EXPECT_EQ( &( op_a->x_ ), &( a.x_ ) );
 }
 
 TEST( OffsetPtr, CanRefOperator )

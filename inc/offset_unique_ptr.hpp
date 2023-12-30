@@ -48,7 +48,7 @@ public:
 	  , deleter_( std::move( d2 ) )
 	{
 	}
-	constexpr offset_unique_ptr( nullptr_t ) noexcept
+	constexpr offset_unique_ptr( std::nullptr_t ) noexcept
 	  : op_target_( nullptr )
 	  , deleter_()
 	{
@@ -161,11 +161,11 @@ public:
 	{
 		return ( get() <=> c.get() );
 	}
-	constexpr bool operator==( nullptr_t ) const noexcept
+	constexpr bool operator==( std::nullptr_t ) const noexcept
 	{
 		return ( get() == nullptr );
 	}
-	constexpr auto operator<=>( nullptr_t ) const noexcept -> std::strong_ordering
+	constexpr auto operator<=>( std::nullptr_t ) const noexcept -> std::strong_ordering
 	{
 		return ( get() <=> nullptr );
 	}
@@ -207,7 +207,7 @@ public:
 	  , deleter_( std::move( d2 ) )
 	{
 	}
-	constexpr offset_unique_ptr( nullptr_t ) noexcept
+	constexpr offset_unique_ptr( std::nullptr_t ) noexcept
 	  : op_target_( nullptr )
 	  , deleter_()
 	{
@@ -325,11 +325,11 @@ public:
 	{
 		return ( get() <=> c.get() );
 	}
-	constexpr bool operator==( nullptr_t ) const noexcept
+	constexpr bool operator==( std::nullptr_t ) const noexcept
 	{
 		return ( get() == nullptr );
 	}
-	constexpr auto operator<=>( nullptr_t ) const noexcept -> std::strong_ordering
+	constexpr auto operator<=>( std::nullptr_t ) const noexcept -> std::strong_ordering
 	{
 		return ( get() <=> nullptr );
 	}
@@ -352,13 +352,13 @@ constexpr bool operator==( const offset_unique_ptr<T1, D1>& a, const offset_uniq
 }
 
 template <class T, class D>
-constexpr bool operator==( const offset_unique_ptr<T, D>& x, nullptr_t ) noexcept
+constexpr bool operator==( const offset_unique_ptr<T, D>& x, std::nullptr_t ) noexcept
 {
 	return ( x.get() == nullptr );
 }
 
 template <class T, class D>
-constexpr bool operator==( nullptr_t, const offset_unique_ptr<T, D>& x ) noexcept
+constexpr bool operator==( std::nullptr_t, const offset_unique_ptr<T, D>& x ) noexcept
 {
 	return ( x.get() == nullptr );
 }
@@ -370,13 +370,13 @@ constexpr bool operator!=( const offset_unique_ptr<T1, D1>& a, const offset_uniq
 }
 
 template <class T, class D>
-constexpr bool operator!=( const offset_unique_ptr<T, D>& x, nullptr_t ) noexcept
+constexpr bool operator!=( const offset_unique_ptr<T, D>& x, std::nullptr_t ) noexcept
 {
 	return !( x.get() == nullptr );
 }
 
 template <class T, class D>
-constexpr bool operator!=( nullptr_t, const offset_unique_ptr<T, D>& x ) noexcept
+constexpr bool operator!=( std::nullptr_t, const offset_unique_ptr<T, D>& x ) noexcept
 {
 	return !( x.get() == nullptr );
 }
@@ -391,13 +391,13 @@ bool operator<( const offset_unique_ptr<T1, D1>& a, const offset_unique_ptr<T2, 
 }
 
 template <class T, class D>
-constexpr bool operator<( const offset_unique_ptr<T, D>& x, nullptr_t )
+constexpr bool operator<( const offset_unique_ptr<T, D>& x, std::nullptr_t )
 {
 	return ( std::less<typename offset_unique_ptr<T, D>::pointer>()( x.get(), nullptr ) );
 }
 
 template <class T, class D>
-constexpr bool operator<( nullptr_t, const offset_unique_ptr<T, D>& x )
+constexpr bool operator<( std::nullptr_t, const offset_unique_ptr<T, D>& x )
 {
 	return ( std::less<typename offset_unique_ptr<T, D>::pointer>()( nullptr, x.get() ) );
 }
@@ -409,13 +409,13 @@ bool operator<=( const offset_unique_ptr<T1, D1>& a, const offset_unique_ptr<T2,
 }
 
 template <class T, class D>
-constexpr bool operator<=( const offset_unique_ptr<T, D>& x, nullptr_t )
+constexpr bool operator<=( const offset_unique_ptr<T, D>& x, std::nullptr_t )
 {
 	return !( nullptr < x );
 }
 
 template <class T, class D>
-constexpr bool operator<=( nullptr_t, const offset_unique_ptr<T, D>& x )
+constexpr bool operator<=( std::nullptr_t, const offset_unique_ptr<T, D>& x )
 {
 	return !( x < nullptr );
 }
@@ -427,13 +427,13 @@ bool operator>( const offset_unique_ptr<T1, D1>& a, const offset_unique_ptr<T2, 
 }
 
 template <class T, class D>
-constexpr bool operator>( const offset_unique_ptr<T, D>& x, nullptr_t )
+constexpr bool operator>( const offset_unique_ptr<T, D>& x, std::nullptr_t )
 {
 	return ( nullptr < x );
 }
 
 template <class T, class D>
-constexpr bool operator>( nullptr_t, const offset_unique_ptr<T, D>& x )
+constexpr bool operator>( std::nullptr_t, const offset_unique_ptr<T, D>& x )
 {
 	return ( x < nullptr );
 }
@@ -445,13 +445,13 @@ bool operator>=( const offset_unique_ptr<T1, D1>& a, const offset_unique_ptr<T2,
 }
 
 template <class T, class D>
-constexpr bool operator>=( const offset_unique_ptr<T, D>& x, nullptr_t )
+constexpr bool operator>=( const offset_unique_ptr<T, D>& x, std::nullptr_t )
 {
 	return !( x < nullptr );
 }
 
 template <class T, class D>
-constexpr bool operator>=( nullptr_t, const offset_unique_ptr<T, D>& x )
+constexpr bool operator>=( std::nullptr_t, const offset_unique_ptr<T, D>& x )
 {
 	return !( nullptr < x );
 }

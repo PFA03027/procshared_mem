@@ -17,12 +17,12 @@
 #include "offset_shared_ptr.hpp"
 
 struct ArrowOpTest {
-	int x;
-	int y;
+	int x_;
+	int y_;
 };
 
 struct DerivedArrowOpTest : public ArrowOpTest {
-	int z;
+	int z_;
 };
 
 TEST( TestOffsetSharedPtr, CanDoDefaultConstruct )
@@ -269,49 +269,49 @@ TEST( TestOffsetSharedPtr, CanDoOperator_Arrow )
 {
 	// Arrange
 	ArrowOpTest* p = new ArrowOpTest;
-	p->x           = 1;
-	p->y           = 2;
+	p->x_           = 1;
+	p->y_           = 2;
 	offset_shared_ptr<ArrowOpTest> sp_sut( p );
 
 	// Act
 
 	// Assert
-	EXPECT_EQ( sp_sut->x, 1 );
-	EXPECT_EQ( sp_sut->y, 2 );
+	EXPECT_EQ( sp_sut->x_, 1 );
+	EXPECT_EQ( sp_sut->y_, 2 );
 }
 
 TEST( TestOffsetSharedPtr, CanDoOperator_Ref )
 {
 	// Arrange
 	ArrowOpTest* p = new ArrowOpTest;
-	p->x           = 1;
-	p->y           = 2;
+	p->x_           = 1;
+	p->y_           = 2;
 	offset_shared_ptr<ArrowOpTest> sp_sut( p );
 
 	// Act
 
 	// Assert
-	EXPECT_EQ( ( *sp_sut ).x, 1 );
-	EXPECT_EQ( ( *sp_sut ).y, 2 );
+	EXPECT_EQ( ( *sp_sut ).x_, 1 );
+	EXPECT_EQ( ( *sp_sut ).y_, 2 );
 }
 
 TEST( TestOffsetSharedPtr, CanDoOperatorArray )
 {
 	// Arrange
 	ArrowOpTest* p = new ArrowOpTest[2];
-	p[0].x         = 1;
-	p[0].y         = 2;
-	p[1].x         = 3;
-	p[1].y         = 4;
+	p[0].x_         = 1;
+	p[0].y_         = 2;
+	p[1].x_         = 3;
+	p[1].y_         = 4;
 	offset_shared_ptr<ArrowOpTest> sp_sut( p, std::default_delete<ArrowOpTest[]>() );
 
 	// Act
 
 	// Assert
-	EXPECT_EQ( sp_sut[0].x, 1 );
-	EXPECT_EQ( sp_sut[0].y, 2 );
-	EXPECT_EQ( sp_sut[1].x, 3 );
-	EXPECT_EQ( sp_sut[1].y, 4 );
+	EXPECT_EQ( sp_sut[0].x_, 1 );
+	EXPECT_EQ( sp_sut[0].y_, 2 );
+	EXPECT_EQ( sp_sut[1].x_, 3 );
+	EXPECT_EQ( sp_sut[1].y_, 4 );
 }
 
 TEST( TestOffsetSharedPtr, CanDoOwnerBefore )
@@ -570,6 +570,6 @@ TEST( TestOffsetSharedPtr, CanDoMakeOffsetShared )
 	// Assert
 	EXPECT_EQ( sp_sut.use_count(), 1 );
 	ASSERT_NE( sp_sut.get(), nullptr );
-	EXPECT_EQ( sp_sut->x, 1 );
-	EXPECT_EQ( sp_sut->y, 2 );
+	EXPECT_EQ( sp_sut->x_, 1 );
+	EXPECT_EQ( sp_sut->y_, 2 );
 }

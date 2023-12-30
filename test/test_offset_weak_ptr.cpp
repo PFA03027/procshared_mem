@@ -17,12 +17,12 @@
 #include "offset_shared_ptr.hpp"
 
 struct ArrowOpTest {
-	int x;
-	int y;
+	int x_;
+	int y_;
 };
 
 struct DerivedArrowOpTest : public ArrowOpTest {
-	int z;
+	int z_;
 };
 
 TEST( TestOffsetWeakPtr, CanDoDefaultConstruct )

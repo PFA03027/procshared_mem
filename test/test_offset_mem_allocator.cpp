@@ -65,26 +65,26 @@ class ProcShared_Malloc : public testing::Test {
 	// To access the test parameter, call GetParam() from class
 	// TestWithParam<T>.
 public:
-	static constexpr size_t alloc_mem_size_ = 1024;
+	static constexpr size_t alloc_mem_size = 1024;
 
 	void SetUp() override
 	{
-		p_mem_ = malloc( alloc_mem_size_ + 16 );
+		p_mem_ = malloc( alloc_mem_size + 16 );
 
 		uintptr_t addr = reinterpret_cast<uintptr_t>( p_mem_ );
 		addr           = ( ( addr + 16 - 1 ) / 16 ) * 16;   // block::block_headerのサイズでアライメントを採る。
 
-		p_sut = new offset_mem_allocator( reinterpret_cast<void*>( addr ), alloc_mem_size_ );
+		p_sut_ = new offset_mem_allocator( reinterpret_cast<void*>( addr ), alloc_mem_size );
 	}
 	void TearDown() override
 	{
 		// Clean-up
-		delete ( p_sut );
+		delete ( p_sut_ );
 		free( p_mem_ );
 	}
 
 	void*                 p_mem_;
-	offset_mem_allocator* p_sut;
+	offset_mem_allocator* p_sut_;
 };
 
 TEST_F( ProcShared_Malloc, CanAllocateSmall )
@@ -92,7 +92,7 @@ TEST_F( ProcShared_Malloc, CanAllocateSmall )
 	// Arrange
 
 	// Act
-	void* p_allc_mem = p_sut->allocate( 10 );
+	void* p_allc_mem = p_sut_->allocate( 10 );
 
 	// Assert
 	EXPECT_NE( p_allc_mem, nullptr );
@@ -103,7 +103,7 @@ TEST_F( ProcShared_Malloc, CanAllocateSmallwSmallAlignment )
 	// Arrange
 
 	// Act
-	void* p_allc_mem = p_sut->allocate( 20, 8 );
+	void* p_allc_mem = p_sut_->allocate( 20, 8 );
 
 	// Assert
 	EXPECT_NE( p_allc_mem, nullptr );
@@ -114,7 +114,7 @@ TEST_F( ProcShared_Malloc, CanAllocateSmallwEQAlignment )
 	// Arrange
 
 	// Act
-	void* p_allc_mem = p_sut->allocate( 20, 16 );
+	void* p_allc_mem = p_sut_->allocate( 20, 16 );
 
 	// Assert
 	EXPECT_NE( p_allc_mem, nullptr );
@@ -125,7 +125,7 @@ TEST_F( ProcShared_Malloc, CanAllocateSmallwBigAlignment )
 	// Arrange
 
 	// Act
-	void* p_allc_mem = p_sut->allocate( 20, 128 );
+	void* p_allc_mem = p_sut_->allocate( 20, 128 );
 
 	// Assert
 	EXPECT_NE( p_allc_mem, nullptr );
@@ -136,7 +136,7 @@ TEST_F( ProcShared_Malloc, CanAllocateOverSize )
 	// Arrange
 
 	// Act
-	void* p_allc_mem = p_sut->allocate( 1024 );
+	void* p_allc_mem = p_sut_->allocate( 1024 );
 
 	// Assert
 	EXPECT_EQ( p_allc_mem, nullptr );
@@ -145,10 +145,10 @@ TEST_F( ProcShared_Malloc, CanAllocateOverSize )
 TEST_F( ProcShared_Malloc, CanDeallocate1 )
 {
 	// Arrange
-	void* p_allc_mem = p_sut->allocate( 10 );
+	void* p_allc_mem = p_sut_->allocate( 10 );
 
 	// Act
-	EXPECT_NO_THROW( p_sut->deallocate( p_allc_mem ) );
+	EXPECT_NO_THROW( p_sut_->deallocate( p_allc_mem ) );
 
 	// Assert
 }
@@ -156,16 +156,16 @@ TEST_F( ProcShared_Malloc, CanDeallocate1 )
 TEST_F( ProcShared_Malloc, CanDeallocate2 )
 {
 	// Arrange
-	void* p_allc_mem1 = p_sut->allocate( 10 );
-	void* p_allc_mem2 = p_sut->allocate( 10 );
-	void* p_allc_mem3 = p_sut->allocate( 10 );
+	void* p_allc_mem1 = p_sut_->allocate( 10 );
+	void* p_allc_mem2 = p_sut_->allocate( 10 );
+	void* p_allc_mem3 = p_sut_->allocate( 10 );
 
 	// Act
-	EXPECT_NO_THROW( p_sut->deallocate( p_allc_mem2 ) );
-	EXPECT_NO_THROW( p_sut->deallocate( p_allc_mem1 ) );
-	EXPECT_NO_THROW( p_sut->deallocate( p_allc_mem3 ) );
-	p_allc_mem1 = p_sut->allocate( 10 );
-	EXPECT_NO_THROW( p_sut->deallocate( p_allc_mem1 ) );
+	EXPECT_NO_THROW( p_sut_->deallocate( p_allc_mem2 ) );
+	EXPECT_NO_THROW( p_sut_->deallocate( p_allc_mem1 ) );
+	EXPECT_NO_THROW( p_sut_->deallocate( p_allc_mem3 ) );
+	p_allc_mem1 = p_sut_->allocate( 10 );
+	EXPECT_NO_THROW( p_sut_->deallocate( p_allc_mem1 ) );
 
 	// Assert
 }

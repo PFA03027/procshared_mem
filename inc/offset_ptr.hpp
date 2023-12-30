@@ -62,14 +62,14 @@ public:
 		orig.offset_ = calc_offset_as_nullptr( &orig );
 	}
 
-	constexpr offset_ptr( nullptr_t ) noexcept
+	constexpr offset_ptr( std::nullptr_t ) noexcept
 	  : offset_( calc_offset_as_nullptr( this ) )
 	{
 	}
 
 	offset_ptr& operator=( const offset_ptr& orig ) noexcept
 	{
-		// if( this == &orig ) return *this;
+		if ( this == &orig ) return *this;
 
 		offset_ = calc_offset( this, orig.calc_address() );
 		return *this;
@@ -117,7 +117,7 @@ public:
 		return ( get() != nullptr );
 	}
 
-	constexpr explicit operator T*() const noexcept
+	constexpr operator T*() const noexcept
 	{
 		return get();
 	}
@@ -191,11 +191,11 @@ public:
 	{
 		return ( calc_address() <=> c.calc_address() );
 	}
-	constexpr bool operator==( const nullptr_t& c ) const noexcept
+	constexpr bool operator==( const std::nullptr_t& c ) const noexcept
 	{
 		return ( calc_address() == nullptr );
 	}
-	constexpr auto operator<=>( const nullptr_t& c ) const noexcept -> std::strong_ordering
+	constexpr auto operator<=>( const std::nullptr_t& c ) const noexcept -> std::strong_ordering
 	{
 		return ( calc_address() <=> nullptr );
 	}
@@ -215,30 +215,30 @@ public:
 	friend constexpr bool operator>=( const offset_ptr<U>& a, const offset_ptr<U>& b ) noexcept;
 
 	template <typename U>
-	friend constexpr bool operator==( const offset_ptr<U>& a, const nullptr_t& b ) noexcept;
+	friend constexpr bool operator==( const offset_ptr<U>& a, const std::nullptr_t& b ) noexcept;
 	template <typename U>
-	friend constexpr bool operator!=( const offset_ptr<U>& a, const nullptr_t& b ) noexcept;
+	friend constexpr bool operator!=( const offset_ptr<U>& a, const std::nullptr_t& b ) noexcept;
 	template <typename U>
-	friend constexpr bool operator<( const offset_ptr<U>& a, const nullptr_t& b ) noexcept;
+	friend constexpr bool operator<( const offset_ptr<U>& a, const std::nullptr_t& b ) noexcept;
 	template <typename U>
-	friend constexpr bool operator<=( const offset_ptr<U>& a, const nullptr_t& b ) noexcept;
+	friend constexpr bool operator<=( const offset_ptr<U>& a, const std::nullptr_t& b ) noexcept;
 	template <typename U>
-	friend constexpr bool operator>( const offset_ptr<U>& a, const nullptr_t& b ) noexcept;
+	friend constexpr bool operator>( const offset_ptr<U>& a, const std::nullptr_t& b ) noexcept;
 	template <typename U>
-	friend constexpr bool operator>=( const offset_ptr<U>& a, const nullptr_t& b ) noexcept;
+	friend constexpr bool operator>=( const offset_ptr<U>& a, const std::nullptr_t& b ) noexcept;
 
 	template <typename U>
-	friend constexpr bool operator==( const nullptr_t& a, const offset_ptr<U>& b ) noexcept;
+	friend constexpr bool operator==( const std::nullptr_t& a, const offset_ptr<U>& b ) noexcept;
 	template <typename U>
-	friend constexpr bool operator!=( const nullptr_t& a, const offset_ptr<U>& b ) noexcept;
+	friend constexpr bool operator!=( const std::nullptr_t& a, const offset_ptr<U>& b ) noexcept;
 	template <typename U>
-	friend constexpr bool operator<( const nullptr_t& a, const offset_ptr<U>& b ) noexcept;
+	friend constexpr bool operator<( const std::nullptr_t& a, const offset_ptr<U>& b ) noexcept;
 	template <typename U>
-	friend constexpr bool operator<=( const nullptr_t& a, const offset_ptr<U>& b ) noexcept;
+	friend constexpr bool operator<=( const std::nullptr_t& a, const offset_ptr<U>& b ) noexcept;
 	template <typename U>
-	friend constexpr bool operator>( const nullptr_t& a, const offset_ptr<U>& b ) noexcept;
+	friend constexpr bool operator>( const std::nullptr_t& a, const offset_ptr<U>& b ) noexcept;
 	template <typename U>
-	friend constexpr bool operator>=( const nullptr_t& a, const offset_ptr<U>& b ) noexcept;
+	friend constexpr bool operator>=( const std::nullptr_t& a, const offset_ptr<U>& b ) noexcept;
 
 #endif
 
@@ -300,63 +300,63 @@ constexpr bool operator>=( const offset_ptr<T>& a, const offset_ptr<T>& b ) noex
 ////////////////////////
 
 template <typename U>
-constexpr bool operator==( const offset_ptr<U>& a, const nullptr_t& b ) noexcept
+constexpr bool operator==( const offset_ptr<U>& a, const std::nullptr_t& b ) noexcept
 {
 	return ( a == offset_ptr<U>( b ) );
 }
 template <typename U>
-constexpr bool operator!=( const offset_ptr<U>& a, const nullptr_t& b ) noexcept
+constexpr bool operator!=( const offset_ptr<U>& a, const std::nullptr_t& b ) noexcept
 {
 	return ( a != offset_ptr<U>( b ) );
 }
 template <typename U>
-constexpr bool operator<( const offset_ptr<U>& a, const nullptr_t& b ) noexcept
+constexpr bool operator<( const offset_ptr<U>& a, const std::nullptr_t& b ) noexcept
 {
 	return ( a < offset_ptr<U>( b ) );
 }
 template <typename U>
-constexpr bool operator<=( const offset_ptr<U>& a, const nullptr_t& b ) noexcept
+constexpr bool operator<=( const offset_ptr<U>& a, const std::nullptr_t& b ) noexcept
 {
 	return ( a <= offset_ptr<U>( b ) );
 }
 template <typename U>
-constexpr bool operator>( const offset_ptr<U>& a, const nullptr_t& b ) noexcept
+constexpr bool operator>( const offset_ptr<U>& a, const std::nullptr_t& b ) noexcept
 {
 	return ( a > offset_ptr<U>( b ) );
 }
 template <typename U>
-constexpr bool operator>=( const offset_ptr<U>& a, const nullptr_t& b ) noexcept
+constexpr bool operator>=( const offset_ptr<U>& a, const std::nullptr_t& b ) noexcept
 {
 	return ( a >= offset_ptr<U>( b ) );
 }
 
 template <typename U>
-constexpr bool operator==( const nullptr_t& a, const offset_ptr<U>& b ) noexcept
+constexpr bool operator==( const std::nullptr_t& a, const offset_ptr<U>& b ) noexcept
 {
 	return ( offset_ptr<U>( a ) == b );
 }
 template <typename U>
-constexpr bool operator!=( const nullptr_t& a, const offset_ptr<U>& b ) noexcept
+constexpr bool operator!=( const std::nullptr_t& a, const offset_ptr<U>& b ) noexcept
 {
 	return ( offset_ptr<U>( a ) != b );
 }
 template <typename U>
-constexpr bool operator<( const nullptr_t& a, const offset_ptr<U>& b ) noexcept
+constexpr bool operator<( const std::nullptr_t& a, const offset_ptr<U>& b ) noexcept
 {
 	return ( offset_ptr<U>( a ) < b );
 }
 template <typename U>
-constexpr bool operator<=( const nullptr_t& a, const offset_ptr<U>& b ) noexcept
+constexpr bool operator<=( const std::nullptr_t& a, const offset_ptr<U>& b ) noexcept
 {
 	return ( offset_ptr<U>( a ) <= b );
 }
 template <typename U>
-constexpr bool operator>( const nullptr_t& a, const offset_ptr<U>& b ) noexcept
+constexpr bool operator>( const std::nullptr_t& a, const offset_ptr<U>& b ) noexcept
 {
 	return ( offset_ptr<U>( a ) > b );
 }
 template <typename U>
-constexpr bool operator>=( const nullptr_t& a, const offset_ptr<U>& b ) noexcept
+constexpr bool operator>=( const std::nullptr_t& a, const offset_ptr<U>& b ) noexcept
 {
 	return ( offset_ptr<U>( a ) >= b );
 }
@@ -374,7 +374,7 @@ constexpr void swap( offset_ptr<T>& a, offset_ptr<T>& b ) noexcept
 template <typename U>
 offset_ptr<U> operator+( const offset_ptr<U>& a, typename offset_ptr<U>::difference_type d ) noexcept
 {
-	offset_ptr ans( a );
+	offset_ptr<U> ans( a );
 	ans += d;
 	return ans;
 }
@@ -382,7 +382,7 @@ offset_ptr<U> operator+( const offset_ptr<U>& a, typename offset_ptr<U>::differe
 template <typename U>
 offset_ptr<U> operator+( typename offset_ptr<U>::difference_type d, const offset_ptr<U>& a ) noexcept
 {
-	offset_ptr ans( a );
+	offset_ptr<U> ans( a );
 	ans += d;
 	return ans;
 }
@@ -390,7 +390,7 @@ offset_ptr<U> operator+( typename offset_ptr<U>::difference_type d, const offset
 template <typename U>
 offset_ptr<U> operator-( const offset_ptr<U>& a, typename offset_ptr<U>::difference_type d ) noexcept
 {
-	offset_ptr ans( a );
+	offset_ptr<U> ans( a );
 	ans -= d;
 	return ans;
 }
@@ -681,7 +681,7 @@ public:
 		return ans;
 	}
 
-	static constexpr bool is_always_lock_free = std::atomic<uintptr_t>::is_always_lock_free;
+	// static constexpr bool is_always_lock_free = std::atomic<uintptr_t>::is_always_lock_free;
 
 private:
 	using element_pointer = T*;

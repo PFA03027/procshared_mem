@@ -17,8 +17,8 @@
 #include "offset_unique_ptr.hpp"
 
 struct ArrowOpTest {
-	int x;
-	int y;
+	int x_;
+	int y_;
 };
 
 template <typename T>
@@ -449,8 +449,8 @@ TEST( OffsetBasedUniquePtr, CanRefOp )
 
 	// Assert
 	ASSERT_NE( oup_sut.get(), nullptr );
-	EXPECT_EQ( ( *oup_sut ).x, 1 );
-	EXPECT_EQ( ( *oup_sut ).y, 2 );
+	EXPECT_EQ( ( *oup_sut ).x_, 1 );
+	EXPECT_EQ( ( *oup_sut ).y_, 2 );
 }
 
 TEST( OffsetBasedUniquePtr, CanArrowOp )
@@ -462,28 +462,28 @@ TEST( OffsetBasedUniquePtr, CanArrowOp )
 
 	// Assert
 	ASSERT_NE( oup_sut.get(), nullptr );
-	EXPECT_EQ( oup_sut->x, 1 );
-	EXPECT_EQ( oup_sut->y, 2 );
+	EXPECT_EQ( oup_sut->x_, 1 );
+	EXPECT_EQ( oup_sut->y_, 2 );
 }
 
 TEST( OffsetBasedUniquePtr, CanArrayOperator )
 {
 	// Arrange
 	ArrowOpTest* p_raw = new ArrowOpTest[10];
-	p_raw[0].x         = 1;
-	p_raw[0].y         = 2;
-	p_raw[1].x         = 3;
-	p_raw[1].y         = 4;
+	p_raw[0].x_         = 1;
+	p_raw[0].y_         = 2;
+	p_raw[1].x_         = 3;
+	p_raw[1].y_         = 4;
 
 	// Act
 	offset_unique_ptr<ArrowOpTest[]> oup_sut( p_raw );
 
 	// Assert
 	ASSERT_NE( oup_sut.get(), nullptr );
-	EXPECT_EQ( oup_sut[0].x, 1 );
-	EXPECT_EQ( oup_sut[0].y, 2 );
-	EXPECT_EQ( oup_sut[1].x, 3 );
-	EXPECT_EQ( oup_sut[1].y, 4 );
+	EXPECT_EQ( oup_sut[0].x_, 1 );
+	EXPECT_EQ( oup_sut[0].y_, 2 );
+	EXPECT_EQ( oup_sut[1].x_, 3 );
+	EXPECT_EQ( oup_sut[1].y_, 4 );
 }
 
 TEST( OffsetBasedUniquePtr, CanOperators )
