@@ -207,7 +207,7 @@ TEST( OffsetPtr, CanTpointerOperator )
 	offset_ptr<ArrowOpTest> op_a( &a );
 
 	// Act
-	ArrowOpTest* p_a = (ArrowOpTest*)op_a;
+	ArrowOpTest* p_a = op_a;   // type cast to row pointer
 
 	// Assert
 	EXPECT_EQ( p_a, &a );

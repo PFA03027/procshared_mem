@@ -45,7 +45,7 @@ int main( void )
 			abort();
 		}
 		if ( exit_code != 122 ) {
-			fprintf( stderr, "shared memory data is not expected %d\n", (int)exit_code );
+			fprintf( stderr, "shared memory data is not expected %d\n", static_cast<int>( exit_code ) );
 		}
 	}
 

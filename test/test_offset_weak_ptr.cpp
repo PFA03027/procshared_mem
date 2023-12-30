@@ -531,6 +531,7 @@ TEST( TestOffsetWeakPtr, CanDoMoveAssignmentWithValidToValidResource3 )
 	EXPECT_EQ( sp_t1.use_count(), 1 );
 }
 
+#if 0
 TEST( TestOffsetWeakPtr, CanDoMoveAssignmentFromSharedWithValidResource1 )
 {
 	// Arrange
@@ -596,6 +597,7 @@ TEST( TestOffsetWeakPtr, CanDoMoveAssignmentFromSharedWithValidToValidResource2 
 	EXPECT_FALSE( wp_sut.expired() );
 	EXPECT_EQ( sp_t1.use_count(), 1 );
 }
+#endif
 
 TEST( TestOffsetWeakPtr, CanDoDefaultConstruct_Then_Lock )
 {

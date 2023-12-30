@@ -57,7 +57,7 @@ child_proc_return_t call_pred_on_child_process( std::function<int()> pred_func_i
 			ans.is_exit_normaly_ = false;
 			if ( WIFSIGNALED( wstatus_code ) ) {
 				auto signum = WTERMSIG( wstatus_code );
-				fprintf( stderr, "child process has exited by signal(%d)\n", (int)signum );
+				fprintf( stderr, "child process has exited by signal(%d)\n", static_cast<int>( signum ) );
 				ans.signal_code_ = signum;
 			}
 			fprintf( stderr, "child process has exited abnormally\n" );

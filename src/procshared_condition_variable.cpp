@@ -93,7 +93,7 @@ std::cv_status procshared_condition_variable::wait_until(
 				// need pthread_cond_timedwait() again
 			} break;
 			default: {
-				loopflag = false;
+				// loopflag = false;
 				std::error_code ec( ret, std::system_category() );
 				throw std::system_error( ec, " pthread_cond_timedwait() return unknown error code" );
 			} break;

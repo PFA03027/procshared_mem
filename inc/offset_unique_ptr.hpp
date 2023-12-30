@@ -385,8 +385,8 @@ template <class T1, class D1, class T2, class D2>
 bool operator<( const offset_unique_ptr<T1, D1>& a, const offset_unique_ptr<T2, D2>& b )
 {
 	using CT = typename std::common_type<typename offset_unique_ptr<T1, D1>::pointer, typename offset_unique_ptr<T2, D2>::pointer>::type;
-	CT ap    = static_cast<CT>( a.get() );
-	CT bp    = static_cast<CT>( b.get() );
+	CT ap = static_cast<CT>( a.get() );
+	CT bp = static_cast<CT>( b.get() );
 	return ( ap < bp );
 }
 

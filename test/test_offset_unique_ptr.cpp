@@ -470,10 +470,10 @@ TEST( OffsetBasedUniquePtr, CanArrayOperator )
 {
 	// Arrange
 	ArrowOpTest* p_raw = new ArrowOpTest[10];
-	p_raw[0].x_         = 1;
-	p_raw[0].y_         = 2;
-	p_raw[1].x_         = 3;
-	p_raw[1].y_         = 4;
+	p_raw[0].x_        = 1;
+	p_raw[0].y_        = 2;
+	p_raw[1].x_        = 3;
+	p_raw[1].y_        = 4;
 
 	// Act
 	offset_unique_ptr<ArrowOpTest[]> oup_sut( p_raw );

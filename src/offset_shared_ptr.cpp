@@ -16,7 +16,7 @@
 
 namespace offset_shared_ptr_detail {
 
-void offset_shared_ptr_impl_if::try_dispose_com( offset_ptr<offset_shared_ptr_impl_if>& p, size_t offset_shared_ptr_impl_if::ctrl_data::*mp_tcnt )
+void offset_shared_ptr_impl_if::try_dispose_com( offset_ptr<offset_shared_ptr_impl_if>& p, long offset_shared_ptr_impl_if::ctrl_data::*mp_tcnt )
 {
 	if ( p == nullptr ) return;
 

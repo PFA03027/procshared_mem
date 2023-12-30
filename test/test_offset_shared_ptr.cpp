@@ -269,8 +269,8 @@ TEST( TestOffsetSharedPtr, CanDoOperator_Arrow )
 {
 	// Arrange
 	ArrowOpTest* p = new ArrowOpTest;
-	p->x_           = 1;
-	p->y_           = 2;
+	p->x_          = 1;
+	p->y_          = 2;
 	offset_shared_ptr<ArrowOpTest> sp_sut( p );
 
 	// Act
@@ -284,8 +284,8 @@ TEST( TestOffsetSharedPtr, CanDoOperator_Ref )
 {
 	// Arrange
 	ArrowOpTest* p = new ArrowOpTest;
-	p->x_           = 1;
-	p->y_           = 2;
+	p->x_          = 1;
+	p->y_          = 2;
 	offset_shared_ptr<ArrowOpTest> sp_sut( p );
 
 	// Act
@@ -299,10 +299,10 @@ TEST( TestOffsetSharedPtr, CanDoOperatorArray )
 {
 	// Arrange
 	ArrowOpTest* p = new ArrowOpTest[2];
-	p[0].x_         = 1;
-	p[0].y_         = 2;
-	p[1].x_         = 3;
-	p[1].y_         = 4;
+	p[0].x_        = 1;
+	p[0].y_        = 2;
+	p[1].x_        = 3;
+	p[1].y_        = 4;
 	offset_shared_ptr<ArrowOpTest> sp_sut( p, std::default_delete<ArrowOpTest[]>() );
 
 	// Act

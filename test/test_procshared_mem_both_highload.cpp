@@ -25,7 +25,7 @@ constexpr int num_of_threads = 100;
 
 void closeall_except_stdinouterr( void )
 {
-	int maxfd = sysconf( _SC_OPEN_MAX );
+	int maxfd = static_cast<int>( sysconf( _SC_OPEN_MAX ) );
 	for ( int fd = 0; fd < maxfd; ++fd ) {
 		if ( ( fd == STDIN_FILENO ) || ( fd == STDOUT_FILENO ) || ( fd == STDERR_FILENO ) ) continue;
 		close( fd );
@@ -56,13 +56,13 @@ void make_shm_and_close( void )
 		if ( WIFEXITED( wstatus_code ) ) {
 			unsigned char exit_code = WEXITSTATUS( wstatus_code );
 			if ( exit_code != 122 ) {
-				fprintf( stderr, "shared memory data is incorrect. rcv data is %d\n", (int)exit_code );
+				fprintf( stderr, "shared memory data is incorrect. rcv data is %d\n", static_cast<int>( exit_code ) );
 				abort();
 			}
 		} else {
 			if ( WIFSIGNALED( wstatus_code ) ) {
 				auto signum = WTERMSIG( wstatus_code );
-				fprintf( stderr, "child process has exited by signal(%d)\n", (int)signum );
+				fprintf( stderr, "child process has exited by signal(%d)\n", static_cast<int>( signum ) );
 			}
 			fprintf( stderr, "child process has exited abnormally\n" );
 			abort();

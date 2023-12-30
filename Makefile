@@ -98,7 +98,9 @@ sanitizer.%.sanitizer: clean
 	make BUILDTARGET=common BUILDTYPE=Debug SANITIZER_TYPE=$* test
 
 tidy-fix:
-	find ./ -name '*.cpp'|xargs -t -P${JOBS} -n1 clang-tidy -p=build --fix
+	find ./ -name '*.cpp'|grep -v googletest|grep -v ./build/|xargs -t -P${JOBS} -n1 clang-tidy -p=build --fix
+	find ./ -name '*.cpp'|grep -v googletest|grep -v ./build/|xargs -t -P${JOBS} -n1 clang-format -i
+	find ./ -name '*.hpp'|grep -v googletest|grep -v ./build/|xargs -t -P${JOBS} -n1 clang-format -i
 
 tidy:
 	find ./ -name '*.cpp'|xargs -t -P${JOBS} -n1 clang-tidy -p=build

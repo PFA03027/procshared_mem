@@ -31,8 +31,8 @@ public:
 		{
 		}
 
-		size_t weak_refc_;   // reference conut of this class instance by weak pointer
-		size_t shrd_refc_;   // reference conut of this class instance by shared pointer
+		long weak_refc_;   // reference conut of this class instance by weak pointer
+		long shrd_refc_;   // reference conut of this class instance by shared pointer
 	};
 
 	class ascer {
@@ -145,7 +145,7 @@ public:
 	}
 
 private:
-	static void try_dispose_com( offset_ptr<offset_shared_ptr_impl_if>& p, size_t ctrl_data::*mp_tcnt );
+	static void try_dispose_com( offset_ptr<offset_shared_ptr_impl_if>& p, long ctrl_data::*mp_tcnt );
 
 	mutable procshared_mutex mtx_;   // mutex for exclusive access control
 	ctrl_data                ctrl_;
