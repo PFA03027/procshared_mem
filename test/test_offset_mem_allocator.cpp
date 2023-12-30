@@ -11,7 +11,7 @@
 
 #include "gtest/gtest.h"
 
-#include "offset_mem_allocator.hpp"
+#include "offset_malloc.hpp"
 
 #include "test_procshared_common.hpp"
 
@@ -19,10 +19,10 @@ TEST( Offset_MemAllocator_Cntr, CanConstruct )
 {
 	// Arrange
 	void*                 p_mem       = malloc( 1024 );
-	offset_mem_allocator* p_mem_alloc = nullptr;
+	offset_malloc* p_mem_alloc = nullptr;
 
 	// Act
-	ASSERT_NO_THROW( p_mem_alloc = new offset_mem_allocator( p_mem, 1024 ) );
+	ASSERT_NO_THROW( p_mem_alloc = new offset_malloc( p_mem, 1024 ) );
 
 	// Assert
 	EXPECT_NE( p_mem_alloc, nullptr );
@@ -35,10 +35,10 @@ TEST( Offset_MemAllocator_Cntr, CanConstruct )
 TEST( Offset_MemAllocator_Cntr, FailConstruct1 )
 {
 	// Arrange
-	void* p_mem = malloc( sizeof( offset_mem_allocator ) + 10 );
+	void* p_mem = malloc( sizeof( offset_malloc ) + 10 );
 
 	// Act
-	EXPECT_ANY_THROW( offset_mem_allocator mm( p_mem, sizeof( offset_mem_allocator ) + 10 ) );
+	EXPECT_ANY_THROW( offset_malloc mm( p_mem, sizeof( offset_malloc ) + 10 ) );
 
 	// Assert
 
@@ -52,7 +52,7 @@ TEST( Offset_MemAllocator_Cntr, FailConstruct2 )
 	void* p_mem = malloc( 10 );
 
 	// Act
-	EXPECT_ANY_THROW( offset_mem_allocator mm( p_mem, 20 ) );
+	EXPECT_ANY_THROW( offset_malloc mm( p_mem, 20 ) );
 
 	// Assert
 
@@ -74,7 +74,7 @@ public:
 		uintptr_t addr = reinterpret_cast<uintptr_t>( p_mem_ );
 		addr           = ( ( addr + 16 - 1 ) / 16 ) * 16;   // block::block_headerのサイズでアライメントを採る。
 
-		p_sut_ = new offset_mem_allocator( reinterpret_cast<void*>( addr ), alloc_mem_size );
+		p_sut_ = new offset_malloc( reinterpret_cast<void*>( addr ), alloc_mem_size );
 	}
 	void TearDown() override
 	{
@@ -84,7 +84,7 @@ public:
 	}
 
 	void*                 p_mem_;
-	offset_mem_allocator* p_sut_;
+	offset_malloc* p_sut_;
 };
 
 TEST_F( ProcShared_Malloc, CanAllocateSmall )

@@ -14,7 +14,7 @@
 
 #include <cstddef>
 
-#include "offset_mem_allocator.hpp"
+#include "offset_malloc.hpp"
 #include "procshared_mem.hpp"
 
 class procshared_malloc {
@@ -56,8 +56,8 @@ private:
 	procshared_malloc( const procshared_malloc& src )            = delete;
 	procshared_malloc& operator=( const procshared_malloc& src ) = delete;
 
-	procshared_mem       shm_obj_;
-	offset_mem_allocator shm_heap_;
+	procshared_mem shm_obj_;
+	offset_malloc  shm_heap_;
 };
 
 #endif   // PROCSHARED_MALLOC_HPP_

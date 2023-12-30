@@ -24,7 +24,7 @@ procshared_malloc::~procshared_malloc()
 procshared_malloc::procshared_malloc( const char* p_shm_name, const char* p_id_dirname, off_t length, mode_t mode )
 {
 	shm_obj_ = procshared_mem( p_shm_name, p_id_dirname, length, mode, [this]( void* p_mem, off_t len ) {
-		shm_heap_ = offset_mem_allocator( p_mem, len );
+		shm_heap_ = offset_malloc( p_mem, len );
 	} );
 }
 

@@ -15,7 +15,7 @@
 #include <cstddef>
 #include <memory_resource>
 
-#include "offset_mem_allocator.hpp"
+#include "offset_malloc.hpp"
 
 class procshared_memory_resource : public std::pmr::memory_resource {
 public:
@@ -26,8 +26,8 @@ public:
 	{
 	}
 
-	constexpr procshared_memory_resource( const procshared_memory_resource& ) noexcept   = default;
-	constexpr procshared_memory_resource& operator=( const procshared_memory_resource& ) = default;
+	constexpr procshared_memory_resource( const procshared_memory_resource& ) noexcept = default;
+	procshared_memory_resource& operator=( const procshared_memory_resource& )         = default;
 
 private:
 	void* do_allocate( std::size_t bytes, std::size_t alignment ) override
@@ -58,7 +58,7 @@ private:
 		return ( p_malloc_ == p_other->p_malloc_ );
 	}
 
-	offset_mem_allocator* p_malloc_;
+	offset_malloc* p_malloc_;
 };
 
 #endif   // PROCSHARED_MEMORY_RESOURCE_HPP

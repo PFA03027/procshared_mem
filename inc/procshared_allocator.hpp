@@ -16,7 +16,7 @@
 #include <memory>
 #include <type_traits>
 
-#include "offset_mem_allocator.hpp"
+#include "offset_malloc.hpp"
 
 /**
  * @brief allocator that is inter-process sharable memory
@@ -38,13 +38,13 @@ public:
 	{
 	}
 
-	constexpr explicit procshared_mem_allocator( offset_mem_allocator* p ) noexcept
+	constexpr explicit procshared_mem_allocator( offset_malloc* p ) noexcept
 	  : p_malloc_( p )
 	  , sp_malloc_( nullptr )
 	{
 	}
 
-	constexpr explicit procshared_mem_allocator( std::shared_ptr<offset_mem_allocator> sp ) noexcept
+	constexpr explicit procshared_mem_allocator( std::shared_ptr<offset_malloc> sp ) noexcept
 	  : p_malloc_( sp.get() )
 	  , sp_malloc_( sp )
 	{
@@ -84,8 +84,8 @@ public:
 	}
 
 private:
-	offset_mem_allocator*                 p_malloc_;
-	std::shared_ptr<offset_mem_allocator> sp_malloc_;
+	offset_malloc*                 p_malloc_;
+	std::shared_ptr<offset_malloc> sp_malloc_;
 };
 
 template <class T, class U>
