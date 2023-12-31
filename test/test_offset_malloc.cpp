@@ -18,7 +18,8 @@
 TEST( Offset_MemAllocator_Cntr, CanConstruct )
 {
 	// Arrange
-	void*          p_mem       = malloc( 1024 );
+	unsigned char  test_buff[1024];
+	void*          p_mem       = reinterpret_cast<void*>( test_buff );
 	offset_malloc* p_mem_alloc = nullptr;
 
 	// Act
@@ -29,35 +30,127 @@ TEST( Offset_MemAllocator_Cntr, CanConstruct )
 
 	// Clean-up
 	delete p_mem_alloc;
-	free( p_mem );
+}
+
+TEST( Offset_MemAllocator_Cntr, CanCopyConstruct )
+{
+	// Arrange
+	unsigned char test_buff[1024];
+	void*         p_mem = reinterpret_cast<void*>( test_buff );
+	offset_malloc mem_alloc1( p_mem, 1024 );
+
+	// Act
+	ASSERT_NO_THROW( offset_malloc mem_alloc2 = mem_alloc1 );
+
+	// Assert
+
+	// Clean-up
+}
+
+TEST( Offset_MemAllocator_Cntr, CanMoveConstruct )
+{
+	// Arrange
+	unsigned char test_buff[1024];
+	void*         p_mem = reinterpret_cast<void*>( test_buff );
+	offset_malloc mem_alloc1( p_mem, 1024 );
+
+	// Act
+	ASSERT_NO_THROW( offset_malloc mem_alloc2 = std::move( mem_alloc1 ) );
+
+	// Assert
+
+	// Clean-up
+}
+
+TEST( Offset_MemAllocator_Cntr, CanCopyAssignment1 )
+{
+	// Arrange
+	unsigned char test_buff[1024];
+	void*         p_mem = reinterpret_cast<void*>( test_buff );
+	offset_malloc mem_alloc1( p_mem, 1024 );
+	offset_malloc mem_alloc2;
+
+	// Act
+	ASSERT_NO_THROW( mem_alloc2 = mem_alloc1 );
+
+	// Assert
+
+	// Clean-up
+}
+
+TEST( Offset_MemAllocator_Cntr, CanCopyAssignment2 )
+{
+	// Arrange
+	unsigned char test_buff1[1024];
+	unsigned char test_buff2[1024];
+	offset_malloc mem_alloc1( reinterpret_cast<void*>( test_buff1 ), 1024 );
+	offset_malloc mem_alloc2( reinterpret_cast<void*>( test_buff2 ), 1024 );
+
+	// Act
+	ASSERT_NO_THROW( mem_alloc2 = mem_alloc1 );
+
+	// Assert
+
+	// Clean-up
+}
+
+TEST( Offset_MemAllocator_Cntr, CanMoveAssignment1 )
+{
+	// Arrange
+	unsigned char test_buff[1024];
+	offset_malloc mem_alloc1( reinterpret_cast<void*>( test_buff ), 1024 );
+	offset_malloc mem_alloc2;
+
+	// Act
+	ASSERT_NO_THROW( mem_alloc2 = std::move( mem_alloc1 ) );
+
+	// Assert
+
+	// Clean-up
+}
+
+TEST( Offset_MemAllocator_Cntr, CanMoveAssignment2 )
+{
+	// Arrange
+	unsigned char test_buff1[1024];
+	unsigned char test_buff2[1024];
+	offset_malloc mem_alloc1( reinterpret_cast<void*>( test_buff1 ), 1024 );
+	offset_malloc mem_alloc2( reinterpret_cast<void*>( test_buff2 ), 1024 );
+
+	// Act
+	ASSERT_NO_THROW( mem_alloc2 = std::move( mem_alloc1 ) );
+
+	// Assert
+
+	// Clean-up
 }
 
 TEST( Offset_MemAllocator_Cntr, FailConstruct1 )
 {
 	// Arrange
-	void* p_mem = malloc( sizeof( offset_malloc ) + 10 );
+	unsigned char test_buff[sizeof( offset_malloc ) + 1];
+	void*         p_mem = reinterpret_cast<void*>( test_buff );
 
 	// Act
-	EXPECT_ANY_THROW( offset_malloc mm( p_mem, sizeof( offset_malloc ) + 10 ) );
+	EXPECT_ANY_THROW( offset_malloc sut( p_mem, sizeof( offset_malloc ) + 1 ) );
 
 	// Assert
 
 	// Clean-up
-	free( p_mem );
 }
 
 TEST( Offset_MemAllocator_Cntr, FailConstruct2 )
 {
 	// Arrange
-	void* p_mem = malloc( 10 );
+	unsigned char test_buff[1];
+	void*         p_mem = reinterpret_cast<void*>( test_buff );
 
 	// Act
-	EXPECT_ANY_THROW( offset_malloc mm( p_mem, 20 ) );
+	EXPECT_ANY_THROW( offset_malloc sut( p_mem, 1 ) );
 
 	// Assert
 
 	// Clean-up
-	free( p_mem );
 }
 
 class ProcShared_Malloc : public testing::Test {

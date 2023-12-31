@@ -18,11 +18,16 @@
 #include "procshared_logger.hpp"
 #include "procshared_mutex.hpp"
 
+/**
+ * @brief memory allocator that implemented K&R memory allocation algorithm
+ *
+ * このクラスは、メモリ領域を所有しない設計としているため、placement_new()で指定された領域にクラス構造を構築する。
+ */
 class offset_mem_krmalloc {
 public:
 	static offset_mem_krmalloc* placement_new( void* begin_pointer, void* end_pointer );
-	static void                 teardown( offset_mem_krmalloc* p_mem );
 	static offset_mem_krmalloc* bind( void* p_mem );
+	static void                 teardown( offset_mem_krmalloc* p_mem );
 
 #if __has_cpp_attribute( nodiscard )
 	[[nodiscard]]
@@ -30,6 +35,8 @@ public:
 	void*
 		 allocate( size_t req_bytes, size_t alignment = alignof( std::max_align_t ) );
 	void deallocate( void* p, size_t alignment = alignof( std::max_align_t ) );
+
+	int get_bind_count( void ) const;
 
 	inline static constexpr size_t test_block_header_size( void )
 	{
@@ -122,13 +129,17 @@ private:
 	offset_mem_krmalloc& operator=( const offset_mem_krmalloc& ) = delete;
 	offset_mem_krmalloc& operator=( offset_mem_krmalloc&& )      = delete;
 
+	int bind( void );
+	int unbind( void );
+
 	static constexpr size_t size_of_block_header( void );
 	static constexpr size_t bytes2blocksize( size_t bytes );
 
-	const uintptr_t   addr_end_;
-	procshared_mutex  mtx_;
-	offset_ptr<block> op_freep_;
-	block             base_blk_;   //!< bigger address of this member variable is allocation memory area
+	const uintptr_t          addr_end_;
+	mutable procshared_mutex mtx_;
+	int                      bind_cnt_;
+	offset_ptr<block>        op_freep_;
+	block                    base_blk_;   //!< bigger address of this member variable is allocation memory area
 };
 
 static_assert( std::is_standard_layout<offset_mem_krmalloc>::value, "offset_mem_krmalloc should be standard layout" );

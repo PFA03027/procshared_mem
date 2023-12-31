@@ -66,7 +66,8 @@
         "span": "cpp",
         "sstream": "cpp",
         "variant": "cpp",
-        "shared_mutex": "cpp"
+        "shared_mutex": "cpp",
+        "cinttypes": "cpp"
     },
     "testMate.cpp.test.executables": "**/{build,Build,BUILD,out,Out,OUT}/**/{test,Test,TEST}*",
     "C_Cpp.codeAnalysis.clangTidy.enabled": true

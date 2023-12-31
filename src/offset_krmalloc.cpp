@@ -42,6 +42,7 @@ constexpr size_t offset_mem_krmalloc::bytes2blocksize( size_t bytes )
 offset_mem_krmalloc::offset_mem_krmalloc( void* end_pointer )
   : addr_end_( reinterpret_cast<uintptr_t>( end_pointer ) )
   , mtx_()
+  , bind_cnt_( 0 )
   , op_freep_( nullptr )
   , base_blk_( nullptr, 0 )
 {
@@ -63,6 +64,8 @@ offset_mem_krmalloc::offset_mem_krmalloc( void* end_pointer )
 	base_blk_.set_next_ptr( p_1st_blk );
 
 	op_freep_ = &base_blk_;
+
+	bind_cnt_ = 1;
 }
 
 void* offset_mem_krmalloc::allocate( size_t req_bytes, size_t alignment )
@@ -199,6 +202,33 @@ void offset_mem_krmalloc::deallocate( void* p, size_t alignment )
 	throw std::logic_error( "fail to free" );
 }
 
+int offset_mem_krmalloc::bind( void )
+{
+	std::lock_guard<procshared_mutex> lk( mtx_ );
+
+	if ( bind_cnt_ <= 0 ) {
+		// 0の場合、すでに解放済みの領域を指している。rece conditionと考えられるため、あえて例外を投げる。
+		throw std::bad_alloc();
+	}
+
+	bind_cnt_++;
+	return bind_cnt_;
+}
+int offset_mem_krmalloc::unbind( void )
+{
+	std::lock_guard<procshared_mutex> lk( mtx_ );
+	if ( bind_cnt_ > 0 ) {
+		bind_cnt_--;
+	}
+	return bind_cnt_;
+}
+
+int offset_mem_krmalloc::get_bind_count( void ) const
+{
+	std::lock_guard<procshared_mutex> lk( mtx_ );
+	return bind_cnt_;
+}
+
 offset_mem_krmalloc* offset_mem_krmalloc::placement_new( void* begin_pointer, void* end_pointer )
 {
 	if ( begin_pointer == nullptr ) {
@@ -217,15 +247,23 @@ offset_mem_krmalloc* offset_mem_krmalloc::placement_new( void* begin_pointer, vo
 	return new ( begin_pointer ) offset_mem_krmalloc( end_pointer );
 }
 
-void offset_mem_krmalloc::teardown( offset_mem_krmalloc* p_mem )
-{
-	p_mem->~offset_mem_krmalloc();
-}
-
 offset_mem_krmalloc* offset_mem_krmalloc::bind( void* p_mem )
 {
 	if ( p_mem == nullptr ) {
-		throw std::bad_alloc();
+		return nullptr;
 	}
-	return reinterpret_cast<offset_mem_krmalloc*>( p_mem );
+
+	offset_mem_krmalloc* p_ans = reinterpret_cast<offset_mem_krmalloc*>( p_mem );
+	p_ans->bind();
+	return p_ans;
+}
+
+void offset_mem_krmalloc::teardown( offset_mem_krmalloc* p_mem )
+{
+	if ( p_mem == nullptr ) {
+		return;
+	}
+	if ( p_mem->unbind() == 0 ) {
+		p_mem->~offset_mem_krmalloc();
+	}
 }

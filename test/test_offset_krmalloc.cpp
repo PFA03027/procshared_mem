@@ -18,24 +18,48 @@
 TEST( ProcShared_KRmalloc_Cntr, CanConstruct )
 {
 	// Arrange
-	void*                p_mem       = malloc( 1024 );
+	unsigned char        test_buff[1024];
+	void*                p_mem       = reinterpret_cast<void*>( test_buff );
 	offset_mem_krmalloc* p_mem_alloc = nullptr;
 
 	// Act
 	ASSERT_NO_THROW( p_mem_alloc = offset_mem_krmalloc::placement_new( p_mem, reinterpret_cast<void*>( reinterpret_cast<uintptr_t>( p_mem ) + 1024 ) ) );
 
 	// Assert
-	EXPECT_NE( p_mem_alloc, nullptr );
+	ASSERT_NE( p_mem_alloc, nullptr );
+	EXPECT_EQ( p_mem_alloc->get_bind_count(), 1 );
 
 	// Clean-up
 	offset_mem_krmalloc::teardown( p_mem_alloc );
-	free( p_mem );
+}
+
+TEST( ProcShared_KRmalloc_Cntr, CanBind )
+{
+	// Arrange
+	unsigned char        test_buff[1024];
+	void*                p_mem        = reinterpret_cast<void*>( test_buff );
+	offset_mem_krmalloc* p_mem_alloc  = nullptr;
+	offset_mem_krmalloc* p_mem_alloc2 = nullptr;
+	ASSERT_NO_THROW( p_mem_alloc = offset_mem_krmalloc::placement_new( p_mem, reinterpret_cast<void*>( reinterpret_cast<uintptr_t>( p_mem ) + 1024 ) ) );
+
+	// Act
+	ASSERT_NO_THROW( p_mem_alloc2 = offset_mem_krmalloc::bind( p_mem ) );
+
+	// Assert
+	ASSERT_NE( p_mem_alloc2, nullptr );
+	EXPECT_EQ( p_mem_alloc2->get_bind_count(), 2 );
+
+	// Clean-up
+	offset_mem_krmalloc::teardown( p_mem_alloc );
+	EXPECT_EQ( p_mem_alloc2->get_bind_count(), 1 );
+	offset_mem_krmalloc::teardown( p_mem_alloc2 );
 }
 
 TEST( ProcShared_KRmalloc_Cntr, FailConstruct1 )
 {
 	// Arrange
-	void* p_mem = malloc( sizeof( offset_mem_krmalloc ) + 10 );
+	unsigned char test_buff[sizeof( offset_mem_krmalloc ) + 10];
+	void*         p_mem = reinterpret_cast<void*>( test_buff );
 
 	// Act
 	EXPECT_ANY_THROW( offset_mem_krmalloc::placement_new( p_mem, reinterpret_cast<void*>( reinterpret_cast<uintptr_t>( p_mem ) + sizeof( offset_mem_krmalloc ) + 10 ) ) );
@@ -43,13 +67,13 @@ TEST( ProcShared_KRmalloc_Cntr, FailConstruct1 )
 	// Assert
 
 	// Clean-up
-	free( p_mem );
 }
 
 TEST( ProcShared_KRmalloc_Cntr, FailConstruct2 )
 {
 	// Arrange
-	void* p_mem = malloc( 10 );
+	unsigned char test_buff[10];
+	void*         p_mem = reinterpret_cast<void*>( test_buff );
 
 	// Act
 	EXPECT_ANY_THROW( offset_mem_krmalloc::placement_new( p_mem, reinterpret_cast<void*>( reinterpret_cast<uintptr_t>( p_mem ) + 10 ) ) );
@@ -57,7 +81,6 @@ TEST( ProcShared_KRmalloc_Cntr, FailConstruct2 )
 	// Assert
 
 	// Clean-up
-	free( p_mem );
 }
 
 class ProcShared_Malloc : public testing::Test {

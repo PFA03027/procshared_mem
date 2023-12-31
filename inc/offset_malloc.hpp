@@ -13,17 +13,18 @@
 #define OFFSET_MALLOC_HPP_
 
 #include <cstddef>
+#include <memory>
 
 class offset_malloc {
 public:
 	offset_malloc( void );
 	~offset_malloc();
-	offset_malloc( const offset_malloc& src )            = default;
-	offset_malloc( offset_malloc&& src )                 = default;
-	offset_malloc& operator=( const offset_malloc& src ) = default;
-	offset_malloc& operator=( offset_malloc&& src )      = default;
+	offset_malloc( const offset_malloc& src )            = default;   // bind to memory allocator that has already setup
+	offset_malloc( offset_malloc&& src )                 = default;   // bind to memory allocator that has already setup
+	offset_malloc& operator=( const offset_malloc& src ) = default;   // bind to memory allocator that has already setup
+	offset_malloc& operator=( offset_malloc&& src )      = default;   // bind to memory allocator that has already setup
 
-	offset_malloc( void* p_mem, size_t mem_bytes );
+	offset_malloc( void* p_mem, size_t mem_bytes );   // bind and setup memory allocator implementation.
 
 #if __has_cpp_attribute( nodiscard )
 	[[nodiscard]]
@@ -35,7 +36,7 @@ public:
 private:
 	class offset_mem_malloc_impl;
 
-	offset_mem_malloc_impl* p_impl_;
+	std::shared_ptr<offset_mem_malloc_impl> sp_impl_;
 };
 
 #endif   // OFFSET_MALLOC_HPP_
