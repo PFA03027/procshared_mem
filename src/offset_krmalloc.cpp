@@ -39,21 +39,22 @@ constexpr size_t offset_mem_krmalloc::bytes2blocksize( size_t bytes )
 	return ( bytes + sizeof( block::block_header ) - 1 ) / sizeof( block::block_header );
 }
 
-offset_mem_krmalloc::offset_mem_krmalloc( size_t mem_bytes )
-  : mem_size_( mem_bytes )
+offset_mem_krmalloc::offset_mem_krmalloc( void* end_pointer )
+  : addr_end_( reinterpret_cast<uintptr_t>( end_pointer ) )
   , mtx_()
   , op_freep_( nullptr )
   , base_blk_( nullptr, 0 )
 {
-	uintptr_t addr_buff = reinterpret_cast<uintptr_t>( base_blk_.block_body_ );
-	uintptr_t addr_top  = ( ( addr_buff + size_of_block_header() - 1 ) / size_of_block_header() ) * size_of_block_header();
-	uintptr_t diff      = addr_top - addr_buff;
+	uintptr_t addr_buff       = reinterpret_cast<uintptr_t>( base_blk_.block_body_ );
+	uintptr_t addr_top        = ( ( addr_buff + size_of_block_header() - 1 ) / size_of_block_header() ) * size_of_block_header();
+	uintptr_t addr_buff_start = addr_top + reinterpret_cast<uintptr_t>( sizeof( offset_mem_krmalloc ) );
 
-	if ( mem_bytes <= ( diff + sizeof( offset_mem_krmalloc ) ) ) {
+	if ( addr_end_ <= addr_buff_start ) {
 		throw std::bad_alloc();
 	}
+	uintptr_t buff_lenght = addr_end_ - addr_buff_start;
 
-	size_t num_of_blocks = ( mem_bytes - ( diff + sizeof( offset_mem_krmalloc ) ) ) / size_of_block_header();
+	size_t num_of_blocks = buff_lenght / size_of_block_header();
 	if ( num_of_blocks < 2 ) {
 		throw std::bad_alloc();
 	}
@@ -141,12 +142,11 @@ void offset_mem_krmalloc::deallocate( void* p, size_t alignment )
 {
 	uintptr_t addr_p   = reinterpret_cast<uintptr_t>( p );
 	uintptr_t addr_top = reinterpret_cast<uintptr_t>( base_blk_.block_body_ );
-	uintptr_t addr_end = addr_top + mem_size_;
 	if ( addr_p < addr_top ) {
 		// out of range
 		return;
 	}
-	if ( addr_end <= addr_p ) {
+	if ( addr_end_ <= addr_p ) {
 		// out of range
 		return;
 	}
@@ -199,15 +199,22 @@ void offset_mem_krmalloc::deallocate( void* p, size_t alignment )
 	throw std::logic_error( "fail to free" );
 }
 
-offset_mem_krmalloc* offset_mem_krmalloc::make( void* p_mem, size_t mem_bytes )
+offset_mem_krmalloc* offset_mem_krmalloc::placement_new( void* begin_pointer, void* end_pointer )
 {
-	if ( p_mem == nullptr ) {
+	if ( begin_pointer == nullptr ) {
 		throw std::bad_alloc();
 	}
-	if ( mem_bytes <= sizeof( offset_mem_krmalloc ) ) {
+	if ( end_pointer == nullptr ) {
 		throw std::bad_alloc();
 	}
-	return new ( p_mem ) offset_mem_krmalloc( mem_bytes );
+	if ( begin_pointer >= end_pointer ) {
+		throw std::bad_alloc();
+	}
+	if ( ( reinterpret_cast<uintptr_t>( begin_pointer ) + sizeof( offset_mem_krmalloc ) ) >= reinterpret_cast<uintptr_t>( end_pointer ) ) {
+		throw std::bad_alloc();
+	}
+
+	return new ( begin_pointer ) offset_mem_krmalloc( end_pointer );
 }
 
 void offset_mem_krmalloc::teardown( offset_mem_krmalloc* p_mem )

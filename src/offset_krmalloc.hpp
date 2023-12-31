@@ -20,7 +20,7 @@
 
 class offset_mem_krmalloc {
 public:
-	static offset_mem_krmalloc* make( void* p_mem, size_t mem_bytes );
+	static offset_mem_krmalloc* placement_new( void* begin_pointer, void* end_pointer );
 	static void                 teardown( offset_mem_krmalloc* p_mem );
 	static offset_mem_krmalloc* bind( void* p_mem );
 
@@ -30,6 +30,15 @@ public:
 	void*
 		 allocate( size_t req_bytes, size_t alignment = alignof( std::max_align_t ) );
 	void deallocate( void* p, size_t alignment = alignof( std::max_align_t ) );
+
+	inline static constexpr size_t test_block_header_size( void )
+	{
+		return sizeof( block::block_header );
+	}
+
+protected:
+	offset_mem_krmalloc( void* end_pointer );
+	~offset_mem_krmalloc() = default;
 
 private:
 	struct block {
@@ -108,7 +117,6 @@ private:
 		block_header block_body_[0];   // ブロック本体。ブロックをブロックヘッダー単位で分割管理するので、block_header型の配列としてアクセスできるように定義
 	};
 
-	offset_mem_krmalloc( size_t mem_bytes );
 	offset_mem_krmalloc( const offset_mem_krmalloc& )            = delete;
 	offset_mem_krmalloc( offset_mem_krmalloc&& )                 = delete;
 	offset_mem_krmalloc& operator=( const offset_mem_krmalloc& ) = delete;
@@ -117,10 +125,10 @@ private:
 	static constexpr size_t size_of_block_header( void );
 	static constexpr size_t bytes2blocksize( size_t bytes );
 
-	const size_t      mem_size_;
+	const uintptr_t   addr_end_;
 	procshared_mutex  mtx_;
 	offset_ptr<block> op_freep_;
-	block             base_blk_;
+	block             base_blk_;   //!< bigger address of this member variable is allocation memory area
 };
 
 static_assert( std::is_standard_layout<offset_mem_krmalloc>::value, "offset_mem_krmalloc should be standard layout" );

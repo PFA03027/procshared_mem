@@ -140,7 +140,7 @@ public:
 	 *
 	 * @note p_shm_name string AAA must follow POSIX semaphore name specifications. please refer sem_open or sem_overview
 	 */
-	impl( const char* p_shm_name, const char* p_id_dirname, off_t length, mode_t mode, std::function<void( void*, off_t )> initfunctor_arg );
+	impl( const char* p_shm_name, const char* p_id_dirname, size_t length, mode_t mode, std::function<void( void*, off_t )> initfunctor_arg );
 
 	/**
 	 * @brief allocate a new cooperative startup shared memory object as primary
@@ -155,7 +155,7 @@ public:
 	 *
 	 * @exception procshared_mem_error
 	 */
-	impl( const construct_as_primary_tag, const char* p_shm_name, const char* p_id_dirname, off_t length, mode_t mode, std::function<void( void*, off_t )> initfunctor_arg );
+	impl( const construct_as_primary_tag, const char* p_shm_name, const char* p_id_dirname, size_t length, mode_t mode, std::function<void( void*, off_t )> initfunctor_arg );
 
 	/**
 	 * @brief allocate a new cooperative startup shared memory object as secondary
@@ -168,7 +168,7 @@ public:
 	 *
 	 * @exception procshared_mem_error
 	 */
-	impl( const construct_as_secondary_tag, const char* p_shm_name, const char* p_id_dirname, off_t length, mode_t mode );
+	impl( const construct_as_secondary_tag, const char* p_shm_name, const char* p_id_dirname, size_t length, mode_t mode );
 
 	void*  get( void );
 	size_t available_size( void ) const;
@@ -188,7 +188,7 @@ private:
 	bool try_setup_as_both( int role_type, const char* p_shm_name_arg, const char* p_id_dirname_arg, mode_t mode_arg, size_t length_arg, std::function<void( void*, size_t )> initfunctor_arg );
 
 	static std::string get_id_filename( const char* p_path_name_arg, const char* p_id_dirname_arg );
-	static off_t       calc_total_neccesary_len( off_t requested_length );
+	static size_t      calc_total_neccesary_len( size_t requested_length );
 	static size_t      calc_available_size( size_t allocated_shm_length );
 
 	std::string                sem_name_;
@@ -216,12 +216,12 @@ struct procshared_mem::impl::procshared_mem_mem_header {
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
-off_t procshared_mem::impl::calc_total_neccesary_len( off_t requested_length )
+size_t procshared_mem::impl::calc_total_neccesary_len( size_t requested_length )
 {
-	off_t total_length = static_cast<off_t>( sizeof( procshared_mem_mem_header ) ) + requested_length;
-	off_t page_len     = sysconf( _SC_PAGE_SIZE );
-	off_t mx           = total_length / page_len;
-	off_t rx           = total_length % page_len;
+	size_t total_length = sizeof( procshared_mem_mem_header ) + requested_length;
+	size_t page_len     = static_cast<size_t>( sysconf( _SC_PAGE_SIZE ) );
+	size_t mx           = total_length / page_len;
+	size_t rx           = total_length % page_len;
 
 	return mx * page_len + ( ( rx == 0 ) ? 0 : page_len );
 }
@@ -287,7 +287,7 @@ procshared_mem::impl::~impl()
 	}
 }
 
-procshared_mem::impl::impl( const char* p_shm_name, const char* p_id_dirname, off_t length, mode_t mode, std::function<void( void*, off_t )> initfunctor_arg )
+procshared_mem::impl::impl( const char* p_shm_name, const char* p_id_dirname, size_t length, mode_t mode, std::function<void( void*, off_t )> initfunctor_arg )
   : sem_name_()
   , id_res_()
   , shm_res_()
@@ -299,7 +299,7 @@ procshared_mem::impl::impl( const char* p_shm_name, const char* p_id_dirname, of
 	sem_name_ = p_shm_name;
 }
 
-procshared_mem::impl::impl( const construct_as_primary_tag, const char* p_shm_name, const char* p_id_dirname, off_t length, mode_t mode, std::function<void( void*, off_t )> initfunctor_arg )
+procshared_mem::impl::impl( const construct_as_primary_tag, const char* p_shm_name, const char* p_id_dirname, size_t length, mode_t mode, std::function<void( void*, off_t )> initfunctor_arg )
   : sem_name_()
   , id_res_()
   , shm_res_()
@@ -311,7 +311,7 @@ procshared_mem::impl::impl( const construct_as_primary_tag, const char* p_shm_na
 	sem_name_ = p_shm_name;
 }
 
-procshared_mem::impl::impl( const construct_as_secondary_tag, const char* p_shm_name, const char* p_id_dirname, off_t length, mode_t mode )
+procshared_mem::impl::impl( const construct_as_secondary_tag, const char* p_shm_name, const char* p_id_dirname, size_t length, mode_t mode )
   : sem_name_()
   , id_res_()
   , shm_res_()
@@ -565,25 +565,25 @@ procshared_mem& procshared_mem::operator=( procshared_mem&& src )
 	return *this;
 }
 
-procshared_mem::procshared_mem( const char* p_shm_name, const char* p_id_dirname, off_t length, mode_t mode, std::function<void( void*, off_t )> initfunctor_arg )
+procshared_mem::procshared_mem( const char* p_shm_name, const char* p_id_dirname, size_t length, mode_t mode, std::function<void( void*, off_t )> initfunctor_arg )
   : p_impl_( nullptr )
 {
 	p_impl_ = new impl( p_shm_name, p_id_dirname, length, mode, initfunctor_arg );
 }
 
-void procshared_mem::allocate_shm_as_both( const char* p_shm_name, const char* p_id_dirname, off_t length, mode_t mode, std::function<void( void*, off_t )> initfunctor_arg )
+void procshared_mem::allocate_shm_as_both( const char* p_shm_name, const char* p_id_dirname, size_t length, mode_t mode, std::function<void( void*, off_t )> initfunctor_arg )
 {
 	delete p_impl_;
 	p_impl_ = new impl( p_shm_name, p_id_dirname, length, mode, initfunctor_arg );
 }
 
-void procshared_mem::allocate_shm_as_primary( const char* p_shm_name, const char* p_id_dirname, off_t length, mode_t mode, std::function<void( void*, off_t )> initfunctor_arg )
+void procshared_mem::allocate_shm_as_primary( const char* p_shm_name, const char* p_id_dirname, size_t length, mode_t mode, std::function<void( void*, off_t )> initfunctor_arg )
 {
 	delete p_impl_;
 	p_impl_ = new impl( procshared_mem::impl::construct_as_primary_tag(), p_shm_name, p_id_dirname, length, mode, initfunctor_arg );
 }
 
-void procshared_mem::allocate_shm_as_secondary( const char* p_shm_name, const char* p_id_dirname, off_t length, mode_t mode )
+void procshared_mem::allocate_shm_as_secondary( const char* p_shm_name, const char* p_id_dirname, size_t length, mode_t mode )
 {
 	delete p_impl_;
 	p_impl_ = new impl( procshared_mem::impl::construct_as_secondary_tag(), p_shm_name, p_id_dirname, length, mode );

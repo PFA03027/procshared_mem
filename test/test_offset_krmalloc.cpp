@@ -22,7 +22,7 @@ TEST( ProcShared_KRmalloc_Cntr, CanConstruct )
 	offset_mem_krmalloc* p_mem_alloc = nullptr;
 
 	// Act
-	ASSERT_NO_THROW( p_mem_alloc = offset_mem_krmalloc::make( p_mem, 1024 ) );
+	ASSERT_NO_THROW( p_mem_alloc = offset_mem_krmalloc::placement_new( p_mem, reinterpret_cast<void*>( reinterpret_cast<uintptr_t>( p_mem ) + 1024 ) ) );
 
 	// Assert
 	EXPECT_NE( p_mem_alloc, nullptr );
@@ -38,7 +38,7 @@ TEST( ProcShared_KRmalloc_Cntr, FailConstruct1 )
 	void* p_mem = malloc( sizeof( offset_mem_krmalloc ) + 10 );
 
 	// Act
-	EXPECT_ANY_THROW( offset_mem_krmalloc::make( p_mem, sizeof( offset_mem_krmalloc ) + 10 ) );
+	EXPECT_ANY_THROW( offset_mem_krmalloc::placement_new( p_mem, reinterpret_cast<void*>( reinterpret_cast<uintptr_t>( p_mem ) + sizeof( offset_mem_krmalloc ) + 10 ) ) );
 
 	// Assert
 
@@ -52,7 +52,7 @@ TEST( ProcShared_KRmalloc_Cntr, FailConstruct2 )
 	void* p_mem = malloc( 10 );
 
 	// Act
-	EXPECT_ANY_THROW( offset_mem_krmalloc::make( p_mem, 20 ) );
+	EXPECT_ANY_THROW( offset_mem_krmalloc::placement_new( p_mem, reinterpret_cast<void*>( reinterpret_cast<uintptr_t>( p_mem ) + 10 ) ) );
 
 	// Assert
 
@@ -74,7 +74,7 @@ public:
 		uintptr_t addr = reinterpret_cast<uintptr_t>( p_mem_ );
 		addr           = ( ( addr + 16 - 1 ) / 16 ) * 16;   // block::block_headerのサイズでアライメントを採る。
 
-		p_sut_ = offset_mem_krmalloc::make( reinterpret_cast<void*>( addr ), alloc_mem_size );
+		p_sut_ = offset_mem_krmalloc::placement_new( reinterpret_cast<void*>( addr ), reinterpret_cast<void*>( reinterpret_cast<uintptr_t>( p_mem_ ) + alloc_mem_size + 16 ) );
 	}
 	void TearDown() override
 	{
@@ -156,7 +156,7 @@ TEST_F( ProcShared_Malloc, CanDeallocate1 )
 TEST_F( ProcShared_Malloc, CanDeallocate2 )
 {
 	// Arrange
-	void* p_allc_mem = p_sut_->allocate( alloc_mem_size - sizeof( offset_mem_krmalloc ) - 48 /* offset_mem_krmalloc::block::block_header */ );
+	void* p_allc_mem = p_sut_->allocate( alloc_mem_size - sizeof( offset_mem_krmalloc ) - offset_mem_krmalloc::test_block_header_size() * 10 /* offset_mem_krmalloc::block::block_header */ );
 	ASSERT_NE( p_allc_mem, nullptr );
 
 	// Act

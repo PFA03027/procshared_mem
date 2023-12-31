@@ -42,7 +42,7 @@ public:
 	 *
 	 * @note p_shm_name string AAA must follow POSIX semaphore name specifications. please refer sem_open or sem_overview
 	 */
-	procshared_malloc( const char* p_shm_name, const char* p_id_dirname, off_t length, mode_t mode );
+	procshared_malloc( const char* p_shm_name, const char* p_id_dirname, size_t length, mode_t mode );
 
 #if __has_cpp_attribute( nodiscard )
 	[[nodiscard]]

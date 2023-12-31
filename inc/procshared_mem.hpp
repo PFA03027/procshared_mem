@@ -68,7 +68,7 @@ public:
 	 *
 	 * @note p_shm_name string AAA must follow POSIX semaphore name specifications. please refer sem_open or sem_overview
 	 */
-	procshared_mem( const char* p_shm_name, const char* p_id_dirname, off_t length, mode_t mode, std::function<void( void*, off_t )> initfunctor_arg );
+	procshared_mem( const char* p_shm_name, const char* p_id_dirname, size_t length, mode_t mode, std::function<void( void*, off_t )> initfunctor_arg );
 
 	/**
 	 * @brief allocate a new cooperative startup shared memory object
@@ -83,7 +83,7 @@ public:
 	 *
 	 * @exception procshared_mem_error
 	 */
-	void allocate_shm_as_both( const char* p_shm_name, const char* p_id_dirname, off_t length, mode_t mode, std::function<void( void*, off_t )> initfunctor_arg );
+	void allocate_shm_as_both( const char* p_shm_name, const char* p_id_dirname, size_t length, mode_t mode, std::function<void( void*, off_t )> initfunctor_arg );
 
 	/**
 	 * @brief allocate a new cooperative startup shared memory object as primary
@@ -98,7 +98,7 @@ public:
 	 *
 	 * @exception procshared_mem_error
 	 */
-	void allocate_shm_as_primary( const char* p_shm_name, const char* p_id_dirname, off_t length, mode_t mode, std::function<void( void*, off_t )> initfunctor_arg );
+	void allocate_shm_as_primary( const char* p_shm_name, const char* p_id_dirname, size_t length, mode_t mode, std::function<void( void*, off_t )> initfunctor_arg );
 
 	/**
 	 * @brief allocate a new cooperative startup shared memory object as secondary
@@ -111,7 +111,7 @@ public:
 	 *
 	 * @exception procshared_mem_error
 	 */
-	void allocate_shm_as_secondary( const char* p_shm_name, const char* p_id_dirname, off_t length, mode_t mode );
+	void allocate_shm_as_secondary( const char* p_shm_name, const char* p_id_dirname, size_t length, mode_t mode );
 
 	size_t available_size( void ) const;
 

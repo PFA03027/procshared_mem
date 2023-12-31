@@ -12,60 +12,61 @@
 #include "offset_krmalloc.hpp"
 #include "offset_malloc.hpp"
 
-class offset_malloc::offset_mem_malloc_impl {
+class offset_malloc::offset_mem_malloc_impl : public offset_mem_krmalloc {
 public:
-	offset_mem_malloc_impl( void* p_mem, size_t mem_bytes )
-	  : p_mem_allocator_( offset_mem_krmalloc::make( p_mem, mem_bytes ) )
+	static offset_mem_malloc_impl* placement_new( void* begin_pointer, void* end_pointer )
 	{
-		return;
+		if ( begin_pointer == nullptr ) {
+			throw std::bad_alloc();
+		}
+		if ( end_pointer == nullptr ) {
+			throw std::bad_alloc();
+		}
+		if ( begin_pointer >= end_pointer ) {
+			throw std::bad_alloc();
+		}
+		if ( ( reinterpret_cast<uintptr_t>( begin_pointer ) + sizeof( offset_mem_malloc_impl ) ) >= reinterpret_cast<uintptr_t>( end_pointer ) ) {
+			throw std::bad_alloc();
+		}
+		return new ( begin_pointer ) offset_mem_malloc_impl( end_pointer );
 	}
-	~offset_mem_malloc_impl()
+	static void teardown( offset_mem_malloc_impl* p_mem )
 	{
-		offset_mem_krmalloc::teardown( p_mem_allocator_ );
-		p_mem_allocator_ = nullptr;
-	}
+		if ( p_mem == nullptr ) return;
 
-	void* allocate( size_t req_bytes, size_t alignment = alignof( std::max_align_t ) )
-	{
-		return p_mem_allocator_->allocate( req_bytes, alignment );
+		p_mem->~offset_mem_malloc_impl();
 	}
-	void deallocate( void* p, size_t alignment = alignof( std::max_align_t ) )
+	static offset_mem_malloc_impl* bind( void* p_mem )
 	{
-		p_mem_allocator_->deallocate( p, alignment );
+		return reinterpret_cast<offset_mem_malloc_impl*>( p_mem );
 	}
 
 private:
-	offset_mem_krmalloc* p_mem_allocator_;
+	offset_mem_malloc_impl( void* end_pointer )
+	  : offset_mem_krmalloc( end_pointer )
+	{
+	}
+	~offset_mem_malloc_impl() = default;
+
+	offset_mem_malloc_impl( const offset_mem_malloc_impl& )            = delete;
+	offset_mem_malloc_impl( offset_mem_malloc_impl&& )                 = delete;
+	offset_mem_malloc_impl& operator=( const offset_mem_malloc_impl& ) = delete;
+	offset_mem_malloc_impl& operator=( offset_mem_malloc_impl&& )      = delete;
 };
 
 offset_malloc::offset_malloc( void )
   : p_impl_( nullptr )
 {
 }
-offset_malloc::offset_malloc( offset_malloc&& src )
-  : p_impl_( src.p_impl_ )
-{
-	src.p_impl_ = nullptr;
-}
-offset_malloc& offset_malloc::operator=( offset_malloc&& src )
-{
-	if ( this == &src ) return *this;
-
-	delete p_impl_;
-	p_impl_     = src.p_impl_;
-	src.p_impl_ = nullptr;
-
-	return *this;
-}
 
 offset_malloc::offset_malloc( void* p_mem, size_t mem_bytes )
-  : p_impl_( new offset_mem_malloc_impl( p_mem, mem_bytes ) )
+  : p_impl_( offset_mem_malloc_impl::placement_new( p_mem, reinterpret_cast<void*>( reinterpret_cast<uintptr_t>( p_mem ) + mem_bytes ) ) )
 {
 }
 
 offset_malloc::~offset_malloc()
 {
-	delete p_impl_;
+	offset_mem_malloc_impl::teardown( p_impl_ );
 	p_impl_ = nullptr;
 }
 
