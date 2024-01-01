@@ -134,6 +134,10 @@ public:
 
 	void swap( procshared_mem& src );
 
+	void set_teardown(
+		std::function<void( void*, size_t )> teardown_functor_arg   //!< [in]  a functor that is called when final deletion. this functor is stored in this instance
+	);
+
 	ino_t       debug_get_id_file_inode( void ) const;
 	bool        debug_test_integrity( void ) const;
 	std::string debug_dump_string( void ) const;

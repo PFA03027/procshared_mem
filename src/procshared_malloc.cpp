@@ -19,6 +19,11 @@ procshared_malloc::procshared_malloc( void )
 
 procshared_malloc::~procshared_malloc()
 {
+	shm_obj_.set_teardown(
+		[this]( void* p_mem, size_t len ) {
+			shm_heap_ = offset_malloc();
+		} );
+	shm_obj_ = procshared_mem();
 }
 
 procshared_malloc& procshared_malloc::operator=( procshared_malloc&& src )
@@ -32,6 +37,8 @@ procshared_malloc& procshared_malloc::operator=( procshared_malloc&& src )
 }
 
 procshared_malloc::procshared_malloc( const char* p_shm_name, const char* p_id_dirname, size_t length, mode_t mode )
+  : shm_obj_()
+  , shm_heap_()
 {
 	shm_obj_ = procshared_mem(
 		p_shm_name, p_id_dirname, length, mode,
@@ -63,4 +70,9 @@ void procshared_malloc::swap( procshared_malloc& src )
 {
 	shm_obj_.swap( src.shm_obj_ );
 	shm_heap_.swap( src.shm_heap_ );
+}
+
+int procshared_malloc::get_bind_count( void ) const
+{
+	return shm_heap_.get_bind_count();
 }

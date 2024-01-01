@@ -50,6 +50,8 @@ public:
 
 	void deallocate( void* p, size_t alignment = alignof( std::max_align_t ) );
 
+	int get_bind_count( void ) const;
+
 private:
 	procshared_malloc( const procshared_malloc& src )            = delete;
 	procshared_malloc& operator=( const procshared_malloc& src ) = delete;

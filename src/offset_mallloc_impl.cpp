@@ -39,20 +39,21 @@ constexpr size_t offset_malloc::offset_mem_malloc_impl::bytes2blocksize( size_t 
 }
 
 offset_malloc::offset_mem_malloc_impl::offset_mem_malloc_impl( void* end_pointer )
-  : addr_end_( reinterpret_cast<uintptr_t>( end_pointer ) )
+  : op_end_( reinterpret_cast<unsigned char*>( end_pointer ) )
   , mtx_()
   , bind_cnt_( 0 )
   , op_freep_( nullptr )
   , base_blk_( nullptr, 0 )
 {
+	uintptr_t addr_end        = reinterpret_cast<uintptr_t>( op_end_.get() );
 	uintptr_t addr_buff       = reinterpret_cast<uintptr_t>( base_blk_.block_body_ );
 	uintptr_t addr_top        = ( ( addr_buff + size_of_block_header() - 1 ) / size_of_block_header() ) * size_of_block_header();
 	uintptr_t addr_buff_start = addr_top + reinterpret_cast<uintptr_t>( sizeof( offset_malloc::offset_mem_malloc_impl ) );
 
-	if ( addr_end_ <= addr_buff_start ) {
+	if ( addr_end <= addr_buff_start ) {
 		throw std::bad_alloc();
 	}
-	uintptr_t buff_lenght = addr_end_ - addr_buff_start;
+	uintptr_t buff_lenght = addr_end - addr_buff_start;
 
 	size_t num_of_blocks = buff_lenght / size_of_block_header();
 	if ( num_of_blocks < 2 ) {
@@ -144,11 +145,12 @@ void offset_malloc::offset_mem_malloc_impl::deallocate( void* p, size_t alignmen
 {
 	uintptr_t addr_p   = reinterpret_cast<uintptr_t>( p );
 	uintptr_t addr_top = reinterpret_cast<uintptr_t>( base_blk_.block_body_ );
+	uintptr_t addr_end = reinterpret_cast<uintptr_t>( op_end_.get() );
 	if ( addr_p < addr_top ) {
 		// out of range
 		return;
 	}
-	if ( addr_end_ <= addr_p ) {
+	if ( addr_end <= addr_p ) {
 		// out of range
 		return;
 	}

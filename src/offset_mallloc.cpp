@@ -86,3 +86,10 @@ void offset_malloc::swap( offset_malloc& src )
 	p_impl_                       = src.p_impl_;
 	src.p_impl_                   = p_tmp;
 }
+
+int offset_malloc::get_bind_count( void ) const
+{
+	if ( p_impl_ == nullptr ) return -2;
+
+	return p_impl_->get_bind_count();
+}

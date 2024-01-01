@@ -48,9 +48,14 @@ test: build-test
 	cd ${BUILD_DIR}; \
 	ctest -j ${JOBS} -v
 
-# test2: test
-# 	build/test/test_procshared_mem_primary_highload
-# 	build/test/test_procshared_mem_both_highload
+load-test: test
+	build/test/loadtest_procshared_malloc_highload
+	build/test/loadtest_procshared_mem_both_highload
+	build/test/loadtest_procshared_mem_primary_highload
+
+build/test/loadtest_procshared_malloc_highload: build-test
+build/test/loadtest_procshared_mem_both_highload: build-test
+build/test/loadtest_procshared_mem_primary_highload: build-test
 
 build-test:
 	make BUILDIMPLTARGET=build-test all

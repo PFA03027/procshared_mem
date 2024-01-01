@@ -206,12 +206,14 @@ TEST( Test_procshared_malloc, CanAllocateBwProcess )
 	// Act
 	std::thread t1( std::move( task1 ), []() -> int {
 		procshared_malloc sut_secondary( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
-		int exit_code = 2;
-		auto p = sut_secondary.allocate( 10 );
-		if ( p != nullptr ) {
-			exit_code = 1;
+		if ( sut_secondary.get_bind_count() != 2 ) {
+			return 3;
 		}
-		return exit_code;
+		auto p = sut_secondary.allocate( 10 );
+		if ( p == nullptr ) {
+			return 2;
+		}
+		return 1;
 	} );
 
 	// Assert

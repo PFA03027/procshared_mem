@@ -37,6 +37,8 @@ public:
 
 	void swap( offset_malloc& src );
 
+	int get_bind_count( void ) const;
+
 private:
 	offset_mem_malloc_impl* p_impl_;
 };

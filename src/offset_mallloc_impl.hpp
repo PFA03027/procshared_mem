@@ -140,11 +140,11 @@ private:
 	static constexpr size_t size_of_block_header( void );
 	static constexpr size_t bytes2blocksize( size_t bytes );
 
-	const uintptr_t          addr_end_;
-	mutable procshared_mutex mtx_;
-	int                      bind_cnt_;
-	offset_ptr<block>        op_freep_;
-	block                    base_blk_;   //!< bigger address of this member variable is allocation memory area
+	const offset_ptr<unsigned char> op_end_;
+	mutable procshared_mutex        mtx_;
+	int                             bind_cnt_;
+	offset_ptr<block>               op_freep_;
+	block                           base_blk_;   //!< bigger address of this member variable is allocation memory area
 };
 
 static_assert( std::is_standard_layout<offset_malloc::offset_mem_malloc_impl>::value, "offset_mem_malloc_impl should be standard layout" );

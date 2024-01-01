@@ -191,6 +191,10 @@ public:
 	void*  get( void );
 	size_t available_size( void ) const;
 
+	void set_teardown(
+		std::function<void( void*, size_t )> teardown_functor_arg   //!< [in]  a functor that is called when final deletion. this functor is stored in this instance
+	);
+
 	ino_t       debug_get_id_file_inode( void ) const;
 	bool        debug_test_integrity( void ) const;
 	std::string debug_dump_string( void ) const;
@@ -299,13 +303,13 @@ procshared_mem::impl::~impl()
 		semaphore_resource_handler cur_sem( sem_name_ );   // セマフォを再オープン
 
 		semaphore_post_guard spg( cur_sem );   // セマフォの取得をまつ。
-		// デストラクタで、sem_postを行う。このsem_postは、ほかのプロセス向けにpostを行う。
+		                                       // デストラクタで、sem_postを行う。このsem_postは、ほかのプロセス向けにpostを行う。
+
+		procshared_mem_mem_header* p_cur_mem = reinterpret_cast<procshared_mem_mem_header*>( shm_res_.get_shm_pointer() );
+		teardown_functor_( p_cur_mem->shm_buff_, calc_available_size( shm_res_.allocated_size() ) );
 
 		auto final_ref_c = p_mem_->reference_count_.fetch_sub( 1 ) - 1;
 		if ( final_ref_c == 0 ) {
-			procshared_mem_mem_header* p_cur_mem = reinterpret_cast<procshared_mem_mem_header*>( shm_res_.get_shm_pointer() );
-			teardown_functor_( p_cur_mem->shm_buff_, calc_available_size( shm_res_.allocated_size() ) );
-
 			id_res_.do_unlink();
 			shm_res_.do_unlink();
 			cur_sem.do_unlink();
@@ -555,6 +559,13 @@ size_t procshared_mem::impl::available_size( void ) const
 	return calc_available_size( shm_res_.allocated_size() );
 }
 
+void procshared_mem::impl::set_teardown(
+	std::function<void( void*, size_t )> teardown_functor_arg   //!< [in]  a functor that is called when final deletion. this functor is stored in this instance
+)
+{
+	teardown_functor_ = teardown_functor_arg;
+}
+
 ino_t procshared_mem::impl::debug_get_id_file_inode( void ) const
 {
 	return reinterpret_cast<procshared_mem_mem_header*>( p_mem_ )->inode_val_.load();
@@ -714,6 +725,15 @@ void procshared_mem::swap( procshared_mem& src )
 	auto p_tmp  = p_impl_;
 	p_impl_     = src.p_impl_;
 	src.p_impl_ = p_tmp;
+}
+
+void procshared_mem::set_teardown(
+	std::function<void( void*, size_t )> teardown_functor_arg   //!< [in]  a functor that is called when final deletion. this functor is stored in this instance
+)
+{
+	if ( p_impl_ == nullptr ) return;
+
+	p_impl_->set_teardown( teardown_functor_arg );
 }
 
 ino_t procshared_mem::debug_get_id_file_inode( void ) const
