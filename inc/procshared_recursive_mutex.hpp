@@ -5,7 +5,7 @@
  * @version 0.1
  * @date 2023-09-24
  *
- * @copyright Copyright (c) 2023, PFA03027@nifty.com
+ * @copyright Copyright (c) 2023-2024, PFA03027@nifty.com
  *
  * @note
  * This class requires pthread library

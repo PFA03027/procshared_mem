@@ -1,11 +1,11 @@
 /**
  * @file offset_shared_ptr.hpp
- * @author Teruaki Ata (PFA03027@nifty.com)
+ * @author PFA03027@nifty.com
  * @brief Shared pointer based on offset_ptr
  * @version 0.1
  * @date 2023-10-20
  *
- * @copyright Copyright (c) 2023, Teruaki Ata (PFA03027@nifty.com)
+ * @copyright Copyright (c) 2023-2024, PFA03027@nifty.com
  *
  */
 

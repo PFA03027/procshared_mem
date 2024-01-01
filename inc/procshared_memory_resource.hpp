@@ -1,11 +1,11 @@
 /**
  * @file procshared_memory_resource.hpp
- * @author Teruaki Ata (PFA03027@nifty.com)
+ * @author PFA03027@nifty.com
  * @brief
  * @version 0.1
  * @date 2023-10-21
  *
- * @copyright Copyright (c) 2023, Teruaki Ata (PFA03027@nifty.com)
+ * @copyright Copyright (c) 2023-2024, PFA03027@nifty.com
  *
  */
 

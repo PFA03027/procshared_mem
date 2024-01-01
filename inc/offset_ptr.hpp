@@ -1,11 +1,11 @@
 /**
  * @file offset_ptr.hpp
- * @author Teruaki Ata (PFA03027@nifty.com)
+ * @author PFA03027@nifty.com
  * @brief offset base pointer
  * @version 0.1
  * @date 2023-08-19
  *
- * @copyright Copyright (c) 2023, Teruaki Ata (PFA03027@nifty.com)
+ * @copyright Copyright (c) 2023-2024, PFA03027@nifty.com
  *
  * 作ってみたはよいが、じつはすでに boost::interprocess::offset_ptr というのがあった。thisポインタをうまく使うというコンセプトもまったく同じ。
  * まぁ、だれでも思いつきそうだしなぁ。誰かが作っていそうだとは思ってた。( 一一)

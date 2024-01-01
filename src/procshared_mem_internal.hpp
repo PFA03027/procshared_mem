@@ -1,11 +1,11 @@
 /**
  * @file procshared_mem_internal.hpp
- * @author Teruaki Ata (PFA03027@nifty.com)
+ * @author PFA03027@nifty.com
  * @brief async open/close shared memory object
  * @version 0.1
  * @date 2023-12-17
  *
- * @copyright Copyright (c) 2023, Teruaki Ata (PFA03027@nifty.com)
+ * @copyright Copyright (c) 2023-2024, PFA03027@nifty.com
  *
  */
 

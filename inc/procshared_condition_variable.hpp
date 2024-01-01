@@ -1,11 +1,11 @@
 /**
  * @file procshared_condition_variable.hpp
- * @author Teruaki Ata (PFA03027@nifty.com)
+ * @author PFA03027@nifty.com
  * @brief condition variable that is sharable b/w processes
  * @version 0.1
  * @date 2023-09-24
  *
- * @copyright Copyright (c) 2023, Teruaki Ata (PFA03027@nifty.com)
+ * @copyright Copyright (c) 2023-2024, PFA03027@nifty.com
  *
  * @note
  * This class requires pthread library

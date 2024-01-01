@@ -1,11 +1,11 @@
 /**
  * @file procshared_malloc.hpp
- * @author Teruaki Ata (PFA03027@nifty.com)
+ * @author PFA03027@nifty.com
  * @brief memory allocator from procshared memory
  * @version 0.1
  * @date 2023-12-24
  *
- * @copyright Copyright (c) 2023, Teruaki Ata (PFA03027@nifty.com)
+ * @copyright Copyright (c) 2023-2024, PFA03027@nifty.com
  *
  */
 
