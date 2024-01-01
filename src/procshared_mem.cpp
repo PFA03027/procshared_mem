@@ -709,6 +709,13 @@ void* procshared_mem::get( void )
 	return p_impl_->get();
 }
 
+void procshared_mem::swap( procshared_mem& src )
+{
+	auto p_tmp  = p_impl_;
+	p_impl_     = src.p_impl_;
+	src.p_impl_ = p_tmp;
+}
+
 ino_t procshared_mem::debug_get_id_file_inode( void ) const
 {
 	if ( p_impl_ == nullptr ) return 0;

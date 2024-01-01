@@ -37,6 +37,7 @@ elseif("${SANITIZER_TYPE}" EQUAL "13")
  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=undefined -fsanitize=shift -fsanitize=shift-base")	# for test purpose
 else()
  # no sanitizer option
+ message("[Sanitizer] No Sanitizer")
 endif()
 
 

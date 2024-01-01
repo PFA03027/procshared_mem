@@ -63,6 +63,11 @@ target_link_libraries(test_procshared_mem procshared_mem test_procshared_common 
 add_dependencies(build-test test_procshared_mem)
 add_test(NAME test_procshared_mem COMMAND $<TARGET_FILE:test_procshared_mem>)
 
+add_executable(test_procshared_malloc EXCLUDE_FROM_ALL test_procshared_malloc.cpp)
+target_link_libraries(test_procshared_malloc procshared_mem test_procshared_common gtest gtest_main )
+add_dependencies(build-test test_procshared_malloc)
+add_test(NAME test_procshared_malloc COMMAND $<TARGET_FILE:test_procshared_malloc>)
+
 add_executable(test_procshared_mem_internal EXCLUDE_FROM_ALL test_procshared_mem_internal_idfile.cpp test_procshared_mem_internal_sem.cpp test_procshared_mem_internal_shm.cpp)
 target_include_directories( test_procshared_mem_internal  PRIVATE ../src )
 target_link_libraries(test_procshared_mem_internal procshared_mem test_procshared_common gtest gtest_main )

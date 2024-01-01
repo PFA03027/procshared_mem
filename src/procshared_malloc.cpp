@@ -21,6 +21,16 @@ procshared_malloc::~procshared_malloc()
 {
 }
 
+procshared_malloc& procshared_malloc::operator=( procshared_malloc&& src )
+{
+	if ( this == &src ) return *this;
+
+	// メンバ変数の開放順を守るため、デストラクタの処理を利用する。
+	procshared_malloc( std::move( src ) ).swap( *this );
+
+	return *this;
+}
+
 procshared_malloc::procshared_malloc( const char* p_shm_name, const char* p_id_dirname, size_t length, mode_t mode )
 {
 	shm_obj_ = procshared_mem(
@@ -39,12 +49,18 @@ procshared_malloc::procshared_malloc( const char* p_shm_name, const char* p_id_d
 [[nodiscard]]
 #endif
 void*
-procshared_malloc::allocate( size_t n )
+procshared_malloc::allocate( size_t n, size_t alignment )
 {
-	return shm_heap_.allocate( n );
+	return shm_heap_.allocate( n, alignment );
 }
 
-void procshared_malloc::deallocate( void* p, size_t n )
+void procshared_malloc::deallocate( void* p, size_t alignment )
 {
-	shm_heap_.deallocate( p, n );
+	shm_heap_.deallocate( p, alignment );
+}
+
+void procshared_malloc::swap( procshared_malloc& src )
+{
+	shm_obj_.swap( src.shm_obj_ );
+	shm_heap_.swap( src.shm_heap_ );
 }

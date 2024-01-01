@@ -21,8 +21,8 @@ class procshared_malloc {
 public:
 	procshared_malloc( void );
 	~procshared_malloc();
-	procshared_malloc( procshared_malloc&& )                = default;
-	procshared_malloc& operator=( procshared_malloc&& src ) = default;
+	procshared_malloc( procshared_malloc&& src ) = default;
+	procshared_malloc& operator=( procshared_malloc&& src );
 
 	/**
 	 * @brief Construct and allocate a new cooperative startup shared memory object
@@ -46,13 +46,15 @@ public:
 	[[nodiscard]]
 #endif
 	void*
-	allocate( size_t n );
+	allocate( size_t n, size_t alignment = alignof( std::max_align_t ) );
 
-	void deallocate( void* p, size_t n );
+	void deallocate( void* p, size_t alignment = alignof( std::max_align_t ) );
 
 private:
 	procshared_malloc( const procshared_malloc& src )            = delete;
 	procshared_malloc& operator=( const procshared_malloc& src ) = delete;
+
+	void swap( procshared_malloc& src );
 
 	procshared_mem shm_obj_;    //!< shared memory object. this member variable declaration order required like procshared_mem, then offset_malloc
 	offset_malloc  shm_heap_;   //!< offset base memory allocator on shared memory. this member variable declaration order required like procshared_mem, then offset_malloc

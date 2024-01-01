@@ -132,6 +132,8 @@ public:
 
 	void* get( void );
 
+	void swap( procshared_mem& src );
+
 	ino_t       debug_get_id_file_inode( void ) const;
 	bool        debug_test_integrity( void ) const;
 	std::string debug_dump_string( void ) const;
