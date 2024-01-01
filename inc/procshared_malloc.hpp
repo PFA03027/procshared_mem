@@ -20,9 +20,7 @@
 class procshared_malloc {
 public:
 	procshared_malloc( void );
-
 	~procshared_malloc();
-
 	procshared_malloc( procshared_malloc&& )                = default;
 	procshared_malloc& operator=( procshared_malloc&& src ) = default;
 

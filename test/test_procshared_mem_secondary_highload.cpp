@@ -28,10 +28,14 @@ int main( void )
 	{
 		// child process side
 		try {
-			procshared_mem shm_obj( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, []( void* p_mem, off_t len ) {
-				std::atomic<unsigned char>* p_data = reinterpret_cast<std::atomic<unsigned char>*>( p_mem );
-				p_data->store( 122 );
-			} );
+			procshared_mem shm_obj(
+				p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+				[]( void* p_mem, off_t len ) {
+					std::atomic<unsigned char>* p_data = reinterpret_cast<std::atomic<unsigned char>*>( p_mem );
+					p_data->store( 122 );
+				},
+				[]( void*, size_t ) { /* 何もしない */ },
+				[]( void*, size_t ) { /* 何もしない */ } );
 			if ( not shm_obj.debug_test_integrity() ) {
 				fprintf( stderr, "debug_test_integrity() return false\n" );
 				abort();

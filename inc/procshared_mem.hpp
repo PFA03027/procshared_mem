@@ -45,45 +45,46 @@ public:
 	 *
 	 */
 	procshared_mem( void );
-
 	~procshared_mem();
-
 	procshared_mem( procshared_mem&& src );
-
 	procshared_mem& operator=( procshared_mem&& src );
 
 	/**
 	 * @brief Construct and allocate a new cooperative startup shared memory object
 	 *
 	 * This constructor allocates a shared memory during constructor.
-	 * If an instance got as a primary role, it calls a functor initfunctor_arg() after finish setup of a shared memory
-	 *
-	 * @param p_shm_name shared memory name. this string should start '/' and shorter than NAME_MAX-4
-	 * @param p_id_dirname directory name of id file. e.g. "/tmp"
-	 * @param length shared memory size
-	 * @param mode access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
-	 * @param initfunctor_arg a functor to initialize a shared memory area that length is same to an argument 'length'
+	 * If an instance got as a primary role, it calls a functor primary_functor_arg() after finish setup of a shared memory
 	 *
 	 * @exception if failed creation by any reason, throw std::bad_alloc(in case of new operator throws) or std::run_time_error
 	 *
 	 * @note p_shm_name string AAA must follow POSIX semaphore name specifications. please refer sem_open or sem_overview
 	 */
-	procshared_mem( const char* p_shm_name, const char* p_id_dirname, size_t length, mode_t mode, std::function<void( void*, off_t )> initfunctor_arg );
+	procshared_mem(
+		const char*                          p_shm_name,              //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
+		const char*                          p_id_dirname,            //!< [in] directory name of id file. e.g. "/tmp"
+		size_t                               length,                  //!< [in] shared memory size
+		mode_t                               mode,                    //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
+		std::function<void( void*, size_t )> primary_functor_arg,     //!< [in] a functor to initialize a shared memory area. first argument is the pointer to the top of memory. second argument is the assigned memory length
+		std::function<void( void*, size_t )> secondary_functor_arg,   //!< [in] a functor as secondary role that is initialized by other procshared_mem instance. first argument is the pointer to the top of memory. second argument is the assigned memory length
+		std::function<void( void*, size_t )> teardown_functor_arg     //!< [in]  a functor that is called when final deletion. this functor is stored in this instance
+	);
 
 	/**
 	 * @brief allocate a new cooperative startup shared memory object
-	 *
-	 * @param p_shm_name shared memory name. this string should start '/' and shorter than NAME_MAX-4
-	 * @param p_id_dirname directory name of id file. e.g. "/tmp"
-	 * @param length shared memory size
-	 * @param mode access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
-	 * @param initfunctor_arg a functor to initialize a shared memory area that length is same to an argument 'length'
 	 *
 	 * @pre this instance is default constructed instance
 	 *
 	 * @exception procshared_mem_error
 	 */
-	void allocate_shm_as_both( const char* p_shm_name, const char* p_id_dirname, size_t length, mode_t mode, std::function<void( void*, off_t )> initfunctor_arg );
+	void allocate_shm_as_both(
+		const char*                          p_shm_name,              //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
+		const char*                          p_id_dirname,            //!< [in] directory name of id file. e.g. "/tmp"
+		size_t                               length,                  //!< [in] shared memory size
+		mode_t                               mode,                    //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
+		std::function<void( void*, size_t )> primary_functor_arg,     //!< [in] a functor to initialize a shared memory area. first argument is the pointer to the top of memory. second argument is the assigned memory length
+		std::function<void( void*, size_t )> secondary_functor_arg,   //!< [in] a functor as secondary role that is initialized by other procshared_mem instance. first argument is the pointer to the top of memory. second argument is the assigned memory length
+		std::function<void( void*, size_t )> teardown_functor_arg     //!< [in]  a functor that is called when final deletion. this functor is stored in this instance
+	);
 
 	/**
 	 * @brief allocate a new cooperative startup shared memory object as primary
@@ -98,7 +99,14 @@ public:
 	 *
 	 * @exception procshared_mem_error
 	 */
-	void allocate_shm_as_primary( const char* p_shm_name, const char* p_id_dirname, size_t length, mode_t mode, std::function<void( void*, off_t )> initfunctor_arg );
+	void allocate_shm_as_primary(
+		const char*                          p_shm_name,            //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
+		const char*                          p_id_dirname,          //!< [in] directory name of id file. e.g. "/tmp"
+		size_t                               length,                //!< [in] shared memory size
+		mode_t                               mode,                  //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
+		std::function<void( void*, size_t )> primary_functor_arg,   //!< [in] a functor to initialize a shared memory area. first argument is the pointer to the top of memory. second argument is the assigned memory length
+		std::function<void( void*, size_t )> teardown_functor_arg   //!< [in]  a functor that is called when final deletion. this functor is stored in this instance
+	);
 
 	/**
 	 * @brief allocate a new cooperative startup shared memory object as secondary
@@ -111,7 +119,14 @@ public:
 	 *
 	 * @exception procshared_mem_error
 	 */
-	void allocate_shm_as_secondary( const char* p_shm_name, const char* p_id_dirname, size_t length, mode_t mode );
+	void allocate_shm_as_secondary(
+		const char*                          p_shm_name,              //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
+		const char*                          p_id_dirname,            //!< [in] directory name of id file. e.g. "/tmp"
+		size_t                               length,                  //!< [in] shared memory size
+		mode_t                               mode,                    //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
+		std::function<void( void*, size_t )> secondary_functor_arg,   //!< [in] a functor as secondary role that is initialized by other procshared_mem instance. first argument is the pointer to the top of memory. second argument is the assigned memory length
+		std::function<void( void*, size_t )> teardown_functor_arg     //!< [in]  a functor that is called when final deletion. this functor is stored in this instance
+	);
 
 	size_t available_size( void ) const;
 

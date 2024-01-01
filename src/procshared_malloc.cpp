@@ -23,9 +23,16 @@ procshared_malloc::~procshared_malloc()
 
 procshared_malloc::procshared_malloc( const char* p_shm_name, const char* p_id_dirname, size_t length, mode_t mode )
 {
-	shm_obj_ = procshared_mem( p_shm_name, p_id_dirname, length, mode, [this]( void* p_mem, size_t len ) {
-		shm_heap_ = offset_malloc( p_mem, len );
-	} );
+	shm_obj_ = procshared_mem(
+		p_shm_name, p_id_dirname, length, mode,
+		[this]( void* p_mem, size_t len ) {
+			shm_heap_ = offset_malloc( p_mem, len );
+		},
+		[this]( void* p_mem, size_t len ) {
+			shm_heap_ = offset_malloc( p_mem );
+		},
+		[this]( void* p_mem, size_t len ) {
+		} );
 }
 
 #if __has_cpp_attribute( nodiscard )

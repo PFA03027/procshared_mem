@@ -86,10 +86,14 @@ int main( void )
 {
 	procshared_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
 
-	procshared_mem shm_obj( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, []( void* p_mem, off_t len ) {
-		std::atomic<unsigned char>* p_data = reinterpret_cast<std::atomic<unsigned char>*>( p_mem );
-		p_data->store( 122 );
-	} );
+	procshared_mem shm_obj(
+		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+		[]( void* p_mem, off_t len ) {
+			std::atomic<unsigned char>* p_data = reinterpret_cast<std::atomic<unsigned char>*>( p_mem );
+			p_data->store( 122 );
+		},
+		[]( void*, size_t ) { /* 何もしない */ },
+		[]( void*, size_t ) { /* 何もしない */ } );
 	printf( "%s\n", shm_obj.debug_dump_string().c_str() );
 
 	for ( int i = 0; i < 10000; i++ ) {

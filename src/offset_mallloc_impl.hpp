@@ -9,25 +9,30 @@
  *
  */
 
-#ifndef OFFSET_KRMALLOC_HPP_
-#define OFFSET_KRMALLOC_HPP_
+#ifndef OFFSET_MALLOC_IMPL_HPP_
+#define OFFSET_MALLOC_IMPL_HPP_
 
 #include <cstddef>
 
+#include "offset_malloc.hpp"
 #include "offset_ptr.hpp"
 #include "procshared_logger.hpp"
 #include "procshared_mutex.hpp"
 
 /**
- * @brief memory allocator that implemented K&R memory allocation algorithm
+ * @brief offset_malloc::offset_mem_malloc_impl implementation
+ *
+ * this memory allocator implemented K&R memory allocation algorithm.
+ *
+ * this class instance does not become resource owner. caller side of placement_new() should release memory resource.
  *
  * このクラスは、メモリ領域を所有しない設計としているため、placement_new()で指定された領域にクラス構造を構築する。
  */
-class offset_mem_krmalloc {
+class offset_malloc::offset_mem_malloc_impl {
 public:
-	static offset_mem_krmalloc* placement_new( void* begin_pointer, void* end_pointer );
-	static offset_mem_krmalloc* bind( void* p_mem );
-	static void                 teardown( offset_mem_krmalloc* p_mem );
+	static offset_malloc::offset_mem_malloc_impl* placement_new( void* begin_pointer, void* end_pointer );
+	static offset_malloc::offset_mem_malloc_impl* bind( void* p_mem );
+	static void                                   teardown( offset_malloc::offset_mem_malloc_impl* p_mem );
 
 #if __has_cpp_attribute( nodiscard )
 	[[nodiscard]]
@@ -44,10 +49,13 @@ public:
 	}
 
 protected:
-	offset_mem_krmalloc( void* end_pointer );
-	~offset_mem_krmalloc() = default;
-
 private:
+	offset_mem_malloc_impl( void* end_pointer );
+	~offset_mem_malloc_impl() = default;
+
+	int bind( void );
+	int unbind( void );
+
 	struct block {
 		struct block_header {
 			offset_ptr<block> op_next_block_;        // 次のブロックへのオフセットポインタ
@@ -124,13 +132,10 @@ private:
 		block_header block_body_[0];   // ブロック本体。ブロックをブロックヘッダー単位で分割管理するので、block_header型の配列としてアクセスできるように定義
 	};
 
-	offset_mem_krmalloc( const offset_mem_krmalloc& )            = delete;
-	offset_mem_krmalloc( offset_mem_krmalloc&& )                 = delete;
-	offset_mem_krmalloc& operator=( const offset_mem_krmalloc& ) = delete;
-	offset_mem_krmalloc& operator=( offset_mem_krmalloc&& )      = delete;
-
-	int bind( void );
-	int unbind( void );
+	offset_mem_malloc_impl( const offset_mem_malloc_impl& )            = delete;
+	offset_mem_malloc_impl( offset_mem_malloc_impl&& )                 = delete;
+	offset_mem_malloc_impl& operator=( const offset_mem_malloc_impl& ) = delete;
+	offset_mem_malloc_impl& operator=( offset_mem_malloc_impl&& )      = delete;
 
 	static constexpr size_t size_of_block_header( void );
 	static constexpr size_t bytes2blocksize( size_t bytes );
@@ -142,6 +147,6 @@ private:
 	block                    base_blk_;   //!< bigger address of this member variable is allocation memory area
 };
 
-static_assert( std::is_standard_layout<offset_mem_krmalloc>::value, "offset_mem_krmalloc should be standard layout" );
+static_assert( std::is_standard_layout<offset_malloc::offset_mem_malloc_impl>::value, "offset_mem_malloc_impl should be standard layout" );
 
-#endif   // OFFSET_KRMALLOC_HPP_
+#endif   // OFFSET_MALLOC_IMPL_HPP_

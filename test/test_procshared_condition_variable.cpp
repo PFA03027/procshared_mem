@@ -216,8 +216,8 @@ TEST( Test_procshared_condition_variable, CanWaitForPred_NoTimeout )
 const char* p_shm_obj_name = "/my_test_shm_test_procshared_condition_variable";
 
 struct test_shared_data {
-	bool                          shared_state_flag_;
-	procshared_mutex              mtx_;
+	bool shared_state_flag_;
+	procshared_mutex mtx_;
 	procshared_condition_variable cond_;
 
 	test_shared_data( void )
@@ -232,34 +232,41 @@ TEST( Test_procshared_condition_variable_bw_proc, CanWaitForPred_Timeout )
 {
 	// Arrange
 	procshared_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
-	procshared_mem                     shm_obj( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, []( void* p_mem, off_t len ) {
-        if ( p_mem == nullptr ) {
-            return;
-        }
-        if ( len < 4096 ) {
-            return;
-        }
-        [[maybe_unused]] test_shared_data* p_sut = new ( p_mem ) test_shared_data();
-    } );
+	procshared_mem shm_obj(
+		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+		[]( void* p_mem, off_t len ) {
+			if ( p_mem == nullptr ) {
+				return;
+			}
+			if ( len < 4096 ) {
+				return;
+			}
+			[[maybe_unused]] test_shared_data* p_sut = new ( p_mem ) test_shared_data();
+		},
+		[]( void*, size_t ) { /* 何もしない */ },
+		[]( void*, size_t ) { /* 何もしない */ } );
 	[[maybe_unused]] test_shared_data* p_sut = reinterpret_cast<test_shared_data*>( shm_obj.get() );
 
 	std::packaged_task<child_proc_return_t( std::function<int()> )> task1( call_pred_on_child_process );   // 非同期実行する関数を登録する
-	std::future<child_proc_return_t>                                f1 = task1.get_future();
+	std::future<child_proc_return_t> f1 = task1.get_future();
 
 	// Act
 	std::thread t1( std::move( task1 ), []() -> int {
 		procshared_mem shm_obj_secondary;
-		shm_obj_secondary.allocate_shm_as_secondary( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+		shm_obj_secondary.allocate_shm_as_secondary(
+			p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+			[]( void*, size_t ) { /* 何もしない */ },
+			[]( void*, size_t ) { /* 何もしない */ } );
 		if ( not shm_obj_secondary.debug_test_integrity() ) {
 			return 1;
 		}
 		test_shared_data* p_sut = reinterpret_cast<test_shared_data*>( shm_obj_secondary.get() );
 
 		std::unique_lock<procshared_mutex> lk( p_sut->mtx_ );
-		bool                               ret = p_sut->cond_.wait_for(
-										  lk,
-										  std::chrono::milliseconds( 10 ),
-										  [p_sut]() { return p_sut->shared_state_flag_; } );
+		bool ret = p_sut->cond_.wait_for(
+			lk,
+			std::chrono::milliseconds( 10 ),
+			[p_sut]() { return p_sut->shared_state_flag_; } );
 		return ( ret ) ? 2 : 3;
 	} );
 	std::this_thread::sleep_for( std::chrono::milliseconds( 20 ) );
@@ -280,33 +287,40 @@ TEST( Test_procshared_condition_variable_bw_proc, CanWaitForPred_NoTimeout )
 {
 	// Arrange
 	procshared_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
-	procshared_mem    shm_obj( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, []( void* p_mem, off_t len ) {
-        if ( p_mem == nullptr ) {
-            return;
-        }
-        if ( len < 4096 ) {
-            return;
-        }
-        [[maybe_unused]] test_shared_data* p_sut = new ( p_mem ) test_shared_data();
-    } );
+	procshared_mem shm_obj(
+		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+		[]( void* p_mem, off_t len ) {
+			if ( p_mem == nullptr ) {
+				return;
+			}
+			if ( len < 4096 ) {
+				return;
+			}
+			[[maybe_unused]] test_shared_data* p_sut = new ( p_mem ) test_shared_data();
+		},
+		[]( void*, size_t ) { /* 何もしない */ },
+		[]( void*, size_t ) { /* 何もしない */ } );
 	test_shared_data* p_sut = reinterpret_cast<test_shared_data*>( shm_obj.get() );
 
 	std::packaged_task<child_proc_return_t( std::function<int()> )> task1( call_pred_on_child_process );   // 非同期実行する関数を登録する
-	std::future<child_proc_return_t>                                f1 = task1.get_future();
+	std::future<child_proc_return_t> f1 = task1.get_future();
 
 	std::thread t1( std::move( task1 ), []() -> int {
 		procshared_mem shm_obj_secondary;
-		shm_obj_secondary.allocate_shm_as_secondary( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+		shm_obj_secondary.allocate_shm_as_secondary(
+			p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+			[]( void*, size_t ) { /* 何もしない */ },
+			[]( void*, size_t ) { /* 何もしない */ } );
 		if ( not shm_obj_secondary.debug_test_integrity() ) {
 			return 1;
 		}
 		test_shared_data* p_sut = reinterpret_cast<test_shared_data*>( shm_obj_secondary.get() );
 
 		std::unique_lock<procshared_mutex> lk( p_sut->mtx_ );
-		bool                               ret = p_sut->cond_.wait_for(
-										  lk,
-										  std::chrono::milliseconds( 20 ),
-										  [p_sut]() { return p_sut->shared_state_flag_; } );
+		bool ret = p_sut->cond_.wait_for(
+			lk,
+			std::chrono::milliseconds( 20 ),
+			[p_sut]() { return p_sut->shared_state_flag_; } );
 		return ( ret ) ? 2 : 3;
 	} );
 	std::this_thread::sleep_for( std::chrono::milliseconds( 10 ) );

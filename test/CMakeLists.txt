@@ -69,11 +69,11 @@ target_link_libraries(test_procshared_mem_internal procshared_mem test_procshare
 add_dependencies(build-test test_procshared_mem_internal)
 add_test(NAME test_procshared_mem_internal COMMAND $<TARGET_FILE:test_procshared_mem_internal>)
 
-add_executable(test_offset_krmalloc EXCLUDE_FROM_ALL test_offset_krmalloc.cpp)
-target_include_directories(test_offset_krmalloc  PUBLIC ../src  )
-target_link_libraries(test_offset_krmalloc procshared_mem test_procshared_common gtest gtest_main )
-add_dependencies(build-test test_offset_krmalloc)
-add_test(NAME test_offset_krmalloc COMMAND $<TARGET_FILE:test_offset_krmalloc>)
+add_executable(test_offset_malloc_impl EXCLUDE_FROM_ALL test_offset_malloc_impl.cpp)
+target_include_directories(test_offset_malloc_impl  PUBLIC ../src  )
+target_link_libraries(test_offset_malloc_impl procshared_mem test_procshared_common gtest gtest_main )
+add_dependencies(build-test test_offset_malloc_impl)
+add_test(NAME test_offset_malloc_impl COMMAND $<TARGET_FILE:test_offset_malloc_impl>)
 
 add_executable(test_offset_malloc EXCLUDE_FROM_ALL test_offset_malloc.cpp)
 target_include_directories(test_offset_malloc  PUBLIC ../src  )

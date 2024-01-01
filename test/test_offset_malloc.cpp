@@ -1,5 +1,5 @@
 /**
- * @file test_offset_krmalloc.cpp
+ * @file test_offset_malloc.cpp
  * @author Teruaki Ata (PFA03027@nifty.com)
  * @brief
  * @version 0.1
