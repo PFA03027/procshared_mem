@@ -1,5 +1,5 @@
 /**
- * @file procshared_malloc.cpp
+ * @file offset_malloc.cpp
  * @author Teruaki Ata (PFA03027@nifty.com)
  * @brief malloc that is shareable b/w processes
  * @version 0.1
