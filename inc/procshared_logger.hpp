@@ -12,6 +12,8 @@
 #ifndef PROCSHARED_LOGGER_HPP_
 #define PROCSHARED_LOGGER_HPP_
 
+#include <cstdio>
+
 enum class psm_log_lv {
 	kTest,
 	kDebug,
@@ -20,8 +22,16 @@ enum class psm_log_lv {
 	kErr
 };
 
-constexpr bool psm_filter( psm_log_lv ll )
+constexpr inline bool psm_filter( psm_log_lv ll )
 {
+#if 1
+	// C++11 and after
+	return ( ll == psm_log_lv::kTest ) ||
+	       ( ll == psm_log_lv::kInfo ) ||
+	       ( ll == psm_log_lv::kWarn ) ||
+	       ( ll == psm_log_lv::kErr );
+#else
+	// C++14 and after
 	bool is_output = false;
 	switch ( ll ) {
 		case psm_log_lv::kTest:
@@ -37,6 +47,7 @@ constexpr bool psm_filter( psm_log_lv ll )
 	}
 
 	return is_output;
+#endif
 }
 
 template <typename... Args>
