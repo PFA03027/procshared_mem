@@ -54,8 +54,8 @@ private:
 	procshared_malloc( const procshared_malloc& src )            = delete;
 	procshared_malloc& operator=( const procshared_malloc& src ) = delete;
 
-	procshared_mem shm_obj_;
-	offset_malloc  shm_heap_;
+	procshared_mem shm_obj_;    //!< shared memory object. this member variable declaration order required like procshared_mem, then offset_malloc
+	offset_malloc  shm_heap_;   //!< offset base memory allocator on shared memory. this member variable declaration order required like procshared_mem, then offset_malloc
 };
 
 #endif   // PROCSHARED_MALLOC_HPP_

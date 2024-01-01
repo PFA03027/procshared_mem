@@ -31,7 +31,7 @@ procshared_malloc::procshared_malloc( const char* p_shm_name, const char* p_id_d
 		[this]( void* p_mem, size_t len ) {
 			shm_heap_ = offset_malloc( p_mem );
 		},
-		[this]( void* p_mem, size_t len ) {
+		[]( void* p_mem, size_t len ) {
 		} );
 }
 
