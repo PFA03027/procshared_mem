@@ -9,7 +9,9 @@ set(BUILD_TARGET common CACHE STRING "Build target?")
 message("[BUILD] ${BUILD_TARGET}")
 include(${BUILD_TARGET}.cmake)
 
-include(debug_option.cmake)
+if("${CMAKE_BUILD_TYPE}" EQUAL "Debug")
+ include(debug_option.cmake)
+endif()
 
 enable_testing()
 

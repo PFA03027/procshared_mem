@@ -60,13 +60,12 @@ public:
 	 * @note p_shm_name string AAA must follow POSIX semaphore name specifications. please refer sem_open or sem_overview
 	 */
 	procshared_mem(
-		const char*                          p_shm_name,              //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
-		const char*                          p_id_dirname,            //!< [in] directory name of id file. e.g. "/tmp"
-		size_t                               length,                  //!< [in] shared memory size
-		mode_t                               mode,                    //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
-		std::function<void( void*, size_t )> primary_functor_arg,     //!< [in] a functor to initialize a shared memory area. first argument is the pointer to the top of memory. second argument is the assigned memory length
-		std::function<void( void*, size_t )> secondary_functor_arg,   //!< [in] a functor as secondary role that is initialized by other procshared_mem instance. first argument is the pointer to the top of memory. second argument is the assigned memory length
-		std::function<void( void*, size_t )> teardown_functor_arg     //!< [in]  a functor that is called when final deletion. this functor is stored in this instance
+		const char*                          p_shm_name,             //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
+		const char*                          p_id_dirname,           //!< [in] directory name of id file. e.g. "/tmp"
+		size_t                               length,                 //!< [in] shared memory size
+		mode_t                               mode,                   //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
+		std::function<void( void*, size_t )> primary_functor_arg,    //!< [in] a functor to initialize a shared memory area. first argument is the pointer to the top of memory. second argument is the assigned memory length
+		std::function<void( void*, size_t )> secondary_functor_arg   //!< [in] a functor as secondary role that is initialized by other procshared_mem instance. first argument is the pointer to the top of memory. second argument is the assigned memory length
 	);
 
 	/**
@@ -77,13 +76,12 @@ public:
 	 * @exception procshared_mem_error
 	 */
 	void allocate_shm_as_both(
-		const char*                          p_shm_name,              //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
-		const char*                          p_id_dirname,            //!< [in] directory name of id file. e.g. "/tmp"
-		size_t                               length,                  //!< [in] shared memory size
-		mode_t                               mode,                    //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
-		std::function<void( void*, size_t )> primary_functor_arg,     //!< [in] a functor to initialize a shared memory area. first argument is the pointer to the top of memory. second argument is the assigned memory length
-		std::function<void( void*, size_t )> secondary_functor_arg,   //!< [in] a functor as secondary role that is initialized by other procshared_mem instance. first argument is the pointer to the top of memory. second argument is the assigned memory length
-		std::function<void( void*, size_t )> teardown_functor_arg     //!< [in]  a functor that is called when final deletion. this functor is stored in this instance
+		const char*                          p_shm_name,             //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
+		const char*                          p_id_dirname,           //!< [in] directory name of id file. e.g. "/tmp"
+		size_t                               length,                 //!< [in] shared memory size
+		mode_t                               mode,                   //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
+		std::function<void( void*, size_t )> primary_functor_arg,    //!< [in] a functor to initialize a shared memory area. first argument is the pointer to the top of memory. second argument is the assigned memory length
+		std::function<void( void*, size_t )> secondary_functor_arg   //!< [in] a functor as secondary role that is initialized by other procshared_mem instance. first argument is the pointer to the top of memory. second argument is the assigned memory length
 	);
 
 	/**
@@ -100,12 +98,11 @@ public:
 	 * @exception procshared_mem_error
 	 */
 	void allocate_shm_as_primary(
-		const char*                          p_shm_name,            //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
-		const char*                          p_id_dirname,          //!< [in] directory name of id file. e.g. "/tmp"
-		size_t                               length,                //!< [in] shared memory size
-		mode_t                               mode,                  //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
-		std::function<void( void*, size_t )> primary_functor_arg,   //!< [in] a functor to initialize a shared memory area. first argument is the pointer to the top of memory. second argument is the assigned memory length
-		std::function<void( void*, size_t )> teardown_functor_arg   //!< [in]  a functor that is called when final deletion. this functor is stored in this instance
+		const char*                          p_shm_name,           //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
+		const char*                          p_id_dirname,         //!< [in] directory name of id file. e.g. "/tmp"
+		size_t                               length,               //!< [in] shared memory size
+		mode_t                               mode,                 //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
+		std::function<void( void*, size_t )> primary_functor_arg   //!< [in] a functor to initialize a shared memory area. first argument is the pointer to the top of memory. second argument is the assigned memory length
 	);
 
 	/**
@@ -120,12 +117,11 @@ public:
 	 * @exception procshared_mem_error
 	 */
 	void allocate_shm_as_secondary(
-		const char*                          p_shm_name,              //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
-		const char*                          p_id_dirname,            //!< [in] directory name of id file. e.g. "/tmp"
-		size_t                               length,                  //!< [in] shared memory size
-		mode_t                               mode,                    //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
-		std::function<void( void*, size_t )> secondary_functor_arg,   //!< [in] a functor as secondary role that is initialized by other procshared_mem instance. first argument is the pointer to the top of memory. second argument is the assigned memory length
-		std::function<void( void*, size_t )> teardown_functor_arg     //!< [in]  a functor that is called when final deletion. this functor is stored in this instance
+		const char*                          p_shm_name,             //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
+		const char*                          p_id_dirname,           //!< [in] directory name of id file. e.g. "/tmp"
+		size_t                               length,                 //!< [in] shared memory size
+		mode_t                               mode,                   //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
+		std::function<void( void*, size_t )> secondary_functor_arg   //!< [in] a functor as secondary role that is initialized by other procshared_mem instance. first argument is the pointer to the top of memory. second argument is the assigned memory length
 	);
 
 	size_t available_size( void ) const;
@@ -135,7 +131,7 @@ public:
 	void swap( procshared_mem& src );
 
 	void set_teardown(
-		std::function<void( void*, size_t )> teardown_functor_arg   //!< [in]  a functor that is called when final deletion. this functor is stored in this instance
+		std::function<void( bool, void*, size_t )> teardown_functor_arg   //!< [in]  a functor that is called when final deletion. this functor is stored in this instance
 	);
 
 	ino_t       debug_get_id_file_inode( void ) const;

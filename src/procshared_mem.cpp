@@ -135,13 +135,12 @@ public:
 	 * @note p_shm_name string AAA must follow POSIX semaphore name specifications. please refer sem_open or sem_overview
 	 */
 	impl(
-		const char*                          p_shm_name,              //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
-		const char*                          p_id_dirname,            //!< [in] directory name of id file. e.g. "/tmp"
-		size_t                               length,                  //!< [in] shared memory size
-		mode_t                               mode,                    //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
-		std::function<void( void*, size_t )> primary_functor_arg,     //!< [in] a functor to initialize a shared memory area. first argument is the pointer to the top of memory. second argument is the assigned memory length
-		std::function<void( void*, size_t )> secondary_functor_arg,   //!< [in] a functor as secondary role that is initialized by other procshared_mem instance. first argument is the pointer to the top of memory. second argument is the assigned memory length
-		std::function<void( void*, size_t )> teardown_functor_arg     //!< [in]  a functor that is called when final deletion. this functor is stored in this instance
+		const char*                          p_shm_name,             //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
+		const char*                          p_id_dirname,           //!< [in] directory name of id file. e.g. "/tmp"
+		size_t                               length,                 //!< [in] shared memory size
+		mode_t                               mode,                   //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
+		std::function<void( void*, size_t )> primary_functor_arg,    //!< [in] a functor to initialize a shared memory area. first argument is the pointer to the top of memory. second argument is the assigned memory length
+		std::function<void( void*, size_t )> secondary_functor_arg   //!< [in] a functor as secondary role that is initialized by other procshared_mem instance. first argument is the pointer to the top of memory. second argument is the assigned memory length
 	);
 
 	/**
@@ -159,12 +158,11 @@ public:
 	 */
 	impl(
 		const construct_as_primary_tag,
-		const char*                          p_shm_name,            //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
-		const char*                          p_id_dirname,          //!< [in] directory name of id file. e.g. "/tmp"
-		size_t                               length,                //!< [in] shared memory size
-		mode_t                               mode,                  //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
-		std::function<void( void*, size_t )> primary_functor_arg,   //!< [in] a functor to initialize a shared memory area. first argument is the pointer to the top of memory. second argument is the assigned memory length
-		std::function<void( void*, size_t )> teardown_functor_arg   //!< [in]  a functor that is called when final deletion. this functor is stored in this instance
+		const char*                          p_shm_name,           //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
+		const char*                          p_id_dirname,         //!< [in] directory name of id file. e.g. "/tmp"
+		size_t                               length,               //!< [in] shared memory size
+		mode_t                               mode,                 //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
+		std::function<void( void*, size_t )> primary_functor_arg   //!< [in] a functor to initialize a shared memory area. first argument is the pointer to the top of memory. second argument is the assigned memory length
 	);
 
 	/**
@@ -180,19 +178,25 @@ public:
 	 */
 	impl(
 		const construct_as_secondary_tag,
-		const char*                          p_shm_name,              //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
-		const char*                          p_id_dirname,            //!< [in] directory name of id file. e.g. "/tmp"
-		size_t                               length,                  //!< [in] shared memory size
-		mode_t                               mode,                    //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
-		std::function<void( void*, size_t )> secondary_functor_arg,   //!< [in] a functor as secondary role that is initialized by other procshared_mem instance. first argument is the pointer to the top of memory. second argument is the assigned memory length
-		std::function<void( void*, size_t )> teardown_functor_arg     //!< [in]  a functor that is called when final deletion. this functor is stored in this instance
+		const char*                          p_shm_name,             //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
+		const char*                          p_id_dirname,           //!< [in] directory name of id file. e.g. "/tmp"
+		size_t                               length,                 //!< [in] shared memory size
+		mode_t                               mode,                   //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
+		std::function<void( void*, size_t )> secondary_functor_arg   //!< [in] a functor as secondary role that is initialized by other procshared_mem instance. first argument is the pointer to the top of memory. second argument is the assigned memory length
 	);
 
 	void*  get( void );
 	size_t available_size( void ) const;
 
+	/**
+	 * @brief Set the teardown object
+	 *
+	 * @li 1st argument of teardown_functor_arg: true, if shared memory is unlinking. false, shared memory itself is still remaining
+	 * @li 2nd argument of teardown_functor_arg: pointer to the top of accessible area in shared memory
+	 * @li 3rd argument of teardown_functor_arg: size of accessible area in shared memory
+	 */
 	void set_teardown(
-		std::function<void( void*, size_t )> teardown_functor_arg   //!< [in]  a functor that is called when final deletion. this functor is stored in this instance
+		std::function<void( bool, void*, size_t )> teardown_functor_arg   //!< [in]  a functor that is called when final deletion. this functor is stored in this instance
 	);
 
 	ino_t       debug_get_id_file_inode( void ) const;
@@ -220,11 +224,11 @@ private:
 	static size_t      calc_total_neccesary_len( size_t requested_length );
 	static size_t      calc_available_size( size_t allocated_shm_length );
 
-	std::string                          sem_name_;
-	id_file_resource_handler             id_res_;
-	shm_resource_handler                 shm_res_;
-	std::function<void( void*, size_t )> teardown_functor_;
-	procshared_mem_mem_header*           p_mem_;
+	std::string                                sem_name_;
+	id_file_resource_handler                   id_res_;
+	shm_resource_handler                       shm_res_;
+	std::function<void( bool, void*, size_t )> teardown_functor_;
+	procshared_mem_mem_header*                 p_mem_;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -241,7 +245,7 @@ struct procshared_mem::impl::procshared_mem_mem_header {
 	{
 		length_val_.store( len_v );
 		reference_count_.store( 0 );
-		inode_val_.store( inode_v );
+		inode_val_.store( inode_v, std::memory_order_release );
 	}
 };
 
@@ -305,19 +309,26 @@ procshared_mem::impl::~impl()
 		semaphore_post_guard spg( cur_sem );   // セマフォの取得をまつ。
 		                                       // デストラクタで、sem_postを行う。このsem_postは、ほかのプロセス向けにpostを行う。
 
-		procshared_mem_mem_header* p_cur_mem = reinterpret_cast<procshared_mem_mem_header*>( shm_res_.get_shm_pointer() );
-		teardown_functor_( p_cur_mem->shm_buff_, calc_available_size( shm_res_.allocated_size() ) );
-
-		auto final_ref_c = p_mem_->reference_count_.fetch_sub( 1 ) - 1;
+		auto                       final_ref_c = p_mem_->reference_count_.fetch_sub( 1 ) - 1;
+		procshared_mem_mem_header* p_cur_mem   = reinterpret_cast<procshared_mem_mem_header*>( shm_res_.get_shm_pointer() );
+		if ( teardown_functor_ ) {
+			// teardown_functor_が呼び出し可能な場合に呼び出しを行う。
+			teardown_functor_( final_ref_c == 0, p_cur_mem->shm_buff_, calc_available_size( shm_res_.allocated_size() ) );
+		}
 		if ( final_ref_c == 0 ) {
+			p_cur_mem = reinterpret_cast<procshared_mem_mem_header*>( shm_res_.get_shm_pointer() );
+			p_cur_mem->inode_val_.store( 0, std::memory_order_release );   // 保存しているinode番号を無効値に書き換える。
+
 			id_res_.do_unlink();
 			shm_res_.do_unlink();
 			cur_sem.do_unlink();
 		}
-
+	} catch ( std::runtime_error& e ) {
+		// 握りつぶす
+		psm_logoutput( psm_log_lv::kErr, "Error: procshared_mem::impl destructor catch std::runtime_error exception: %s", e.what() );
 	} catch ( ... ) {
 		// 握りつぶす
-		psm_logoutput( psm_log_lv::kErr, "Error: procshared_mem::impl destructor catch exception" );
+		psm_logoutput( psm_log_lv::kErr, "Error: procshared_mem::impl destructor catch unknown exception" );
 	}
 }
 
@@ -327,12 +338,11 @@ procshared_mem::impl::impl(
 	size_t                               length,
 	mode_t                               mode,
 	std::function<void( void*, size_t )> primary_functor_arg,
-	std::function<void( void*, size_t )> secondary_functor_arg,
-	std::function<void( void*, size_t )> teardown_functor_arg )
+	std::function<void( void*, size_t )> secondary_functor_arg )
   : sem_name_()
   , id_res_()
   , shm_res_()
-  , teardown_functor_( teardown_functor_arg )
+  , teardown_functor_()
   , p_mem_( nullptr )
 {
 	check_path_name( p_shm_name );
@@ -347,12 +357,11 @@ procshared_mem::impl::impl(
 	const char*                          p_id_dirname,
 	size_t                               length,
 	mode_t                               mode,
-	std::function<void( void*, size_t )> primary_functor_arg,
-	std::function<void( void*, size_t )> teardown_functor_arg )
+	std::function<void( void*, size_t )> primary_functor_arg )
   : sem_name_()
   , id_res_()
   , shm_res_()
-  , teardown_functor_( teardown_functor_arg )
+  , teardown_functor_()
   , p_mem_( nullptr )
 {
 	check_path_name( p_shm_name );
@@ -367,12 +376,11 @@ procshared_mem::impl::impl(
 	const char*                          p_id_dirname,
 	size_t                               length,
 	mode_t                               mode,
-	std::function<void( void*, size_t )> secondary_functor_arg,
-	std::function<void( void*, size_t )> teardown_functor_arg )
+	std::function<void( void*, size_t )> secondary_functor_arg )
   : sem_name_()
   , id_res_()
   , shm_res_()
-  , teardown_functor_( teardown_functor_arg )
+  , teardown_functor_()
   , p_mem_( nullptr )
 {
 	check_path_name( p_shm_name );
@@ -496,6 +504,7 @@ bool procshared_mem::impl::try_setup_as_both(
 		}
 		return false;
 	}
+	// unlink済みであっても、ここを抜けてくる場合がある。
 
 	shm_resource_handler       cur_shm_res;
 	procshared_mem_mem_header* p_cur_mem;
@@ -522,13 +531,16 @@ bool procshared_mem::impl::try_setup_as_both(
 			return false;
 		}
 
-		p_cur_mem = reinterpret_cast<procshared_mem_mem_header*>( cur_shm_res.get_shm_pointer() );
-		if ( cur_id_res.get_inode_number() != p_cur_mem->inode_val_.load() ) {
-			psm_logoutput( psm_log_lv::kInfo, "Info: inode number mis-match, cur_id_res %lu, inode_val_ %lu", cur_id_res.get_inode_number(), p_cur_mem->inode_val_.load() );
+		p_cur_mem                       = reinterpret_cast<procshared_mem_mem_header*>( cur_shm_res.get_shm_pointer() );
+		auto cur_inode_value_in_cur_mem = p_cur_mem->inode_val_.load( std::memory_order_acquire );
+		if ( cur_id_res.get_inode_number() != cur_inode_value_in_cur_mem ) {
+			// 共有メモリ削除時にidファイルチェックを抜けてきた場合、最後は、ここで、inode番号がクリアされていることによる不一致で、不整合を検出する。
+			psm_logoutput( psm_log_lv::kInfo, "Info: inode number mis-match, cur_id_res %lu, inode_val_ %lu", cur_id_res.get_inode_number(), cur_inode_value_in_cur_mem );
 			return false;
 		}
-		if ( p_cur_mem->inode_val_.load() < 1 ) {
-			psm_logoutput( psm_log_lv::kInfo, "Info: inode number is out of range, inode_val_ %lu", p_cur_mem->inode_val_.load() );
+		if ( cur_inode_value_in_cur_mem < 1 ) {
+			// 共有メモリ削除時にidファイルチェックを抜けてきた場合、最後は、ここで、inode番号がクリアされていることによる不一致で、不整合を検出する。
+			psm_logoutput( psm_log_lv::kInfo, "Info: inode number is out of range, inode_val_ %lu", cur_inode_value_in_cur_mem );
 			return false;
 		}
 
@@ -560,7 +572,7 @@ size_t procshared_mem::impl::available_size( void ) const
 }
 
 void procshared_mem::impl::set_teardown(
-	std::function<void( void*, size_t )> teardown_functor_arg   //!< [in]  a functor that is called when final deletion. this functor is stored in this instance
+	std::function<void( bool, void*, size_t )> teardown_functor_arg   //!< [in]  a functor that is called when final deletion. this functor is stored in this instance
 )
 {
 	teardown_functor_ = teardown_functor_arg;
@@ -568,7 +580,7 @@ void procshared_mem::impl::set_teardown(
 
 ino_t procshared_mem::impl::debug_get_id_file_inode( void ) const
 {
-	return reinterpret_cast<procshared_mem_mem_header*>( p_mem_ )->inode_val_.load();
+	return reinterpret_cast<procshared_mem_mem_header*>( p_mem_ )->inode_val_.load( std::memory_order_acquire );
 }
 
 bool procshared_mem::impl::debug_test_integrity( void ) const
@@ -662,11 +674,10 @@ procshared_mem::procshared_mem(
 	size_t                               length,
 	mode_t                               mode,
 	std::function<void( void*, size_t )> primary_functor_arg,
-	std::function<void( void*, size_t )> secondary_functor_arg,
-	std::function<void( void*, size_t )> teardown_functor_arg )
+	std::function<void( void*, size_t )> secondary_functor_arg )
   : p_impl_( nullptr )
 {
-	p_impl_ = new impl( p_shm_name, p_id_dirname, length, mode, primary_functor_arg, secondary_functor_arg, teardown_functor_arg );
+	p_impl_ = new impl( p_shm_name, p_id_dirname, length, mode, primary_functor_arg, secondary_functor_arg );
 }
 
 void procshared_mem::allocate_shm_as_both(
@@ -675,11 +686,10 @@ void procshared_mem::allocate_shm_as_both(
 	size_t                               length,
 	mode_t                               mode,
 	std::function<void( void*, size_t )> primary_functor_arg,
-	std::function<void( void*, size_t )> secondary_functor_arg,
-	std::function<void( void*, size_t )> teardown_functor_arg )
+	std::function<void( void*, size_t )> secondary_functor_arg )
 {
 	delete p_impl_;
-	p_impl_ = new impl( p_shm_name, p_id_dirname, length, mode, primary_functor_arg, secondary_functor_arg, teardown_functor_arg );
+	p_impl_ = new impl( p_shm_name, p_id_dirname, length, mode, primary_functor_arg, secondary_functor_arg );
 }
 
 void procshared_mem::allocate_shm_as_primary(
@@ -687,11 +697,10 @@ void procshared_mem::allocate_shm_as_primary(
 	const char*                          p_id_dirname,
 	size_t                               length,
 	mode_t                               mode,
-	std::function<void( void*, size_t )> primary_functor_arg,
-	std::function<void( void*, size_t )> teardown_functor_arg )
+	std::function<void( void*, size_t )> primary_functor_arg )
 {
 	delete p_impl_;
-	p_impl_ = new impl( procshared_mem::impl::construct_as_primary_tag(), p_shm_name, p_id_dirname, length, mode, primary_functor_arg, teardown_functor_arg );
+	p_impl_ = new impl( procshared_mem::impl::construct_as_primary_tag(), p_shm_name, p_id_dirname, length, mode, primary_functor_arg );
 }
 
 void procshared_mem::allocate_shm_as_secondary(
@@ -699,11 +708,10 @@ void procshared_mem::allocate_shm_as_secondary(
 	const char*                          p_id_dirname,
 	size_t                               length,
 	mode_t                               mode,
-	std::function<void( void*, size_t )> secondary_functor_arg,
-	std::function<void( void*, size_t )> teardown_functor_arg )
+	std::function<void( void*, size_t )> secondary_functor_arg )
 {
 	delete p_impl_;
-	p_impl_ = new impl( procshared_mem::impl::construct_as_secondary_tag(), p_shm_name, p_id_dirname, length, mode, secondary_functor_arg, teardown_functor_arg );
+	p_impl_ = new impl( procshared_mem::impl::construct_as_secondary_tag(), p_shm_name, p_id_dirname, length, mode, secondary_functor_arg );
 }
 
 size_t procshared_mem::available_size( void ) const
@@ -728,7 +736,7 @@ void procshared_mem::swap( procshared_mem& src )
 }
 
 void procshared_mem::set_teardown(
-	std::function<void( void*, size_t )> teardown_functor_arg   //!< [in]  a functor that is called when final deletion. this functor is stored in this instance
+	std::function<void( bool, void*, size_t )> teardown_functor_arg   //!< [in]  a functor that is called when final deletion. this functor is stored in this instance
 )
 {
 	if ( p_impl_ == nullptr ) return;

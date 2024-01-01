@@ -20,7 +20,7 @@ procshared_malloc::procshared_malloc( void )
 procshared_malloc::~procshared_malloc()
 {
 	shm_obj_.set_teardown(
-		[this]( void* p_mem, size_t len ) {
+		[this]( bool final_teardown, void* p_mem, size_t len ) {
 			shm_heap_ = offset_malloc();
 		} );
 	shm_obj_ = procshared_mem();
@@ -47,8 +47,6 @@ procshared_malloc::procshared_malloc( const char* p_shm_name, const char* p_id_d
 		},
 		[this]( void* p_mem, size_t len ) {
 			shm_heap_ = offset_malloc( p_mem );
-		},
-		[]( void* p_mem, size_t len ) {
 		} );
 }
 

@@ -14,12 +14,34 @@
 #include <stdexcept>
 #include <system_error>
 
+#include <execinfo.h>
 #include <pthread.h>
 
 #include "procshared_logger.hpp"
 #include "procshared_mutex.hpp"
 #include "procshared_mutex_base.hpp"
 #include "procshared_recursive_mutex.hpp"
+
+#ifdef ENABLE_BACKTRACE_LOGOUTPUT
+void backtrace_print( void )
+{
+	size_t i;
+	void*  trace[128];
+	char** ss_trace;
+	size_t size = backtrace( trace, sizeof( trace ) / sizeof( trace[0] ) );
+	ss_trace    = backtrace_symbols( trace, size );
+	if ( ss_trace == NULL ) {
+		/*Failure*/
+		return;
+	}
+
+	/*例えば表示*/
+	for ( i = 0; i < size; i++ ) {
+		printf( "%s\n", ss_trace[i] );
+	}
+	free( ss_trace );
+}
+#endif
 
 procshared_mutex_base::procshared_mutex_base( int kind )
 {
@@ -76,6 +98,9 @@ void procshared_mutex_base::lock( void )
 			throw std::system_error( ec, "Fail to call pthread_mutex_consistent() in pthread_mutex_lock()" );
 		}
 	} else {
+#ifdef ENABLE_BACKTRACE_LOGOUTPUT
+		backtrace_print();
+#endif
 		std::error_code ec( ret, std::system_category() );
 		throw std::system_error( ec, "Fail to call pthread_mutex_lock()" );
 	}

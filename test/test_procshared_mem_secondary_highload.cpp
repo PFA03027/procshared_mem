@@ -30,12 +30,18 @@ int main( void )
 		try {
 			procshared_mem shm_obj(
 				p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
-				[]( void* p_mem, off_t len ) {
+				[]( void* p_mem, size_t len ) {
 					std::atomic<unsigned char>* p_data = reinterpret_cast<std::atomic<unsigned char>*>( p_mem );
 					p_data->store( 122 );
 				},
-				[]( void*, size_t ) { /* 何もしない */ },
 				[]( void*, size_t ) { /* 何もしない */ } );
+			shm_obj.set_teardown(
+				[]( bool final_teardown, void* p_mem, size_t len ) {
+					if ( final_teardown ) {
+						std::atomic<unsigned char>* p_data = reinterpret_cast<std::atomic<unsigned char>*>( p_mem );
+						p_data->store( 123 );
+					}
+				} );
 			if ( not shm_obj.debug_test_integrity() ) {
 				fprintf( stderr, "debug_test_integrity() return false\n" );
 				abort();

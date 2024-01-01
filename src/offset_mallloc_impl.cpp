@@ -259,17 +259,19 @@ offset_malloc::offset_mem_malloc_impl* offset_malloc::offset_mem_malloc_impl::bi
 	return p_ans;
 }
 
-void offset_malloc::offset_mem_malloc_impl::teardown( offset_malloc::offset_mem_malloc_impl* p_mem )
+bool offset_malloc::offset_mem_malloc_impl::teardown( offset_malloc::offset_mem_malloc_impl* p_mem )
 {
 	if ( p_mem == nullptr ) {
-		return;
+		return false;
 	}
 	int cnt = p_mem->unbind();
 	if ( cnt == 0 ) {
 		p_mem->~offset_mem_malloc_impl();
+		return true;
 	} else if ( cnt < 0 ) {
 		psm_logoutput( psm_log_lv::kErr, "Error: teardown already, p_mem=%p", p_mem );
 	} else {
 		// nothing to do
 	}
+	return false;
 }
