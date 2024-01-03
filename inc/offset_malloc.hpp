@@ -16,7 +16,7 @@
 
 class offset_malloc {
 public:
-	class offset_mem_malloc_impl;
+	class offset_malloc_impl;
 
 	offset_malloc( void );
 	~offset_malloc();
@@ -40,7 +40,7 @@ public:
 	int get_bind_count( void ) const;
 
 private:
-	offset_mem_malloc_impl* p_impl_;
+	offset_malloc_impl* p_impl_;
 };
 
 #endif   // OFFSET_MALLOC_HPP_

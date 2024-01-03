@@ -20,7 +20,7 @@
 #include "procshared_mutex.hpp"
 
 /**
- * @brief offset_malloc::offset_mem_malloc_impl implementation
+ * @brief offset_malloc::offset_malloc_impl implementation
  *
  * this memory allocator implemented K&R memory allocation algorithm.
  *
@@ -28,11 +28,11 @@
  *
  * このクラスは、メモリ領域を所有しない設計としているため、placement_new()で指定された領域にクラス構造を構築する。
  */
-class offset_malloc::offset_mem_malloc_impl {
+class offset_malloc::offset_malloc_impl {
 public:
-	static offset_malloc::offset_mem_malloc_impl* placement_new( void* begin_pointer, void* end_pointer );
-	static offset_malloc::offset_mem_malloc_impl* bind( void* p_mem );
-	static bool                                   teardown( offset_malloc::offset_mem_malloc_impl* p_mem );
+	static offset_malloc::offset_malloc_impl* placement_new( void* begin_pointer, void* end_pointer );
+	static offset_malloc::offset_malloc_impl* bind( void* p_mem );
+	static bool                                   teardown( offset_malloc::offset_malloc_impl* p_mem );
 
 #if __has_cpp_attribute( nodiscard )
 	[[nodiscard]]
@@ -50,8 +50,8 @@ public:
 
 protected:
 private:
-	offset_mem_malloc_impl( void* end_pointer );
-	~offset_mem_malloc_impl() = default;
+	offset_malloc_impl( void* end_pointer );
+	~offset_malloc_impl() = default;
 
 	int bind( void );
 	int unbind( void );
@@ -132,10 +132,10 @@ private:
 		block_header block_body_[0];   // ブロック本体。ブロックをブロックヘッダー単位で分割管理するので、block_header型の配列としてアクセスできるように定義
 	};
 
-	offset_mem_malloc_impl( const offset_mem_malloc_impl& )            = delete;
-	offset_mem_malloc_impl( offset_mem_malloc_impl&& )                 = delete;
-	offset_mem_malloc_impl& operator=( const offset_mem_malloc_impl& ) = delete;
-	offset_mem_malloc_impl& operator=( offset_mem_malloc_impl&& )      = delete;
+	offset_malloc_impl( const offset_malloc_impl& )            = delete;
+	offset_malloc_impl( offset_malloc_impl&& )                 = delete;
+	offset_malloc_impl& operator=( const offset_malloc_impl& ) = delete;
+	offset_malloc_impl& operator=( offset_malloc_impl&& )      = delete;
 
 	static constexpr size_t size_of_block_header( void );
 	static constexpr size_t bytes2blocksize( size_t bytes );
@@ -147,6 +147,6 @@ private:
 	block                           base_blk_;   //!< bigger address of this member variable is allocation memory area
 };
 
-static_assert( std::is_standard_layout<offset_malloc::offset_mem_malloc_impl>::value, "offset_mem_malloc_impl should be standard layout" );
+static_assert( std::is_standard_layout<offset_malloc::offset_malloc_impl>::value, "offset_malloc_impl should be standard layout" );
 
 #endif   // OFFSET_MALLOC_IMPL_HPP_

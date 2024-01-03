@@ -17,28 +17,28 @@
 #include "offset_ptr.hpp"
 #include "procshared_logger.hpp"
 
-offset_malloc::offset_mem_malloc_impl::block::block_header::block_header( offset_malloc::offset_mem_malloc_impl::block* p_next_arg, std::size_t this_block_size )
+offset_malloc::offset_malloc_impl::block::block_header::block_header( offset_malloc::offset_malloc_impl::block* p_next_arg, std::size_t this_block_size )
   : op_next_block_( p_next_arg )
   , size_of_this_block_( this_block_size )
 {
 }
 
-offset_malloc::offset_mem_malloc_impl::block::block( offset_malloc::offset_mem_malloc_impl::block* p_next_arg, std::size_t this_block_size )
+offset_malloc::offset_malloc_impl::block::block( offset_malloc::offset_malloc_impl::block* p_next_arg, std::size_t this_block_size )
   : active_header_( p_next_arg, this_block_size )
 {
 }
 
-constexpr size_t offset_malloc::offset_mem_malloc_impl::size_of_block_header( void )
+constexpr size_t offset_malloc::offset_malloc_impl::size_of_block_header( void )
 {
 	return sizeof( block::block_header );
 }
 
-constexpr size_t offset_malloc::offset_mem_malloc_impl::bytes2blocksize( size_t bytes )
+constexpr size_t offset_malloc::offset_malloc_impl::bytes2blocksize( size_t bytes )
 {
 	return ( bytes + sizeof( block::block_header ) - 1 ) / sizeof( block::block_header );
 }
 
-offset_malloc::offset_mem_malloc_impl::offset_mem_malloc_impl( void* end_pointer )
+offset_malloc::offset_malloc_impl::offset_malloc_impl( void* end_pointer )
   : op_end_( reinterpret_cast<unsigned char*>( end_pointer ) )
   , mtx_()
   , bind_cnt_( 0 )
@@ -48,7 +48,7 @@ offset_malloc::offset_mem_malloc_impl::offset_mem_malloc_impl( void* end_pointer
 	uintptr_t addr_end        = reinterpret_cast<uintptr_t>( op_end_.get() );
 	uintptr_t addr_buff       = reinterpret_cast<uintptr_t>( base_blk_.block_body_ );
 	uintptr_t addr_top        = ( ( addr_buff + size_of_block_header() - 1 ) / size_of_block_header() ) * size_of_block_header();
-	uintptr_t addr_buff_start = addr_top + reinterpret_cast<uintptr_t>( sizeof( offset_malloc::offset_mem_malloc_impl ) );
+	uintptr_t addr_buff_start = addr_top + reinterpret_cast<uintptr_t>( sizeof( offset_malloc::offset_malloc_impl ) );
 
 	if ( addr_end <= addr_buff_start ) {
 		throw std::bad_alloc();
@@ -68,7 +68,7 @@ offset_malloc::offset_mem_malloc_impl::offset_mem_malloc_impl( void* end_pointer
 	bind_cnt_ = 1;
 }
 
-void* offset_malloc::offset_mem_malloc_impl::allocate( size_t req_bytes, size_t alignment )
+void* offset_malloc::offset_malloc_impl::allocate( size_t req_bytes, size_t alignment )
 {
 	const size_t real_alignment  = ( alignment == 0 ) ? 1 : alignment;
 	const size_t additional_size = ( alignment <= size_of_block_header() ) ? 0 : ( alignment - size_of_block_header() );
@@ -141,7 +141,7 @@ void* offset_malloc::offset_mem_malloc_impl::allocate( size_t req_bytes, size_t 
 	return nullptr;
 }
 
-void offset_malloc::offset_mem_malloc_impl::deallocate( void* p, size_t alignment )
+void offset_malloc::offset_malloc_impl::deallocate( void* p, size_t alignment )
 {
 	uintptr_t addr_p   = reinterpret_cast<uintptr_t>( p );
 	uintptr_t addr_top = reinterpret_cast<uintptr_t>( base_blk_.block_body_ );
@@ -203,7 +203,7 @@ void offset_malloc::offset_mem_malloc_impl::deallocate( void* p, size_t alignmen
 	throw std::logic_error( "fail to free" );
 }
 
-int offset_malloc::offset_mem_malloc_impl::bind( void )
+int offset_malloc::offset_malloc_impl::bind( void )
 {
 	std::lock_guard<procshared_mutex> lk( mtx_ );
 
@@ -215,7 +215,7 @@ int offset_malloc::offset_mem_malloc_impl::bind( void )
 	bind_cnt_++;
 	return bind_cnt_;
 }
-int offset_malloc::offset_mem_malloc_impl::unbind( void )
+int offset_malloc::offset_malloc_impl::unbind( void )
 {
 	std::lock_guard<procshared_mutex> lk( mtx_ );
 	if ( bind_cnt_ >= 0 ) {
@@ -224,13 +224,13 @@ int offset_malloc::offset_mem_malloc_impl::unbind( void )
 	return bind_cnt_;
 }
 
-int offset_malloc::offset_mem_malloc_impl::get_bind_count( void ) const
+int offset_malloc::offset_malloc_impl::get_bind_count( void ) const
 {
 	std::lock_guard<procshared_mutex> lk( mtx_ );
 	return bind_cnt_;
 }
 
-offset_malloc::offset_mem_malloc_impl* offset_malloc::offset_mem_malloc_impl::placement_new( void* begin_pointer, void* end_pointer )
+offset_malloc::offset_malloc_impl* offset_malloc::offset_malloc_impl::placement_new( void* begin_pointer, void* end_pointer )
 {
 	if ( begin_pointer == nullptr ) {
 		throw std::bad_alloc();
@@ -241,32 +241,32 @@ offset_malloc::offset_mem_malloc_impl* offset_malloc::offset_mem_malloc_impl::pl
 	if ( begin_pointer >= end_pointer ) {
 		throw std::bad_alloc();
 	}
-	if ( ( reinterpret_cast<uintptr_t>( begin_pointer ) + sizeof( offset_malloc::offset_mem_malloc_impl ) ) >= reinterpret_cast<uintptr_t>( end_pointer ) ) {
+	if ( ( reinterpret_cast<uintptr_t>( begin_pointer ) + sizeof( offset_malloc::offset_malloc_impl ) ) >= reinterpret_cast<uintptr_t>( end_pointer ) ) {
 		throw std::bad_alloc();
 	}
 
-	return new ( begin_pointer ) offset_malloc::offset_mem_malloc_impl( end_pointer );
+	return new ( begin_pointer ) offset_malloc::offset_malloc_impl( end_pointer );
 }
 
-offset_malloc::offset_mem_malloc_impl* offset_malloc::offset_mem_malloc_impl::bind( void* p_mem )
+offset_malloc::offset_malloc_impl* offset_malloc::offset_malloc_impl::bind( void* p_mem )
 {
 	if ( p_mem == nullptr ) {
 		return nullptr;
 	}
 
-	offset_malloc::offset_mem_malloc_impl* p_ans = reinterpret_cast<offset_malloc::offset_mem_malloc_impl*>( p_mem );
+	offset_malloc::offset_malloc_impl* p_ans = reinterpret_cast<offset_malloc::offset_malloc_impl*>( p_mem );
 	p_ans->bind();
 	return p_ans;
 }
 
-bool offset_malloc::offset_mem_malloc_impl::teardown( offset_malloc::offset_mem_malloc_impl* p_mem )
+bool offset_malloc::offset_malloc_impl::teardown( offset_malloc::offset_malloc_impl* p_mem )
 {
 	if ( p_mem == nullptr ) {
 		return false;
 	}
 	int cnt = p_mem->unbind();
 	if ( cnt == 0 ) {
-		p_mem->~offset_mem_malloc_impl();
+		p_mem->~offset_malloc_impl();
 		return true;
 	} else if ( cnt < 0 ) {
 		psm_logoutput( psm_log_lv::kErr, "Error: teardown already, p_mem=%p", p_mem );

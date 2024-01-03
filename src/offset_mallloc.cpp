@@ -19,12 +19,12 @@ offset_malloc::offset_malloc( void )
 
 offset_malloc::~offset_malloc()
 {
-	offset_mem_malloc_impl::teardown( p_impl_ );
+	offset_malloc_impl::teardown( p_impl_ );
 	p_impl_ = nullptr;
 }
 
 offset_malloc::offset_malloc( const offset_malloc& src )
-  : p_impl_( offset_mem_malloc_impl::bind( src.p_impl_ ) )
+  : p_impl_( offset_malloc_impl::bind( src.p_impl_ ) )
 {
 }
 
@@ -38,8 +38,8 @@ offset_malloc& offset_malloc::operator=( const offset_malloc& src )
 {
 	if ( this == &src ) return *this;
 
-	offset_mem_malloc_impl::teardown( p_impl_ );
-	p_impl_ = offset_mem_malloc_impl::bind( src.p_impl_ );
+	offset_malloc_impl::teardown( p_impl_ );
+	p_impl_ = offset_malloc_impl::bind( src.p_impl_ );
 
 	return *this;
 }
@@ -48,7 +48,7 @@ offset_malloc& offset_malloc::operator=( offset_malloc&& src )
 {
 	if ( this == &src ) return *this;
 
-	offset_mem_malloc_impl::teardown( p_impl_ );
+	offset_malloc_impl::teardown( p_impl_ );
 	p_impl_     = src.p_impl_;
 	src.p_impl_ = nullptr;
 
@@ -56,12 +56,12 @@ offset_malloc& offset_malloc::operator=( offset_malloc&& src )
 }
 
 offset_malloc::offset_malloc( void* p_mem, size_t mem_bytes )
-  : p_impl_( offset_mem_malloc_impl::placement_new( p_mem, reinterpret_cast<void*>( reinterpret_cast<uintptr_t>( p_mem ) + mem_bytes ) ) )
+  : p_impl_( offset_malloc_impl::placement_new( p_mem, reinterpret_cast<void*>( reinterpret_cast<uintptr_t>( p_mem ) + mem_bytes ) ) )
 {
 }
 
 offset_malloc::offset_malloc( void* p_mem )
-  : p_impl_( offset_mem_malloc_impl::bind( p_mem ) )
+  : p_impl_( offset_malloc_impl::bind( p_mem ) )
 {
 }
 
@@ -82,7 +82,7 @@ void offset_malloc::swap( offset_malloc& src )
 {
 	if ( this == &src ) return;
 
-	offset_mem_malloc_impl* p_tmp = p_impl_;
+	offset_malloc_impl* p_tmp = p_impl_;
 	p_impl_                       = src.p_impl_;
 	src.p_impl_                   = p_tmp;
 }
