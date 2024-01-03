@@ -33,8 +33,10 @@ class offset_ptr {
 public:
 	using value_type      = T;
 	using pointer         = value_type*;
-	using reference       = value_type&;      // std::add_lvalue_reference<value_type>::type;
-	using difference_type = std::ptrdiff_t;   // using difference_type = decltype( std::declval<pointer>() - std::declval<pointer>() );
+	using reference       = value_type&;   // std::add_lvalue_reference<value_type>::type;
+	using const_pointer   = const value_type*;
+	using const_reference = const value_type&;   // std::add_lvalue_reference<value_type>::type;
+	using difference_type = std::ptrdiff_t;      // using difference_type = decltype( std::declval<pointer>() - std::declval<pointer>() );
 #if __cplusplus >= 202002L
 	using iterator_category = std::contiguous_iterator_tag;
 #else
@@ -59,12 +61,7 @@ public:
 	constexpr offset_ptr( offset_ptr&& orig ) noexcept
 	  : offset_( calc_offset( this, orig.calc_address() ) )
 	{
-		orig.offset_ = calc_offset_as_nullptr( &orig );
-	}
-
-	constexpr offset_ptr( std::nullptr_t ) noexcept
-	  : offset_( calc_offset_as_nullptr( this ) )
-	{
+		orig = nullptr;
 	}
 
 	offset_ptr& operator=( const offset_ptr& orig ) noexcept
@@ -79,8 +76,59 @@ public:
 	{
 		if ( this == &orig ) return *this;
 
-		offset_      = calc_offset( this, orig.calc_address() );
-		orig.offset_ = calc_offset_as_nullptr( &orig );
+		offset_ = calc_offset( this, orig.calc_address() );
+		orig    = nullptr;
+		return *this;
+	}
+
+	template <typename U = T,
+	          typename std::enable_if<
+				  !std::is_same<U, T>::value &&
+				  std::is_convertible<typename offset_ptr<U>::pointer, pointer>::value>::type* = nullptr>
+	constexpr offset_ptr( const offset_ptr<U>& orig ) noexcept
+	  : offset_( calc_offset( this, orig.calc_address() ) )
+	{
+	}
+
+	template <typename U = T,
+	          typename std::enable_if<
+				  !std::is_same<U, T>::value &&
+				  std::is_convertible<typename offset_ptr<U>::pointer, pointer>::value>::type* = nullptr>
+	constexpr offset_ptr( offset_ptr<U>&& orig ) noexcept
+	  : offset_( calc_offset( this, orig.calc_address() ) )
+	{
+		orig = nullptr;
+	}
+
+	template <typename U = T,
+	          typename std::enable_if<
+				  !std::is_same<U, T>::value &&
+				  std::is_convertible<typename offset_ptr<U>::pointer, pointer>::value>::type* = nullptr>
+	offset_ptr& operator=( const offset_ptr<U>& orig ) noexcept
+	{
+		offset_ = calc_offset( this, orig.calc_address() );
+		return *this;
+	}
+
+	template <typename U = T,
+	          typename std::enable_if<
+				  !std::is_same<U, T>::value &&
+				  std::is_convertible<typename offset_ptr<U>::pointer, pointer>::value>::type* = nullptr>
+	offset_ptr& operator=( offset_ptr<U>&& orig ) noexcept
+	{
+		offset_ = calc_offset( this, orig.calc_address() );
+		orig    = nullptr;
+		return *this;
+	}
+
+	constexpr offset_ptr( std::nullptr_t ) noexcept
+	  : offset_( calc_offset_as_nullptr( this ) )
+	{
+	}
+
+	offset_ptr& operator=( std::nullptr_t ) noexcept
+	{
+		offset_ = calc_offset_as_nullptr( this );
 		return *this;
 	}
 
@@ -257,6 +305,9 @@ private:
 	}
 
 	uintptr_t offset_;
+
+	template <typename U>
+	friend class offset_ptr;
 };
 
 #if ( __cpp_impl_three_way_comparison > 201907L )
@@ -681,7 +732,9 @@ public:
 		return ans;
 	}
 
-	// static constexpr bool is_always_lock_free = std::atomic<uintptr_t>::is_always_lock_free;
+#ifdef __cpp_lib_atomic_is_always_lock_free   // #if __cpp_lib_atomic_is_always_lock_free >= 201603
+	static constexpr bool is_always_lock_free = std::atomic<uintptr_t>::is_always_lock_free;
+#endif
 
 private:
 	using element_pointer = T*;
