@@ -121,12 +121,12 @@ public:
 		return *this;
 	}
 
-	constexpr offset_ptr( std::nullptr_t ) noexcept
+	constexpr offset_ptr( const std::nullptr_t& ) noexcept
 	  : offset_( calc_offset_as_nullptr( this ) )
 	{
 	}
 
-	offset_ptr& operator=( std::nullptr_t ) noexcept
+	offset_ptr& operator=( const std::nullptr_t& ) noexcept
 	{
 		offset_ = calc_offset_as_nullptr( this );
 		return *this;

@@ -142,7 +142,7 @@ TEST( OffsetList_CanMoveConstruct, FromEmpty1 )
 	ASSERT_NO_THROW( offset_list<int> sut( std::move( src ) ); );
 
 	// Assert
-	EXPECT_EQ( src.size(), 0 );
+	EXPECT_EQ( src.size(), 0 );   // NOLINT(bugprone-use-after-move,clang-analyzer-cplusplus.Move)
 }
 
 TEST( OffsetList_CanMoveConstruct, FromEmpty2 )
@@ -155,7 +155,7 @@ TEST( OffsetList_CanMoveConstruct, FromEmpty2 )
 
 	// Assert
 	EXPECT_EQ( sut.size(), 0 );
-	EXPECT_EQ( src.size(), 0 );
+	EXPECT_EQ( src.size(), 0 );   // NOLINT(bugprone-use-after-move,clang-analyzer-cplusplus.Move)
 }
 
 TEST( OffsetList_CanMoveConstruct, From1Node )

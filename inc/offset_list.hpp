@@ -74,140 +74,40 @@ public:
 #endif
 	offset_list& operator=( std::initializer_list<T> x );
 
-	iterator begin( void ) noexcept
-	{
-		return iterator( *this, op_head_ );
-	}
-	const_iterator begin( void ) const noexcept
-	{
-		return const_iterator( *this, op_head_ );
-	}
-	const_iterator cbegin( void ) const noexcept
-	{
-		return begin();
-	}
-	iterator end( void ) noexcept
-	{
-		return iterator( *this, nullptr );
-	}
-	const_iterator end( void ) const noexcept
-	{
-		return const_iterator( *this, nullptr );
-	}
-	const_iterator cend( void ) const noexcept
-	{
-		return end();
-	}
+	iterator       begin( void ) noexcept;
+	const_iterator begin( void ) const noexcept;
+	const_iterator cbegin( void ) const noexcept;
+	iterator       end( void ) noexcept;
+	const_iterator end( void ) const noexcept;
+	const_iterator cend( void ) const noexcept;
 
-	reverse_iterator rbegin( void ) noexcept
-	{
-		return reverse_iterator( *this, op_tail_ );
-	}
-	const_reverse_iterator rbegin( void ) const noexcept
-	{
-		return const_reverse_iterator( *this, op_tail_ );
-	}
-	const_reverse_iterator crbegin( void ) const noexcept
-	{
-		return rbegin();
-	}
-	reverse_iterator rend( void ) noexcept
-	{
-		return reverse_iterator( *this, nullptr );
-	}
-	const_reverse_iterator rend( void ) const noexcept
-	{
-		return const_reverse_iterator( *this, nullptr );
-	}
-	const_reverse_iterator crend( void ) const noexcept
-	{
-		return rend();
-	}
+	reverse_iterator       rbegin( void ) noexcept;
+	const_reverse_iterator rbegin( void ) const noexcept;
+	const_reverse_iterator crbegin( void ) const noexcept;
+	reverse_iterator       rend( void ) noexcept;
+	const_reverse_iterator rend( void ) const noexcept;
+	const_reverse_iterator crend( void ) const noexcept;
 
-	bool empty( void ) const noexcept
-	{
-		return op_head_ == nullptr;
-	}
+	bool      empty( void ) const noexcept;
+	size_type size( void ) const noexcept;
+	size_type max_size() const noexcept;
 
-	size_type size( void ) const noexcept
-	{
-		size_type ans = 0;
-		for ( auto it = begin(); it != end(); ++it ) {
-			ans++;
-		}
-		return ans;
-	}
+	reference       front( void );
+	const_reference front( void ) const;
 
-	size_type max_size() const noexcept
-	{
-		return std::numeric_limits<size_type>::max();
-	}
+	reference       back( void );
+	const_reference back( void ) const;
 
-	reference front( void )
-	{
-		return *begin();
-	}
-	const_reference front( void ) const
-	{
-		return *begin();
-	}
+	void push_front( const T& x );
+	void push_front( T&& x );
 
-	reference back( void )
-	{
-		auto eit = end();
-		--eit;
-		return *eit;
-	}
-	const_reference back( void ) const
-	{
-		auto eit = end();
-		--eit;
-		return *eit;
-	}
-
-	void push_front( const T& x )
-	{
-		auto p_node = node_allocator_traits_type::allocate( alloc_, 1 );
-		node_allocator_traits_type::construct( alloc_, p_node, node { nullptr, nullptr, x } );
-		insert_node_to_front( p_node );
-	}
-	void push_front( T&& x )
-	{
-		auto p_node = node_allocator_traits_type::allocate( alloc_, 1 );
-		node_allocator_traits_type::construct( alloc_, p_node, node { nullptr, nullptr, std::move( x ) } );
-		insert_node_to_front( p_node );
-	}
-
-	void push_back( const T& x )
-	{
-		auto p_node = node_allocator_traits_type::allocate( alloc_, 1 );
-		node_allocator_traits_type::construct( alloc_, p_node, node { nullptr, nullptr, x } );
-		insert_node_to_back( p_node );
-	}
-	void push_back( T&& x )
-	{
-		auto p_node = node_allocator_traits_type::allocate( alloc_, 1 );
-		node_allocator_traits_type::construct( alloc_, p_node, node { nullptr, nullptr, std::move( x ) } );
-		insert_node_to_back( p_node );
-	}
+	void push_back( const T& x );
+	void push_back( T&& x );
 
 	template <class... Args>
-	reference emplace_front( Args&&... args )
-	{
-		auto p_node = node_allocator_traits_type::allocate( alloc_, 1 );
-		node_allocator_traits_type::construct( alloc_, p_node, node { nullptr, nullptr, value_type { std::forward<Args>( args )... } } );
-		insert_node_to_front( p_node );
-		return p_node->data_;
-	}
-
+	reference emplace_front( Args&&... args );
 	template <class... Args>
-	reference emplace_back( Args&&... args )
-	{
-		auto p_node = node_allocator_traits_type::allocate( alloc_, 1 );
-		node_allocator_traits_type::construct( alloc_, p_node, node { nullptr, nullptr, value_type { std::forward<Args>( args )... } } );
-		insert_node_to_back( p_node );
-		return p_node->data_;
-	}
+	reference emplace_back( Args&&... args );
 
 	iterator insert( const_iterator position, const T& x );
 	iterator insert( const_iterator position, T&& x );
@@ -231,7 +131,7 @@ public:
 	}
 
 private:
-	class node;
+	struct node;
 	using offset_pointer_to_node       = offset_ptr<node>;
 	using offset_pointer_to_const_node = offset_ptr<const node>;
 
@@ -358,8 +258,8 @@ public:
 	  : op_owner_( std::move( orig.op_owner_ ) )
 	  , op_cur_node_( std::move( orig.op_cur_node_ ) )
 	{
-		orig.op_owner_    = nullptr;
-		orig.op_cur_node_ = nullptr;
+		// orig.op_owner_    = nullptr;
+		// orig.op_cur_node_ = nullptr;
 	}
 
 	template <bool CU = CT, typename U = T, typename UAllocator = Allocator,
@@ -446,6 +346,11 @@ private:
 	friend bool operator!=( const iterator_impl<XCT1, XT, XAllocator>& a, const iterator_impl<XCT2, XT, XAllocator>& b );
 
 	iterator_impl( owner_type& owner, const offset_pointer_to_node_t& src )
+	  : op_owner_( &owner )
+	  , op_cur_node_( src )
+	{
+	}
+	iterator_impl( owner_type& owner, const std::nullptr_t src )
 	  : op_owner_( &owner )
 	  , op_cur_node_( src )
 	{
@@ -698,6 +603,166 @@ offset_list<T, Allocator>& offset_list<T, Allocator>::operator=( std::initialize
 		push_back( std::move( e ) );
 	}
 	return *this;
+}
+
+template <typename T, typename Allocator>
+inline typename offset_list<T, Allocator>::iterator offset_list<T, Allocator>::begin( void ) noexcept
+{
+	return iterator( *this, op_head_ );
+}
+template <typename T, typename Allocator>
+inline typename offset_list<T, Allocator>::const_iterator offset_list<T, Allocator>::begin( void ) const noexcept
+{
+	return const_iterator( *this, op_head_ );
+}
+template <typename T, typename Allocator>
+inline typename offset_list<T, Allocator>::const_iterator offset_list<T, Allocator>::cbegin( void ) const noexcept
+{
+	return begin();
+}
+template <typename T, typename Allocator>
+inline typename offset_list<T, Allocator>::iterator offset_list<T, Allocator>::end( void ) noexcept
+{
+	return iterator( *this, nullptr );
+}
+template <typename T, typename Allocator>
+inline typename offset_list<T, Allocator>::const_iterator offset_list<T, Allocator>::end( void ) const noexcept
+{
+	return const_iterator( *this, nullptr );
+}
+template <typename T, typename Allocator>
+inline typename offset_list<T, Allocator>::const_iterator offset_list<T, Allocator>::cend( void ) const noexcept
+{
+	return end();
+}
+
+template <typename T, typename Allocator>
+inline typename offset_list<T, Allocator>::reverse_iterator offset_list<T, Allocator>::rbegin( void ) noexcept
+{
+	return reverse_iterator( *this, op_tail_ );
+}
+template <typename T, typename Allocator>
+inline typename offset_list<T, Allocator>::const_reverse_iterator offset_list<T, Allocator>::rbegin( void ) const noexcept
+{
+	return const_reverse_iterator( *this, op_tail_ );
+}
+template <typename T, typename Allocator>
+inline typename offset_list<T, Allocator>::const_reverse_iterator offset_list<T, Allocator>::crbegin( void ) const noexcept
+{
+	return rbegin();
+}
+template <typename T, typename Allocator>
+inline typename offset_list<T, Allocator>::reverse_iterator offset_list<T, Allocator>::rend( void ) noexcept
+{
+	return reverse_iterator( *this, nullptr );
+}
+template <typename T, typename Allocator>
+inline typename offset_list<T, Allocator>::const_reverse_iterator offset_list<T, Allocator>::rend( void ) const noexcept
+{
+	return const_reverse_iterator( *this, nullptr );
+}
+template <typename T, typename Allocator>
+inline typename offset_list<T, Allocator>::const_reverse_iterator offset_list<T, Allocator>::crend( void ) const noexcept
+{
+	return rend();
+}
+
+template <typename T, typename Allocator>
+inline typename offset_list<T, Allocator>::size_type offset_list<T, Allocator>::max_size() const noexcept
+{
+	return std::numeric_limits<size_type>::max();
+}
+
+template <typename T, typename Allocator>
+inline bool offset_list<T, Allocator>::empty( void ) const noexcept
+{
+	return op_head_ == nullptr;
+}
+
+template <typename T, typename Allocator>
+typename offset_list<T, Allocator>::size_type offset_list<T, Allocator>::size( void ) const noexcept
+{
+	size_type ans = 0;
+	for ( auto it = begin(); it != end(); ++it ) {
+		ans++;
+	}
+	return ans;
+}
+
+template <typename T, typename Allocator>
+inline typename offset_list<T, Allocator>::reference offset_list<T, Allocator>::front( void )
+{
+	return *begin();
+}
+template <typename T, typename Allocator>
+inline typename offset_list<T, Allocator>::const_reference offset_list<T, Allocator>::front( void ) const
+{
+	return *begin();
+}
+
+template <typename T, typename Allocator>
+inline typename offset_list<T, Allocator>::reference offset_list<T, Allocator>::back( void )
+{
+	auto eit = end();
+	--eit;
+	return *eit;
+}
+template <typename T, typename Allocator>
+inline typename offset_list<T, Allocator>::const_reference offset_list<T, Allocator>::back( void ) const
+{
+	auto eit = end();
+	--eit;
+	return *eit;
+}
+
+template <typename T, typename Allocator>
+void offset_list<T, Allocator>::push_front( const T& x )
+{
+	auto p_node = node_allocator_traits_type::allocate( alloc_, 1 );
+	node_allocator_traits_type::construct( alloc_, p_node, node { nullptr, nullptr, x } );
+	insert_node_to_front( p_node );
+}
+template <typename T, typename Allocator>
+void offset_list<T, Allocator>::push_front( T&& x )
+{
+	auto p_node = node_allocator_traits_type::allocate( alloc_, 1 );
+	node_allocator_traits_type::construct( alloc_, p_node, node { nullptr, nullptr, std::move( x ) } );
+	insert_node_to_front( p_node );
+}
+
+template <typename T, typename Allocator>
+void offset_list<T, Allocator>::push_back( const T& x )
+{
+	auto p_node = node_allocator_traits_type::allocate( alloc_, 1 );
+	node_allocator_traits_type::construct( alloc_, p_node, node { nullptr, nullptr, x } );
+	insert_node_to_back( p_node );
+}
+template <typename T, typename Allocator>
+void offset_list<T, Allocator>::push_back( T&& x )
+{
+	auto p_node = node_allocator_traits_type::allocate( alloc_, 1 );
+	node_allocator_traits_type::construct( alloc_, p_node, node { nullptr, nullptr, std::move( x ) } );
+	insert_node_to_back( p_node );
+}
+
+template <typename T, typename Allocator>
+template <class... Args>
+typename offset_list<T, Allocator>::reference offset_list<T, Allocator>::emplace_front( Args&&... args )
+{
+	auto p_node = node_allocator_traits_type::allocate( alloc_, 1 );
+	node_allocator_traits_type::construct( alloc_, p_node, node { nullptr, nullptr, value_type { std::forward<Args>( args )... } } );
+	insert_node_to_front( p_node );
+	return p_node->data_;
+}
+
+template <typename T, typename Allocator>
+template <class... Args>
+typename offset_list<T, Allocator>::reference offset_list<T, Allocator>::emplace_back( Args&&... args )
+{
+	auto p_node = node_allocator_traits_type::allocate( alloc_, 1 );
+	node_allocator_traits_type::construct( alloc_, p_node, node { nullptr, nullptr, value_type { std::forward<Args>( args )... } } );
+	insert_node_to_back( p_node );
+	return p_node->data_;
 }
 
 template <typename T, typename Allocator>
