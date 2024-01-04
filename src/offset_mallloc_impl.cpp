@@ -148,10 +148,14 @@ void offset_malloc::offset_malloc_impl::deallocate( void* p, size_t alignment )
 	uintptr_t addr_end = reinterpret_cast<uintptr_t>( op_end_.get() );
 	if ( addr_p < addr_top ) {
 		// out of range
+		psm_logoutput( psm_log_lv::kErr, "Error: incorrect deallocation is requested. it is out of range, p_mem=%p, addr_top=%p",
+		               p, reinterpret_cast<void*>( addr_top ) );
 		return;
 	}
 	if ( addr_end <= addr_p ) {
 		// out of range
+		psm_logoutput( psm_log_lv::kErr, "Error: incorrect deallocation is requested. it is out of range, p_mem=%p, addr_end=%p",
+		               p, reinterpret_cast<void*>( addr_end ) );
 		return;
 	}
 
@@ -248,15 +252,14 @@ offset_malloc::offset_malloc_impl* offset_malloc::offset_malloc_impl::placement_
 	return new ( begin_pointer ) offset_malloc::offset_malloc_impl( end_pointer );
 }
 
-offset_malloc::offset_malloc_impl* offset_malloc::offset_malloc_impl::bind( void* p_mem )
+offset_malloc::offset_malloc_impl* offset_malloc::offset_malloc_impl::bind( offset_malloc_impl* p_mem )
 {
 	if ( p_mem == nullptr ) {
 		return nullptr;
 	}
 
-	offset_malloc::offset_malloc_impl* p_ans = reinterpret_cast<offset_malloc::offset_malloc_impl*>( p_mem );
-	p_ans->bind();
-	return p_ans;
+	p_mem->bind();
+	return p_mem;
 }
 
 bool offset_malloc::offset_malloc_impl::teardown( offset_malloc::offset_malloc_impl* p_mem )

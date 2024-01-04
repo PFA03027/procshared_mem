@@ -11,11 +11,7 @@
 
 #include "offset_mallloc_impl.hpp"
 #include "offset_malloc.hpp"
-
-offset_malloc::offset_malloc( void )
-  : p_impl_( nullptr )
-{
-}
+#include "procshared_logger.hpp"
 
 offset_malloc::~offset_malloc()
 {
@@ -61,19 +57,24 @@ offset_malloc::offset_malloc( void* p_mem, size_t mem_bytes )
 }
 
 offset_malloc::offset_malloc( void* p_mem )
-  : p_impl_( offset_malloc_impl::bind( p_mem ) )
+  : p_impl_( offset_malloc_impl::bind( reinterpret_cast<offset_malloc_impl*>( p_mem ) ) )
 {
 }
 
 void* offset_malloc::allocate( size_t req_bytes, size_t alignment )
 {
-	if ( p_impl_ == nullptr ) return nullptr;
-
+	if ( p_impl_ == nullptr ) {
+		psm_logoutput( psm_log_lv::kWarn, "Warning: offset_malloc(%p) is required to allocate, but p_impl_ is nullptr", this );
+		return nullptr;
+	}
 	return p_impl_->allocate( req_bytes, alignment );
 }
 void offset_malloc::deallocate( void* p, size_t alignment )
 {
-	if ( p_impl_ == nullptr ) return;
+	if ( p_impl_ == nullptr ) {
+		psm_logoutput( psm_log_lv::kWarn, "Warning: offset_malloc(%p) is required to deallocate, but p_impl_ is nullptr", this );
+		return;
+	}
 
 	p_impl_->deallocate( p, alignment );
 }
@@ -83,13 +84,15 @@ void offset_malloc::swap( offset_malloc& src )
 	if ( this == &src ) return;
 
 	offset_malloc_impl* p_tmp = p_impl_;
-	p_impl_                       = src.p_impl_;
-	src.p_impl_                   = p_tmp;
+	p_impl_                   = src.p_impl_;
+	src.p_impl_               = p_tmp;
 }
 
 int offset_malloc::get_bind_count( void ) const
 {
-	if ( p_impl_ == nullptr ) return -2;
-
+	if ( p_impl_ == nullptr ) {
+		psm_logoutput( psm_log_lv::kDebug, "Debug: p_impl_ = offset_malloc(%p) is nullptr", this );
+		return 0;
+	}
 	return p_impl_->get_bind_count();
 }

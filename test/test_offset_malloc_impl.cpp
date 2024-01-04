@@ -43,7 +43,7 @@ TEST( ProcShared_KRmalloc_Cntr, CanBind )
 	ASSERT_NO_THROW( p_mem_alloc = offset_malloc::offset_malloc_impl::placement_new( p_mem, reinterpret_cast<void*>( reinterpret_cast<uintptr_t>( p_mem ) + 1024 ) ) );
 
 	// Act
-	ASSERT_NO_THROW( p_mem_alloc2 = offset_malloc::offset_malloc_impl::bind( p_mem ) );
+	ASSERT_NO_THROW( p_mem_alloc2 = offset_malloc::offset_malloc_impl::bind( reinterpret_cast<offset_malloc::offset_malloc_impl*>( p_mem ) ) );
 
 	// Assert
 	ASSERT_NE( p_mem_alloc2, nullptr );

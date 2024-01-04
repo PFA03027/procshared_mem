@@ -24,7 +24,7 @@
  * @tparam T type to allocate
  */
 template <typename T>
-class procshared_mem_allocator {
+class procshared_allocator {
 public:
 	using value_type                             = T;
 	using propagate_on_container_move_assignment = std::true_type;
@@ -32,34 +32,34 @@ public:
 	using difference_type                        = ptrdiff_t;
 	using is_always_equal                        = std::false_type;
 
-	constexpr procshared_mem_allocator() noexcept
+	constexpr procshared_allocator() noexcept
 	  : p_malloc_( nullptr )
 	  , sp_malloc_( nullptr )
 	{
 	}
 
-	constexpr explicit procshared_mem_allocator( offset_malloc* p ) noexcept
+	constexpr explicit procshared_allocator( offset_malloc* p ) noexcept
 	  : p_malloc_( p )
 	  , sp_malloc_( nullptr )
 	{
 	}
 
-	constexpr explicit procshared_mem_allocator( const std::shared_ptr<offset_malloc>& sp ) noexcept
+	constexpr explicit procshared_allocator( const std::shared_ptr<offset_malloc>& sp ) noexcept
 	  : p_malloc_( sp.get() )
 	  , sp_malloc_( sp )
 	{
 	}
 
-	constexpr procshared_mem_allocator( const procshared_mem_allocator& ) noexcept = default;
+	constexpr procshared_allocator( const procshared_allocator& ) noexcept = default;
 
 	template <class U>
-	constexpr procshared_mem_allocator( const procshared_mem_allocator<U>& orig ) noexcept
+	constexpr procshared_allocator( const procshared_allocator<U>& orig ) noexcept
 	  : p_malloc_( orig.p_malloc_ )
 	  , sp_malloc_( orig.sp_malloc_ )
 	{
 	}
 
-	constexpr procshared_mem_allocator& operator=( const procshared_mem_allocator& ) = default;
+	constexpr procshared_allocator& operator=( const procshared_allocator& ) = default;
 
 #if __has_cpp_attribute( nodiscard )
 	[[nodiscard]]
@@ -89,12 +89,12 @@ private:
 };
 
 template <class T, class U>
-constexpr bool operator==( const procshared_mem_allocator<T>& a, const procshared_mem_allocator<U>& b ) noexcept
+constexpr bool operator==( const procshared_allocator<T>& a, const procshared_allocator<U>& b ) noexcept
 {
 	return ( a.p_malloc_ == b.p_malloc_ );
 }
 template <class T, class U>
-constexpr bool operator!=( const procshared_mem_allocator<T>& a, const procshared_mem_allocator<U>& b ) noexcept
+constexpr bool operator!=( const procshared_allocator<T>& a, const procshared_allocator<U>& b ) noexcept
 {
 	return ( a.p_malloc_ != b.p_malloc_ );
 }

@@ -9,13 +9,17 @@
  *
  */
 
+#include <future>
+#include <mutex>
+#include <thread>
+
 #include "gtest/gtest.h"
 
 #include "offset_malloc.hpp"
 
 #include "test_procshared_common.hpp"
 
-TEST( Offset_MemAllocator_Cntr, CanConstruct )
+TEST( Offset_Malloc_Cntr, CanConstruct )
 {
 	// Arrange
 	unsigned char  test_buff[1024];
@@ -32,7 +36,7 @@ TEST( Offset_MemAllocator_Cntr, CanConstruct )
 	delete p_mem_alloc;
 }
 
-TEST( Offset_MemAllocator_Cntr, CanCopyConstruct )
+TEST( Offset_Malloc_Cntr, CanCopyConstruct )
 {
 	// Arrange
 	unsigned char test_buff[1024];
@@ -47,7 +51,7 @@ TEST( Offset_MemAllocator_Cntr, CanCopyConstruct )
 	// Clean-up
 }
 
-TEST( Offset_MemAllocator_Cntr, CanMoveConstruct )
+TEST( Offset_Malloc_Cntr, CanMoveConstruct )
 {
 	// Arrange
 	unsigned char test_buff[1024];
@@ -62,7 +66,7 @@ TEST( Offset_MemAllocator_Cntr, CanMoveConstruct )
 	// Clean-up
 }
 
-TEST( Offset_MemAllocator_Cntr, CanCopyAssignment1 )
+TEST( Offset_Malloc_Cntr, CanCopyAssignment1 )
 {
 	// Arrange
 	unsigned char test_buff[1024];
@@ -78,7 +82,7 @@ TEST( Offset_MemAllocator_Cntr, CanCopyAssignment1 )
 	// Clean-up
 }
 
-TEST( Offset_MemAllocator_Cntr, CanCopyAssignment2 )
+TEST( Offset_Malloc_Cntr, CanCopyAssignment2 )
 {
 	// Arrange
 	unsigned char test_buff1[1024];
@@ -94,7 +98,7 @@ TEST( Offset_MemAllocator_Cntr, CanCopyAssignment2 )
 	// Clean-up
 }
 
-TEST( Offset_MemAllocator_Cntr, CanMoveAssignment1 )
+TEST( Offset_Malloc_Cntr, CanMoveAssignment1 )
 {
 	// Arrange
 	unsigned char test_buff[1024];
@@ -109,7 +113,7 @@ TEST( Offset_MemAllocator_Cntr, CanMoveAssignment1 )
 	// Clean-up
 }
 
-TEST( Offset_MemAllocator_Cntr, CanMoveAssignment2 )
+TEST( Offset_Malloc_Cntr, CanMoveAssignment2 )
 {
 	// Arrange
 	unsigned char test_buff1[1024];
@@ -125,7 +129,7 @@ TEST( Offset_MemAllocator_Cntr, CanMoveAssignment2 )
 	// Clean-up
 }
 
-TEST( Offset_MemAllocator_Cntr, FailConstruct1 )
+TEST( Offset_Malloc_Cntr, FailConstruct1 )
 {
 	// Arrange
 	unsigned char test_buff[sizeof( offset_malloc ) + 1];
@@ -139,7 +143,7 @@ TEST( Offset_MemAllocator_Cntr, FailConstruct1 )
 	// Clean-up
 }
 
-TEST( Offset_MemAllocator_Cntr, FailConstruct2 )
+TEST( Offset_Malloc_Cntr, FailConstruct2 )
 {
 	// Arrange
 	unsigned char test_buff[1];
@@ -153,7 +157,7 @@ TEST( Offset_MemAllocator_Cntr, FailConstruct2 )
 	// Clean-up
 }
 
-class ProcShared_Malloc : public testing::Test {
+class Offset_Malloc : public testing::Test {
 	// You can implement all the usual fixture class members here.
 	// To access the test parameter, call GetParam() from class
 	// TestWithParam<T>.
@@ -180,7 +184,7 @@ public:
 	offset_malloc* p_sut_;
 };
 
-TEST_F( ProcShared_Malloc, CanAllocateSmall )
+TEST_F( Offset_Malloc, CanAllocateSmall )
 {
 	// Arrange
 
@@ -191,7 +195,7 @@ TEST_F( ProcShared_Malloc, CanAllocateSmall )
 	EXPECT_NE( p_allc_mem, nullptr );
 }
 
-TEST_F( ProcShared_Malloc, CanAllocateSmallwSmallAlignment )
+TEST_F( Offset_Malloc, CanAllocateSmallwSmallAlignment )
 {
 	// Arrange
 
@@ -202,7 +206,7 @@ TEST_F( ProcShared_Malloc, CanAllocateSmallwSmallAlignment )
 	EXPECT_NE( p_allc_mem, nullptr );
 }
 
-TEST_F( ProcShared_Malloc, CanAllocateSmallwEQAlignment )
+TEST_F( Offset_Malloc, CanAllocateSmallwEQAlignment )
 {
 	// Arrange
 
@@ -213,7 +217,7 @@ TEST_F( ProcShared_Malloc, CanAllocateSmallwEQAlignment )
 	EXPECT_NE( p_allc_mem, nullptr );
 }
 
-TEST_F( ProcShared_Malloc, CanAllocateSmallwBigAlignment )
+TEST_F( Offset_Malloc, CanAllocateSmallwBigAlignment )
 {
 	// Arrange
 
@@ -224,7 +228,7 @@ TEST_F( ProcShared_Malloc, CanAllocateSmallwBigAlignment )
 	EXPECT_NE( p_allc_mem, nullptr );
 }
 
-TEST_F( ProcShared_Malloc, CanAllocateOverSize )
+TEST_F( Offset_Malloc, CanAllocateOverSize )
 {
 	// Arrange
 
@@ -235,7 +239,7 @@ TEST_F( ProcShared_Malloc, CanAllocateOverSize )
 	EXPECT_EQ( p_allc_mem, nullptr );
 }
 
-TEST_F( ProcShared_Malloc, CanDeallocate1 )
+TEST_F( Offset_Malloc, CanDeallocate1 )
 {
 	// Arrange
 	void* p_allc_mem = p_sut_->allocate( 10 );
@@ -246,7 +250,7 @@ TEST_F( ProcShared_Malloc, CanDeallocate1 )
 	// Assert
 }
 
-TEST_F( ProcShared_Malloc, CanDeallocate2 )
+TEST_F( Offset_Malloc, CanDeallocate2 )
 {
 	// Arrange
 	void* p_allc_mem1 = p_sut_->allocate( 10 );
@@ -261,4 +265,53 @@ TEST_F( ProcShared_Malloc, CanDeallocate2 )
 	EXPECT_NO_THROW( p_sut_->deallocate( p_allc_mem1 ) );
 
 	// Assert
+}
+
+TEST( Offset_Malloc_Highload, CanMulti_Thread_Calling )
+{
+	// Arrange
+	const int        loopcount       = 100000;
+	const size_t     alloc_size      = 11;
+	constexpr int    test_thread_num = 100;
+	constexpr size_t buff_size       = alloc_size * 100 * test_thread_num;
+
+	std::unique_ptr<unsigned char[]> up_buff( new unsigned char[buff_size] );   // 4MBytes
+	void*                            p_mem = reinterpret_cast<void*>( up_buff.get() );
+	offset_malloc                    sut( p_mem, buff_size );
+
+	std::packaged_task<int( offset_malloc )> fail_count_tasks[test_thread_num];
+	std::future<int>                         fail_count_task_results[test_thread_num];
+	std::thread                              thread_array[test_thread_num];
+
+	// Act
+	for ( int i = 0; i < test_thread_num; i++ ) {
+		fail_count_tasks[i]        = std::packaged_task<int( offset_malloc )>( [alloc_size, loopcount]( offset_malloc ttsut ) -> int {
+            int fail_count_ret = 0;
+            for ( int i = 0; i < loopcount; i++ ) {
+                auto p_ret = ttsut.allocate( 11 );
+                if ( p_ret == nullptr ) {
+                    fail_count_ret++;
+                }
+                ttsut.deallocate( p_ret );
+            }
+
+            return fail_count_ret;
+        } );
+		fail_count_task_results[i] = fail_count_tasks[i].get_future();
+		thread_array[i]            = std::thread( std::move( fail_count_tasks[i] ), sut );
+	}
+
+	// Assert
+	int final_fail_count_result = 0;
+	for ( auto& e : fail_count_task_results ) {
+		final_fail_count_result += e.get();
+	}
+	EXPECT_EQ( final_fail_count_result, 0 );
+
+	// Clean-up
+	for ( auto& e : thread_array ) {
+		if ( e.joinable() ) {
+			e.join();
+		}
+	}
 }

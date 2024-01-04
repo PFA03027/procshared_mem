@@ -30,9 +30,9 @@
  */
 class offset_malloc::offset_malloc_impl {
 public:
-	static offset_malloc::offset_malloc_impl* placement_new( void* begin_pointer, void* end_pointer );
-	static offset_malloc::offset_malloc_impl* bind( void* p_mem );
-	static bool                                   teardown( offset_malloc::offset_malloc_impl* p_mem );
+	static offset_malloc_impl* placement_new( void* begin_pointer, void* end_pointer );
+	static offset_malloc_impl* bind( offset_malloc_impl* p_mem );
+	static bool                teardown( offset_malloc_impl* p_mem );
 
 #if __has_cpp_attribute( nodiscard )
 	[[nodiscard]]
