@@ -188,6 +188,7 @@ TEST( Offset_Allocator_CopyAssingment, CanAssignFromValidAllocatorToValidAllocat
 	EXPECT_EQ( src.get_bind_count(), 1 );
 	auto p_ret_from_src = src.allocate( 10 );
 	EXPECT_NE( p_ret_from_src, nullptr );
+
 	unsigned char         test_buff2[1024];
 	void*                 p_mem2 = reinterpret_cast<void*>( test_buff2 );
 	offset_allocator<int> sut( p_mem2, 1024 );

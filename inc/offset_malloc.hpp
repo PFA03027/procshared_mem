@@ -40,7 +40,8 @@ public:
 
 	void swap( offset_malloc& src );
 
-	int get_bind_count( void ) const;
+	int  get_bind_count( void ) const;
+	bool is_belong_to( void* p_mem ) const;
 
 private:
 	offset_malloc_impl* p_impl_;

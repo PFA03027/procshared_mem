@@ -193,6 +193,7 @@ TEST_F( Offset_Malloc, CanAllocateSmall )
 
 	// Assert
 	EXPECT_NE( p_allc_mem, nullptr );
+	EXPECT_TRUE( p_sut_->is_belong_to( p_allc_mem ) );
 }
 
 TEST_F( Offset_Malloc, CanAllocateSmallwSmallAlignment )
@@ -204,6 +205,7 @@ TEST_F( Offset_Malloc, CanAllocateSmallwSmallAlignment )
 
 	// Assert
 	EXPECT_NE( p_allc_mem, nullptr );
+	EXPECT_TRUE( p_sut_->is_belong_to( p_allc_mem ) );
 }
 
 TEST_F( Offset_Malloc, CanAllocateSmallwEQAlignment )
@@ -215,6 +217,7 @@ TEST_F( Offset_Malloc, CanAllocateSmallwEQAlignment )
 
 	// Assert
 	EXPECT_NE( p_allc_mem, nullptr );
+	EXPECT_TRUE( p_sut_->is_belong_to( p_allc_mem ) );
 }
 
 TEST_F( Offset_Malloc, CanAllocateSmallwBigAlignment )
@@ -226,6 +229,7 @@ TEST_F( Offset_Malloc, CanAllocateSmallwBigAlignment )
 
 	// Assert
 	EXPECT_NE( p_allc_mem, nullptr );
+	EXPECT_TRUE( p_sut_->is_belong_to( p_allc_mem ) );
 }
 
 TEST_F( Offset_Malloc, CanAllocateOverSize )
@@ -237,6 +241,7 @@ TEST_F( Offset_Malloc, CanAllocateOverSize )
 
 	// Assert
 	EXPECT_EQ( p_allc_mem, nullptr );
+	EXPECT_FALSE( p_sut_->is_belong_to( p_allc_mem ) );
 }
 
 TEST_F( Offset_Malloc, CanDeallocate1 )

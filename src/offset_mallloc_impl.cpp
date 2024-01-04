@@ -234,6 +234,23 @@ int offset_malloc::offset_malloc_impl::get_bind_count( void ) const
 	return bind_cnt_;
 }
 
+bool offset_malloc::offset_malloc_impl::is_belong_to( void* p_mem ) const
+{
+	uintptr_t addr_p   = reinterpret_cast<uintptr_t>( p_mem );
+	uintptr_t addr_top = reinterpret_cast<uintptr_t>( base_blk_.block_body_ );
+	uintptr_t addr_end = reinterpret_cast<uintptr_t>( op_end_.get() );
+	if ( addr_p < addr_top ) {
+		// out of range
+		return false;
+	}
+	if ( addr_end <= addr_p ) {
+		// out of range
+		return false;
+	}
+
+	return true;
+}
+
 offset_malloc::offset_malloc_impl* offset_malloc::offset_malloc_impl::placement_new( void* begin_pointer, void* end_pointer )
 {
 	if ( begin_pointer == nullptr ) {

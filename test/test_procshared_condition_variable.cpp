@@ -13,6 +13,8 @@
 #include <mutex>
 #include <thread>
 
+#include <pthread.h>
+
 #include "gtest/gtest.h"
 
 #include "procshared_condition_variable.hpp"
@@ -112,16 +114,22 @@ TEST( Test_procshared_condition_variable, CanWaitFor_Timeout )
 TEST( Test_procshared_condition_variable, CanWaitFor_NoTimeout )
 {
 	// Arrange
+	pthread_barrier_t br_obj;
+	ASSERT_EQ( pthread_barrier_init( &br_obj, nullptr, 2 ), 0 );
+
 	bool                          shared_state_flag = false;
 	procshared_mutex              mtx;
 	procshared_condition_variable sut1;
 
-	std::packaged_task<std::cv_status()> task1( [&sut1, &mtx]() {
+	std::packaged_task<std::cv_status()> task1( [&sut1, &mtx, &br_obj]() {
+		pthread_barrier_wait( &br_obj );
 		std::unique_lock<procshared_mutex> lk( mtx );
-		return sut1.wait_for( lk, std::chrono::milliseconds( 20 ) );
+		return sut1.wait_for( lk, std::chrono::milliseconds( 2000 ) );
 	} );   // 非同期実行する関数を登録する
 	std::future<std::cv_status>          f1 = task1.get_future();
 	std::thread                          t1( std::move( task1 ) );
+
+	pthread_barrier_wait( &br_obj );
 	std::this_thread::sleep_for( std::chrono::milliseconds( 10 ) );
 
 	// Act
@@ -141,6 +149,7 @@ TEST( Test_procshared_condition_variable, CanWaitFor_NoTimeout )
 	if ( t1.joinable() ) {
 		t1.join();
 	}
+	pthread_barrier_destroy( &br_obj );
 }
 
 TEST( Test_procshared_condition_variable, CanWaitForPred_Timeout )

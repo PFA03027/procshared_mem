@@ -14,6 +14,7 @@
 
 #include "gtest/gtest.h"
 
+#include "offset_allocator.hpp"
 #include "offset_list.hpp"
 
 struct EmplacementTestData {
@@ -1679,4 +1680,136 @@ TEST( OffsetList, CanCallMaxSize )
 
 	// Assert
 	EXPECT_GT( ret, 0 );
+}
+
+TEST( OffsetList_Allocator, CanConstruct )
+{
+	// Arrange
+	unsigned char         test_buff[1024];
+	void*                 p_mem = reinterpret_cast<void*>( test_buff );
+	offset_malloc         malloc_obj( p_mem, 1024 );
+	offset_allocator<int> allocator_obj( malloc_obj );
+
+	// Act
+	offset_list<int, offset_allocator<int>> sut( allocator_obj );
+
+	// Assert
+}
+
+TEST( OffsetList_Allocator, CanPush )
+{
+	// Arrange
+	unsigned char                           test_buff[1024];
+	void*                                   p_mem = reinterpret_cast<void*>( test_buff );
+	offset_malloc                           malloc_obj( p_mem, 1024 );
+	offset_allocator<int>                   allocator_obj( malloc_obj );
+	offset_list<int, offset_allocator<int>> sut( allocator_obj );
+
+	// Act
+	sut.push_back( 1 );
+
+	// Assert
+	auto it            = sut.begin();
+	int* p_target_data = &( *it );
+	EXPECT_TRUE( malloc_obj.is_belong_to( p_target_data ) );
+}
+
+TEST( OffsetList_Allocator, CanCopyConstruct )
+{
+	// Arrange
+	unsigned char                           test_buff[1024];
+	void*                                   p_mem = reinterpret_cast<void*>( test_buff );
+	offset_malloc                           malloc_obj( p_mem, 1024 );
+	offset_allocator<int>                   allocator_obj( malloc_obj );
+	offset_list<int, offset_allocator<int>> src( allocator_obj );
+	src.push_back( 1 );
+
+	// Act
+	offset_list<int, offset_allocator<int>> sut( src );
+
+	// Assert
+	auto it            = sut.begin();
+	int* p_target_data = &( *it );
+	EXPECT_TRUE( malloc_obj.is_belong_to( p_target_data ) );
+	EXPECT_NE( it, src.begin() );
+}
+
+TEST( OffsetList_Allocator, CanMoveConstruct )
+{
+	// Arrange
+	unsigned char                           test_buff[1024];
+	void*                                   p_mem = reinterpret_cast<void*>( test_buff );
+	offset_malloc                           malloc_obj( p_mem, 1024 );
+	offset_allocator<int>                   allocator_obj( malloc_obj );
+	offset_list<int, offset_allocator<int>> src( allocator_obj );
+	src.push_back( 1 );
+
+	// Act
+	offset_list<int, offset_allocator<int>> sut( std::move( src ) );
+
+	// Assert
+	auto it            = sut.begin();
+	int* p_target_data = &( *it );
+	EXPECT_TRUE( malloc_obj.is_belong_to( p_target_data ) );
+
+	sut.push_front( 2 );
+	it            = sut.begin();
+	p_target_data = &( *it );
+	EXPECT_TRUE( malloc_obj.is_belong_to( p_target_data ) );
+}
+
+TEST( OffsetList_Allocator, CanCopyAssingment )
+{
+	// Arrange
+	unsigned char                           test_buff[1024];
+	void*                                   p_mem = reinterpret_cast<void*>( test_buff );
+	offset_malloc                           malloc_obj( p_mem, 1024 );
+	offset_allocator<int>                   allocator_obj( malloc_obj );
+	offset_list<int, offset_allocator<int>> src( allocator_obj );
+	src.push_back( 1 );
+
+	unsigned char                           test_buff2[1024];
+	void*                                   p_mem2 = reinterpret_cast<void*>( test_buff2 );
+	offset_malloc                           malloc_obj2( p_mem2, 1024 );
+	offset_allocator<int>                   allocator_obj2( malloc_obj2 );
+	offset_list<int, offset_allocator<int>> sut( allocator_obj2 );
+
+	// Act
+	sut = src;
+
+	// Assert
+	auto it            = sut.begin();
+	int* p_target_data = &( *it );
+	EXPECT_TRUE( malloc_obj2.is_belong_to( p_target_data ) );
+	EXPECT_NE( it, src.begin() );
+}
+
+TEST( OffsetList_Allocator, CanMoveAssignment )
+{
+	// Arrange
+	unsigned char                           test_buff[1024];
+	void*                                   p_mem = reinterpret_cast<void*>( test_buff );
+	offset_malloc                           malloc_obj( p_mem, 1024 );
+	offset_allocator<int>                   allocator_obj( malloc_obj );
+	offset_list<int, offset_allocator<int>> src( allocator_obj );
+	src.push_back( 1 );
+
+	unsigned char                           test_buff2[1024];
+	void*                                   p_mem2 = reinterpret_cast<void*>( test_buff2 );
+	offset_malloc                           malloc_obj2( p_mem2, 1024 );
+	offset_allocator<int>                   allocator_obj2( malloc_obj2 );
+	offset_list<int, offset_allocator<int>> sut( allocator_obj2 );
+
+	// Act
+	sut = std::move( src );
+
+	// Assert
+	auto it            = sut.begin();
+	int* p_target_data = &( *it );
+	EXPECT_TRUE( malloc_obj.is_belong_to( p_target_data ) );
+
+	sut.push_front( 2 );
+	it            = sut.begin();
+	p_target_data = &( *it );
+	EXPECT_TRUE( malloc_obj.is_belong_to( p_target_data ) );
 }

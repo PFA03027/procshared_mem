@@ -53,6 +53,8 @@ public:
 		my_allocator_.deallocate( p );
 	}
 
+	offset_allocator select_on_container_copy_construction( void ) const;
+
 	int get_bind_count( void ) const
 	{
 		return my_allocator_.get_bind_count();
@@ -113,6 +115,16 @@ template <typename U>
 offset_allocator<T>::offset_allocator( const offset_allocator<U>& src )
   : my_allocator_( src.my_allocator_ )
 {
+}
+
+template <typename T>
+offset_allocator<T> offset_allocator<T>::select_on_container_copy_construction( void ) const
+{
+	// TODO: 仮実装として、自身のコピーオブジェクトを返す。
+	// offset_mallocは、デフォルト構築された場合、メモリ確保できない。
+	// そのため、いったん安全のために、この実装を仮に実装する。
+	// offset_allocatorの仕様として、デフォルト構築した場合に、通常のヒープからメモリを確保するしようとするかの決断が必要。
+	return offset_allocator( *this );
 }
 
 #endif   // OFFSET_ALLOCATOR_HPP_
