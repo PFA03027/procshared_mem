@@ -46,7 +46,7 @@ public:
 	value_type*
 	allocate( size_type n )
 	{
-		return reinterpret_cast<value_type*>( my_allocator_.allocate( sizeof( value_type ) * n ) );
+		return reinterpret_cast<value_type*>( my_allocator_.allocate( sizeof( value_type[n] ) ) );
 	}
 	void deallocate( value_type* p, size_type n )
 	{

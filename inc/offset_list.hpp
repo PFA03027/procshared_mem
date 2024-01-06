@@ -18,6 +18,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "offset_memory_util.hpp"
 #include "offset_ptr.hpp"
 
 template <typename T, typename Allocator>
@@ -140,6 +141,28 @@ private:
 		offset_pointer_to_node op_pre_;
 		offset_pointer_to_node op_nxt_;
 		value_type             data_;
+
+		template <typename... Args>
+		node( Args&&... args )
+		  : op_pre_( nullptr )
+		  , op_nxt_( nullptr )
+		  , data_ { std::forward<Args>( args )... }
+		{
+		}
+		template <typename... Args>
+		node( Args&&... args, const Allocator& a )
+		  : op_pre_( nullptr )
+		  , op_nxt_( nullptr )
+		  , data_( std::forward<Args>( args )..., a )
+		{
+		}
+		template <typename... Args>
+		node( std::allocator_arg_t, const Allocator& a, Args&&... args )
+		  : op_pre_( nullptr )
+		  , op_nxt_( nullptr )
+		  , data_( std::forward<Args>( args )..., a )
+		{
+		}
 	};
 
 	using node_allocator_type        = typename std::allocator_traits<allocator_type>::template rebind_alloc<node>;
@@ -153,7 +176,7 @@ private:
 	{
 		// Tは集成体として構築できることを想定した関数
 		auto p_node = node_allocator_traits_type::allocate( alloc_, 1 );
-		node_allocator_traits_type::construct( alloc_, p_node, node { nullptr, nullptr, value_type { std::forward<Args>( args )... } } );
+		node_allocator_traits_type::construct( alloc_, p_node, std::forward<Args>( args )... );
 
 		return p_node;
 	}
@@ -165,7 +188,7 @@ private:
 	{
 		// Tはコンストラクタ呼び出しT(args...)として構築できることを想定した関数
 		auto p_node = node_allocator_traits_type::allocate( alloc_, 1 );
-		node_allocator_traits_type::construct( alloc_, p_node, node { nullptr, nullptr, value_type( std::forward<Args>( args )... ) } );
+		node_allocator_traits_type::construct( alloc_, p_node, std::forward<Args>( args )... );
 
 		return p_node;
 	}
@@ -176,7 +199,7 @@ private:
 	node* uses_allocator_contruct_node( Args&&... args )
 	{
 		auto p_node = node_allocator_traits_type::allocate( alloc_, 1 );
-		node_allocator_traits_type::construct( alloc_, p_node, node { nullptr, nullptr, value_type( std::allocator_arg_t(), alloc_, std::forward<Args>( args )... ) } );
+		node_allocator_traits_type::construct( alloc_, p_node, std::allocator_arg_t(), alloc_, std::forward<Args>( args )... );
 
 		return p_node;
 	}
@@ -187,9 +210,17 @@ private:
 	node* uses_allocator_contruct_node( Args&&... args )
 	{
 		auto p_node = node_allocator_traits_type::allocate( alloc_, 1 );
-		node_allocator_traits_type::construct( alloc_, p_node, node { nullptr, nullptr, value_type( std::forward<Args>( args )..., alloc_ ) } );
+		node_allocator_traits_type::construct( alloc_, p_node, std::forward<Args>( args )..., alloc_ );
 
 		return p_node;
+	}
+
+	void usee_allocator_destruct_node( node* p_node )
+	{
+		if ( p_node == nullptr ) return;
+
+		node_allocator_traits_type::destroy( alloc_, p_node );
+		node_allocator_traits_type::deallocate( alloc_, p_node, 1 );
 	}
 
 	void insert_node_to_front( node* p_node )
@@ -934,8 +965,7 @@ typename offset_list<T, Allocator>::iterator offset_list<T, Allocator>::erase( c
 
 	while ( p_target_node != p_nxt_node ) {
 		node* p_next = p_target_node->op_nxt_;
-		node_allocator_traits_type::destroy( alloc_, p_target_node );
-		node_allocator_traits_type::deallocate( alloc_, p_target_node, 1 );
+		usee_allocator_destruct_node( p_target_node );
 		p_target_node = p_next;
 	}
 
@@ -967,8 +997,7 @@ void offset_list<T, Allocator>::clear( void ) noexcept
 	while ( p_cur_node != nullptr ) {
 		node* p_next = p_cur_node->op_nxt_;
 
-		node_allocator_traits_type::destroy( alloc_, p_cur_node );
-		node_allocator_traits_type::deallocate( alloc_, p_cur_node, 1 );
+		usee_allocator_destruct_node( p_cur_node );
 
 		p_cur_node = p_next;
 	}
@@ -989,9 +1018,27 @@ void offset_list<T, Allocator>::swap( offset_list& x )
 		alloc_                        = x.alloc_;
 		x.alloc_                      = tmp_alloc;
 	}
+	if ( alloc_ == x.alloc_ ) {
+		op_head_.swap( x.op_head_ );
+		op_tail_.swap( x.op_tail_ );
+	} else {
+		// 自分自身のデータは、退避する。
+		offset_pointer_to_node op_orig_head = std::move( op_head_ );
+		op_tail_                            = nullptr;
 
-	op_head_.swap( x.op_head_ );
-	op_tail_.swap( x.op_tail_ );
+		// 本当は削除しながらmoveした方がキャッシュヒット率が高くなるので速くなると思うが、
+		// わかりにくいので、2パス方式で実装する。
+		for ( auto& e : x ) {
+			push_back( std::move( e ) );
+		}
+		x.clear();
+
+		for ( auto op_cur = op_orig_head; op_cur != nullptr; ) {
+			x.push_back( std::move( op_cur->data_ ) );
+			op_cur = op_cur->op_nxt_;
+			usee_allocator_destruct_node( op_cur );
+		}
+	}
 }
 
 template <typename XT, typename XAllocator, bool XCT1, bool XCT2>

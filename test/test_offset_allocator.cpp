@@ -12,6 +12,18 @@
 #include "gtest/gtest.h"
 
 #include "offset_allocator.hpp"
+#include "offset_memory_util.hpp"
+
+struct EmplacementTestData {
+	int    x_;
+	double y_;
+};
+
+bool operator==( const EmplacementTestData& a, const EmplacementTestData& b )
+{
+	return ( a.x_ == b.x_ ) &&
+	       ( a.y_ == b.y_ );
+}
 
 TEST( Offset_Allocator_Cntr, CanDefaultConstruct )
 {
@@ -257,4 +269,19 @@ TEST( Offset_Allocator, CanDeallocate2 )
 	// Assert
 	p_cur = sut.allocate( 10 );
 	EXPECT_NE( p_cur, nullptr );
+}
+
+TEST( Offset_Allocator, CanMakeObj )
+{
+	// Arrange
+	unsigned char                         test_buff[1024];
+	void*                                 p_mem = reinterpret_cast<void*>( test_buff );
+	offset_allocator<EmplacementTestData> sut( p_mem, 1024 );
+
+	// Act
+	EmplacementTestData* p = make_obj_construct_using_allocator<EmplacementTestData>( sut, 1, 2.0 );
+
+	// Assert
+	EXPECT_EQ( p->x_, 1 );
+	EXPECT_EQ( p->y_, 2.0 );
 }
