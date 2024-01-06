@@ -27,7 +27,8 @@ template <typename T>
 class procshared_allocator {
 public:
 	using value_type                             = T;
-	using propagate_on_container_move_assignment = std::true_type;
+	using propagate_on_container_move_assignment = std::false_type;
+	using propagate_on_container_copy_assignment = std::false_type;
 	using size_type                              = size_t;
 	using difference_type                        = ptrdiff_t;
 	using is_always_equal                        = std::false_type;

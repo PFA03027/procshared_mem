@@ -15,6 +15,7 @@
 #include <initializer_list>
 #include <limits>
 #include <memory>
+#include <type_traits>
 #include <utility>
 
 #include "offset_ptr.hpp"
@@ -143,6 +144,53 @@ private:
 
 	using node_allocator_type        = typename std::allocator_traits<allocator_type>::template rebind_alloc<node>;
 	using node_allocator_traits_type = std::allocator_traits<node_allocator_type>;
+
+	template <typename... Args,
+	          typename std::enable_if<
+				  ( !std::uses_allocator<T, Allocator>::value ) &&
+				  ( !std::is_constructible<T, Args...>::value )>::type* = nullptr>
+	node* uses_allocator_contruct_node( Args&&... args )
+	{
+		// Tは集成体として構築できることを想定した関数
+		auto p_node = node_allocator_traits_type::allocate( alloc_, 1 );
+		node_allocator_traits_type::construct( alloc_, p_node, node { nullptr, nullptr, value_type { std::forward<Args>( args )... } } );
+
+		return p_node;
+	}
+	template <typename... Args,
+	          typename std::enable_if<
+				  ( !std::uses_allocator<T, Allocator>::value ) &&
+				  std::is_constructible<T, Args...>::value>::type* = nullptr>
+	node* uses_allocator_contruct_node( Args&&... args )
+	{
+		// Tはコンストラクタ呼び出しT(args...)として構築できることを想定した関数
+		auto p_node = node_allocator_traits_type::allocate( alloc_, 1 );
+		node_allocator_traits_type::construct( alloc_, p_node, node { nullptr, nullptr, value_type( std::forward<Args>( args )... ) } );
+
+		return p_node;
+	}
+	template <typename... Args,
+	          typename std::enable_if<
+				  std::uses_allocator<T, Allocator>::value &&
+				  std::is_constructible<T, std::allocator_arg_t, Allocator, Args...>::value>::type* = nullptr>
+	node* uses_allocator_contruct_node( Args&&... args )
+	{
+		auto p_node = node_allocator_traits_type::allocate( alloc_, 1 );
+		node_allocator_traits_type::construct( alloc_, p_node, node { nullptr, nullptr, value_type( std::allocator_arg_t(), alloc_, std::forward<Args>( args )... ) } );
+
+		return p_node;
+	}
+	template <typename... Args,
+	          typename std::enable_if<
+				  std::uses_allocator<T, Allocator>::value &&
+				  std::is_constructible<T, Args..., Allocator>::value>::type* = nullptr>
+	node* uses_allocator_contruct_node( Args&&... args )
+	{
+		auto p_node = node_allocator_traits_type::allocate( alloc_, 1 );
+		node_allocator_traits_type::construct( alloc_, p_node, node { nullptr, nullptr, value_type( std::forward<Args>( args )..., alloc_ ) } );
+
+		return p_node;
+	}
 
 	void insert_node_to_front( node* p_node )
 	{
@@ -552,8 +600,17 @@ template <typename T, typename Allocator>
 offset_list<T, Allocator>::offset_list( offset_list&& x, const Allocator& a )
   : offset_list( a )
 {
-	op_head_ = std::move( x.op_head_ );
-	op_tail_ = std::move( x.op_tail_ );
+	if ( alloc_ == x.alloc_ ) {
+		op_head_ = std::move( x.op_head_ );
+		op_tail_ = std::move( x.op_tail_ );
+	} else {
+		// 本当は削除しながらmoveした方がキャッシュヒット率が高くなるので速くなると思うが、
+		// わかりにくいので、2パス方式で実装する。
+		for ( auto& e : x ) {
+			push_back( std::move( e ) );
+		}
+		x.clear();
+	}
 }
 
 template <typename T, typename Allocator>
@@ -589,8 +646,17 @@ offset_list<T, Allocator>& offset_list<T, Allocator>::operator=( offset_list&& x
 		alloc_ = x.alloc_;
 	}
 
-	op_head_ = std::move( x.op_head_ );
-	op_tail_ = std::move( x.op_tail_ );
+	if ( alloc_ == x.alloc_ ) {
+		op_head_ = std::move( x.op_head_ );
+		op_tail_ = std::move( x.op_tail_ );
+	} else {
+		// 本当は削除しながらmoveした方がキャッシュヒット率が高くなるので速くなると思うが、
+		// わかりにくいので、2パス方式で実装する。
+		for ( auto& e : x ) {
+			push_back( std::move( e ) );
+		}
+		x.clear();
+	}
 
 	return *this;
 }
@@ -718,30 +784,46 @@ inline typename offset_list<T, Allocator>::const_reference offset_list<T, Alloca
 template <typename T, typename Allocator>
 void offset_list<T, Allocator>::push_front( const T& x )
 {
+#if 1
+	auto p_node = uses_allocator_contruct_node( x );
+#else
 	auto p_node = node_allocator_traits_type::allocate( alloc_, 1 );
 	node_allocator_traits_type::construct( alloc_, p_node, node { nullptr, nullptr, x } );
+#endif
 	insert_node_to_front( p_node );
 }
 template <typename T, typename Allocator>
 void offset_list<T, Allocator>::push_front( T&& x )
 {
+#if 1
+	auto p_node = uses_allocator_contruct_node( std::move( x ) );
+#else
 	auto p_node = node_allocator_traits_type::allocate( alloc_, 1 );
 	node_allocator_traits_type::construct( alloc_, p_node, node { nullptr, nullptr, std::move( x ) } );
+#endif
 	insert_node_to_front( p_node );
 }
 
 template <typename T, typename Allocator>
 void offset_list<T, Allocator>::push_back( const T& x )
 {
+#if 1
+	auto p_node = uses_allocator_contruct_node( x );
+#else
 	auto p_node = node_allocator_traits_type::allocate( alloc_, 1 );
 	node_allocator_traits_type::construct( alloc_, p_node, node { nullptr, nullptr, x } );
+#endif
 	insert_node_to_back( p_node );
 }
 template <typename T, typename Allocator>
 void offset_list<T, Allocator>::push_back( T&& x )
 {
+#if 1
+	auto p_node = uses_allocator_contruct_node( std::move( x ) );
+#else
 	auto p_node = node_allocator_traits_type::allocate( alloc_, 1 );
 	node_allocator_traits_type::construct( alloc_, p_node, node { nullptr, nullptr, std::move( x ) } );
+#endif
 	insert_node_to_back( p_node );
 }
 
@@ -749,8 +831,12 @@ template <typename T, typename Allocator>
 template <class... Args>
 typename offset_list<T, Allocator>::reference offset_list<T, Allocator>::emplace_front( Args&&... args )
 {
+#if 1
+	auto p_node = uses_allocator_contruct_node( std::forward<Args>( args )... );
+#else
 	auto p_node = node_allocator_traits_type::allocate( alloc_, 1 );
 	node_allocator_traits_type::construct( alloc_, p_node, node { nullptr, nullptr, value_type { std::forward<Args>( args )... } } );
+#endif
 	insert_node_to_front( p_node );
 	return p_node->data_;
 }
@@ -759,8 +845,12 @@ template <typename T, typename Allocator>
 template <class... Args>
 typename offset_list<T, Allocator>::reference offset_list<T, Allocator>::emplace_back( Args&&... args )
 {
+#if 1
+	auto p_node = uses_allocator_contruct_node( std::forward<Args>( args )... );
+#else
 	auto p_node = node_allocator_traits_type::allocate( alloc_, 1 );
 	node_allocator_traits_type::construct( alloc_, p_node, node { nullptr, nullptr, value_type { std::forward<Args>( args )... } } );
+#endif
 	insert_node_to_back( p_node );
 	return p_node->data_;
 }
@@ -768,8 +858,12 @@ typename offset_list<T, Allocator>::reference offset_list<T, Allocator>::emplace
 template <typename T, typename Allocator>
 typename offset_list<T, Allocator>::iterator offset_list<T, Allocator>::insert( const_iterator position, const T& x )
 {
+#if 1
+	auto p_node = uses_allocator_contruct_node( x );
+#else
 	auto p_node = node_allocator_traits_type::allocate( alloc_, 1 );
 	node_allocator_traits_type::construct( alloc_, p_node, node { nullptr, nullptr, x } );
+#endif
 
 	insert_node_before_position( position, p_node );
 
@@ -778,8 +872,12 @@ typename offset_list<T, Allocator>::iterator offset_list<T, Allocator>::insert( 
 template <typename T, typename Allocator>
 typename offset_list<T, Allocator>::iterator offset_list<T, Allocator>::insert( const_iterator position, T&& x )
 {
+#if 1
+	auto p_node = uses_allocator_contruct_node( std::move( x ) );
+#else
 	auto p_node = node_allocator_traits_type::allocate( alloc_, 1 );
 	node_allocator_traits_type::construct( alloc_, p_node, node { nullptr, nullptr, std::move( x ) } );
+#endif
 
 	insert_node_before_position( position, p_node );
 
@@ -789,8 +887,12 @@ template <typename T, typename Allocator>
 template <class... Args>
 typename offset_list<T, Allocator>::iterator offset_list<T, Allocator>::emplace( const_iterator position, Args&&... args )
 {
+#if 1
+	auto p_node = uses_allocator_contruct_node( std::forward<Args>( args )... );
+#else
 	auto p_node = node_allocator_traits_type::allocate( alloc_, 1 );
 	node_allocator_traits_type::construct( alloc_, p_node, node { nullptr, nullptr, value_type { std::forward<Args>( args )... } } );
+#endif
 
 	insert_node_before_position( position, p_node );
 

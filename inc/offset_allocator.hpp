@@ -22,7 +22,8 @@ template <typename T>
 class offset_allocator {
 public:
 	using value_type                             = T;
-	using propagate_on_container_move_assignment = std::true_type;
+	using propagate_on_container_move_assignment = std::false_type;   // メモリ管理領域が違う場合、moveであっても、move先のメモリ管理領域で値が構築されるべき。move/copy先が同じメモリ管理領域の場合に処理を最適化するかどうかは、allocatorを使用する側の都合で決定すべき。
+	using propagate_on_container_copy_assignment = std::false_type;   // メモリ管理領域が違う場合、copyであっても、copy先のメモリ管理領域で値が構築されるべき。move/copy先が同じメモリ管理領域の場合に処理を最適化するかどうかは、allocatorを使用する側の都合で決定すべき。
 	using size_type                              = size_t;
 	using difference_type                        = ptrdiff_t;
 	using is_always_equal                        = std::false_type;

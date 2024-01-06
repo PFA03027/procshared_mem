@@ -431,6 +431,27 @@ TEST( OffsetList_CanInitializerlistAssignment, Assign3ItemTo1ItemList )
 	EXPECT_EQ( sut.back(), 3 );
 }
 
+TEST( OffsetList_Construct, CanTypeSelf )
+{
+	// Arrange
+
+	// Act
+	offset_list<offset_list<int>> src;
+
+	// Assert
+}
+
+TEST( OffsetList_Construct, CanPushTypeSelf )
+{
+	// Arrange
+	offset_list<offset_list<int>> src;
+
+	// Act
+	src.push_back( offset_list<int>() );
+
+	// Assert
+}
+
 TEST( OffsetList_Push, CanPushBack1 )
 {
 	// Arrange
@@ -1806,10 +1827,267 @@ TEST( OffsetList_Allocator, CanMoveAssignment )
 	// Assert
 	auto it            = sut.begin();
 	int* p_target_data = &( *it );
-	EXPECT_TRUE( malloc_obj.is_belong_to( p_target_data ) );
+	EXPECT_TRUE( malloc_obj2.is_belong_to( p_target_data ) );
 
 	sut.push_front( 2 );
 	it            = sut.begin();
 	p_target_data = &( *it );
+	EXPECT_TRUE( malloc_obj2.is_belong_to( p_target_data ) );
+}
+
+TEST( OffsetList_Allocator, CanTypeSelf )
+{
+	// Arrange
+	unsigned char         test_buff[1024];
+	void*                 p_mem = reinterpret_cast<void*>( test_buff );
+	offset_malloc         malloc_obj( p_mem, 1024 );
+	offset_allocator<int> allocator_obj( malloc_obj );
+
+	// Act
+	offset_list<offset_list<int>, offset_allocator<offset_list<int>>> sut( allocator_obj );
+
+	// Assert
+}
+
+TEST( OffsetList_Allocator, CanEmplaceFrontUsesAllocatableType )
+{
+	// Arrange
+	using TestElementType = offset_list<double, offset_allocator<double>>;
+	unsigned char                                                   test_buff[1024];
+	void*                                                           p_mem = reinterpret_cast<void*>( test_buff );
+	offset_malloc                                                   malloc_obj( p_mem, 1024 );
+	offset_allocator<TestElementType>                               allocator_obj( malloc_obj );
+	offset_list<TestElementType, offset_allocator<TestElementType>> sut( allocator_obj );
+
+	// Act
+	sut.emplace_front();
+
+	// Assert
+	auto  it            = sut.begin();
+	auto* p_target_data = &( *it );
+	EXPECT_TRUE( malloc_obj.is_belong_to( p_target_data ) );
+}
+
+TEST( OffsetList_Allocator, CanEmplaceBackUsesAllocatableType )
+{
+	// Arrange
+	using TestElementType = offset_list<double, offset_allocator<double>>;
+	unsigned char                                                   test_buff[1024];
+	void*                                                           p_mem = reinterpret_cast<void*>( test_buff );
+	offset_malloc                                                   malloc_obj( p_mem, 1024 );
+	offset_allocator<TestElementType>                               allocator_obj( malloc_obj );
+	offset_list<TestElementType, offset_allocator<TestElementType>> sut( allocator_obj );
+
+	// Act
+	sut.emplace_back();
+
+	// Assert
+	auto  it            = sut.begin();
+	auto* p_target_data = &( *it );
+	EXPECT_TRUE( malloc_obj.is_belong_to( p_target_data ) );
+}
+
+TEST( OffsetList_Allocator, CanInsertUsesAllocatableType )
+{
+	// Arrange
+	using TestElementType = offset_list<double, offset_allocator<double>>;
+	unsigned char                                                   test_buff[1024];
+	void*                                                           p_mem = reinterpret_cast<void*>( test_buff );
+	offset_malloc                                                   malloc_obj( p_mem, 1024 );
+	offset_allocator<TestElementType>                               allocator_obj( malloc_obj );
+	offset_list<TestElementType, offset_allocator<TestElementType>> sut( allocator_obj );
+	auto                                                            bit = sut.begin();
+
+	// Act
+	auto it = sut.insert( bit, TestElementType() );
+
+	// Assert
+	auto* p_target_data = &( *it );
+	EXPECT_TRUE( malloc_obj.is_belong_to( p_target_data ) );
+}
+
+TEST( OffsetList_Allocator, CanEmplaceToMovingPushedInnerElement1 )
+{
+	// Arrange
+	using TestElementType = offset_list<double, offset_allocator<double>>;
+	unsigned char                                                   test_buff[1024];
+	void*                                                           p_mem = reinterpret_cast<void*>( test_buff );
+	offset_malloc                                                   malloc_obj( p_mem, 1024 );
+	offset_allocator<TestElementType>                               allocator_obj( malloc_obj );
+	offset_list<TestElementType, offset_allocator<TestElementType>> sut( allocator_obj );
+	sut.push_back( TestElementType() );
+	auto it = sut.begin();
+
+	// Act
+	it->emplace_back( 1.0 );
+
+	// Assert
+	auto  it2           = it->begin();
+	auto* p_target_data = &( *it2 );
+	EXPECT_TRUE( malloc_obj.is_belong_to( p_target_data ) );
+}
+
+TEST( OffsetList_Allocator, CanEmplaceToMovingPushedInnerElement2 )
+{
+	// Arrange
+	using TestElementType = offset_list<double, offset_allocator<double>>;
+	unsigned char            test_buff2[1024];
+	void*                    p_mem2 = reinterpret_cast<void*>( test_buff2 );
+	offset_malloc            malloc_obj2( p_mem2, 1024 );
+	offset_allocator<double> allocator_obj2( malloc_obj2 );
+	TestElementType          src( allocator_obj2 );
+
+	unsigned char                                                   test_buff[1024];
+	void*                                                           p_mem = reinterpret_cast<void*>( test_buff );
+	offset_malloc                                                   malloc_obj( p_mem, 1024 );
+	offset_allocator<TestElementType>                               allocator_obj( malloc_obj );
+	offset_list<TestElementType, offset_allocator<TestElementType>> sut( allocator_obj );
+
+	sut.push_back( std::move( src ) );
+	auto it = sut.begin();
+
+	// Act
+	it->emplace_back( 1.0 );
+
+	// Assert
+	auto it2 = it->begin();
+	EXPECT_EQ( *it2, 1.0 );
+	auto* p_target_data = &( *it2 );
+	EXPECT_TRUE( malloc_obj.is_belong_to( p_target_data ) );
+}
+
+TEST( OffsetList_Allocator, CanEmplaceToMovingPushedInnerElement3 )
+{
+	// Arrange
+	using TestElementType = offset_list<double, offset_allocator<double>>;
+	unsigned char            test_buff2[1024];
+	void*                    p_mem2 = reinterpret_cast<void*>( test_buff2 );
+	offset_malloc            malloc_obj2( p_mem2, 1024 );
+	offset_allocator<double> allocator_obj2( malloc_obj2 );
+	TestElementType          src( allocator_obj2 );
+	src.emplace_back( 1.0 );
+
+	unsigned char                                                   test_buff[1024];
+	void*                                                           p_mem = reinterpret_cast<void*>( test_buff );
+	offset_malloc                                                   malloc_obj( p_mem, 1024 );
+	offset_allocator<TestElementType>                               allocator_obj( malloc_obj );
+	offset_list<TestElementType, offset_allocator<TestElementType>> sut( allocator_obj );
+
+	// Act
+	sut.push_back( std::move( src ) );
+
+	// Assert
+	auto it  = sut.begin();
+	auto it2 = it->begin();
+	EXPECT_EQ( *it2, 1.0 );
+	auto* p_target_data = &( *it2 );
+	EXPECT_TRUE( malloc_obj.is_belong_to( p_target_data ) );   // moveが行われた場合、move先であるコンテナのメモリリソースの管理下に置かれるべき。
+	                                                           // よって、値管理を行うノードのアドレスは、sut側のメモリリソースに属することを確認する。
+	                                                           // なお、値そのものは、moveが行われるべきである。
+	EXPECT_FALSE( malloc_obj2.is_belong_to( p_target_data ) );
+}
+
+TEST( OffsetList_Allocator, CanEmplaceToCopyingPushedInnerElement1 )
+{
+	// Arrange
+	using TestElementType = offset_list<double, offset_allocator<double>>;
+	unsigned char test_buff[1024];
+	void*         p_mem = reinterpret_cast<void*>( test_buff );
+	offset_malloc malloc_obj( p_mem, 1024 );
+
+	offset_allocator<double> allocator_obj2( malloc_obj );
+	TestElementType          src( allocator_obj2 );
+
+	offset_allocator<TestElementType>                               allocator_obj( malloc_obj );
+	offset_list<TestElementType, offset_allocator<TestElementType>> sut( allocator_obj );
+
+	sut.push_back( src );
+	auto it = sut.begin();
+
+	// Act
+	it->emplace_back( 1.0 );
+
+	// Assert
+	auto it2 = it->begin();
+	EXPECT_EQ( *it2, 1.0 );
+	auto* p_target_data = &( *it2 );
+	EXPECT_TRUE( malloc_obj.is_belong_to( p_target_data ) );
+}
+
+TEST( OffsetList_Allocator, CanEmplaceToCopyingPushedInnerElement2 )
+{
+	// Arrange
+	using TestElementType = offset_list<double, offset_allocator<double>>;
+	unsigned char            test_buff2[1024];
+	void*                    p_mem2 = reinterpret_cast<void*>( test_buff2 );
+	offset_malloc            malloc_obj2( p_mem2, 1024 );
+	offset_allocator<double> allocator_obj2( malloc_obj2 );
+	TestElementType          src( allocator_obj2 );
+
+	unsigned char                                                   test_buff[1024];
+	void*                                                           p_mem = reinterpret_cast<void*>( test_buff );
+	offset_malloc                                                   malloc_obj( p_mem, 1024 );
+	offset_allocator<TestElementType>                               allocator_obj( malloc_obj );
+	offset_list<TestElementType, offset_allocator<TestElementType>> sut( allocator_obj );
+
+	sut.push_back( src );
+	auto it = sut.begin();
+
+	// Act
+	it->emplace_back( 1.0 );
+
+	// Assert
+	auto it2 = it->begin();
+	EXPECT_EQ( *it2, 1.0 );
+	auto* p_target_data = &( *it2 );
+	EXPECT_TRUE( malloc_obj.is_belong_to( p_target_data ) );
+}
+
+TEST( OffsetList_Allocator, CanEmplaceToCopyingPushedInnerElement3 )
+{
+	// Arrange
+	using TestElementType = offset_list<double, offset_allocator<double>>;
+	unsigned char            test_buff2[1024];
+	void*                    p_mem2 = reinterpret_cast<void*>( test_buff2 );
+	offset_malloc            malloc_obj2( p_mem2, 1024 );
+	offset_allocator<double> allocator_obj2( malloc_obj2 );
+	TestElementType          src( allocator_obj2 );
+	src.emplace_back( 1.0 );
+
+	unsigned char                                                   test_buff[1024];
+	void*                                                           p_mem = reinterpret_cast<void*>( test_buff );
+	offset_malloc                                                   malloc_obj( p_mem, 1024 );
+	offset_allocator<TestElementType>                               allocator_obj( malloc_obj );
+	offset_list<TestElementType, offset_allocator<TestElementType>> sut( allocator_obj );
+
+	// Act
+	sut.push_back( src );
+
+	// Assert
+	auto it  = sut.begin();
+	auto it2 = it->begin();
+	EXPECT_EQ( *it2, 1.0 );
+	auto* p_target_data = &( *it2 );
+	EXPECT_TRUE( malloc_obj.is_belong_to( p_target_data ) );
+}
+
+TEST( OffsetList_Allocator, CanEmplaceToEmplacedInnerElement )
+{
+	// Arrange
+	using TestElementType = offset_list<double, offset_allocator<double>>;
+	unsigned char                                                   test_buff[1024];
+	void*                                                           p_mem = reinterpret_cast<void*>( test_buff );
+	offset_malloc                                                   malloc_obj( p_mem, 1024 );
+	offset_allocator<int>                                           allocator_obj( malloc_obj );
+	offset_list<TestElementType, offset_allocator<TestElementType>> sut( allocator_obj );
+	sut.emplace_back();
+	auto it = sut.begin();
+
+	// Act
+	it->emplace_back( 1.0 );
+
+	// Assert
+	auto  it2           = it->begin();
+	auto* p_target_data = &( *it2 );
 	EXPECT_TRUE( malloc_obj.is_belong_to( p_target_data ) );
 }
