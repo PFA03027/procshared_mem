@@ -28,6 +28,15 @@
 #include <compare>
 #endif
 
+/**
+ * @brief Offset base pointer
+ *
+ * @warning
+ * nullptrを表現するために、offset値ゼロをnullptr扱いとする。これにより、アドレス空間の異なるプロセス間でnullptr相当の意味をもつポインタ情報の交換が可能になる。
+ * ただし、このことによる制約として、自身を指すことができない、また自身の前後で連続しないアドレスを指すため、真にcontiguous_iteratorとは言えなくなる。
+ *
+ * @tparam T
+ */
 template <typename T>
 class offset_ptr {
 public:
@@ -293,15 +302,24 @@ public:
 private:
 	inline constexpr pointer calc_address( void ) const noexcept
 	{
-		return reinterpret_cast<pointer>( reinterpret_cast<uintptr_t>( this ) + offset_ );
+		if ( offset_ == 0 ) {
+			return nullptr;
+		} else {
+			return reinterpret_cast<pointer>( reinterpret_cast<uintptr_t>( this ) + offset_ );
+		}
 	}
 	static inline constexpr uintptr_t calc_offset( const offset_ptr* base_p, T* p ) noexcept
 	{
-		return reinterpret_cast<uintptr_t>( p ) - reinterpret_cast<uintptr_t>( base_p );
+		if ( p == nullptr ) {
+			return 0;
+		} else {
+			return reinterpret_cast<uintptr_t>( p ) - reinterpret_cast<uintptr_t>( base_p );
+		}
 	}
 	static inline constexpr uintptr_t calc_offset_as_nullptr( const offset_ptr* base_p ) noexcept
 	{
-		return ( -reinterpret_cast<uintptr_t>( base_p ) );
+		return 0;
+		// return ( -reinterpret_cast<uintptr_t>( base_p ) );
 	}
 
 	uintptr_t offset_;
@@ -744,11 +762,16 @@ private:
 	}
 	static inline constexpr uintptr_t calc_offset( const atomic_offset_ptr* base_p, element_pointer p ) noexcept
 	{
-		return reinterpret_cast<uintptr_t>( p ) - reinterpret_cast<uintptr_t>( base_p );
+		if ( p == nullptr ) {
+			return 0;
+		} else {
+			return reinterpret_cast<uintptr_t>( p ) - reinterpret_cast<uintptr_t>( base_p );
+		}
 	}
 	static inline constexpr uintptr_t calc_offset_as_nullptr( const atomic_offset_ptr* base_p ) noexcept
 	{
-		return ( -reinterpret_cast<uintptr_t>( base_p ) );
+		return 0;
+		// return ( -reinterpret_cast<uintptr_t>( base_p ) );
 	}
 	static inline constexpr uintptr_t calc_addr_diff( difference_type n ) noexcept
 	{
