@@ -454,6 +454,11 @@ public:
 		return ( get() != nullptr );
 	}
 
+	operator void*() const noexcept
+	{
+		return reinterpret_cast<void*>( calc_address() );
+	}
+
 #if ( __cpp_impl_three_way_comparison > 201907L )
 	constexpr bool operator==( const offset_ptr& c ) const noexcept
 	{

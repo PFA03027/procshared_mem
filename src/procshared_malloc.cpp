@@ -15,15 +15,23 @@
 #include "procshared_logger.hpp"
 #include "procshared_malloc.hpp"
 
-struct msg_channel {
-	procshared_mutex                        mtx_;
-	procshared_condition_variable           cond_;
-	offset_list<int, offset_allocator<int>> msgch_[2];
+constexpr unsigned int default_channel_size = 2;
 
-	msg_channel( const offset_allocator<int> a )
+unsigned int procshared_malloc::channel_size( void )
+{
+	return default_channel_size;
+}
+
+struct msg_channel {
+	using data_type = offset_ptr<void>;
+	procshared_mutex                                    mtx_;
+	procshared_condition_variable                       cond_;
+	offset_list<data_type, offset_allocator<data_type>> msgch_[default_channel_size];
+
+	msg_channel( const offset_allocator<data_type> a )
 	  : mtx_()
 	  , cond_()
-	  , msgch_ { offset_list<int, offset_allocator<int>>( a ), offset_list<int, offset_allocator<int>>( a ) }
+	  , msgch_ { offset_list<data_type, offset_allocator<data_type>>( a ), offset_list<data_type, offset_allocator<data_type>>( a ) }
 	{
 	}
 };
@@ -109,10 +117,14 @@ int procshared_malloc::get_bind_count( void ) const
 	return shm_obj_.get_bind_count();
 }
 
-void procshared_malloc::send( int ch, int sending_value )
+void procshared_malloc::send( unsigned int ch, offset_ptr<void> sending_value )
 {
 	if ( p_msgch_ == nullptr ) {
 		psm_logoutput( psm_log_lv::kErr, "Error: in procshared_malloc::send(), p_msgch_ of procshared_malloc is nullptr" );
+		return;
+	}
+	if ( ch >= default_channel_size ) {
+		psm_logoutput( psm_log_lv::kErr, "Error: in procshared_malloc::send(), ch is too big, ch=%u", ch );
 		return;
 	}
 
@@ -120,19 +132,23 @@ void procshared_malloc::send( int ch, int sending_value )
 	p_msgch_->msgch_[ch].emplace_back( sending_value );
 	return;
 }
-int procshared_malloc::receive( int ch )
+offset_ptr<void> procshared_malloc::receive( unsigned int ch )
 {
 	if ( p_msgch_ == nullptr ) {
 		psm_logoutput( psm_log_lv::kErr, "Error: in procshared_malloc::receive(), p_msgch_ of procshared_malloc is nullptr" );
 		// TODO: should throw exception?
-		return 0;
+		return nullptr;
+	}
+	if ( ch >= default_channel_size ) {
+		psm_logoutput( psm_log_lv::kErr, "Error: in procshared_malloc::send(), ch is too big, ch=%u", ch );
+		return nullptr;
 	}
 
 	std::unique_lock<procshared_mutex> lk( p_msgch_->mtx_ );
 	p_msgch_->cond_.wait( lk, [this, ch]() -> bool {
 		return !( p_msgch_->msgch_[ch].empty() );
 	} );
-	int ans = p_msgch_->msgch_[ch].front();
+	offset_ptr<void> ans = p_msgch_->msgch_[ch].front();
 	p_msgch_->msgch_[ch].pop_front();
 	return ans;
 }

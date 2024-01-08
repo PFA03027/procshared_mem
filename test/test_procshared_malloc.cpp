@@ -234,28 +234,77 @@ struct proc_task_data {
 	std::thread t;
 };
 
+template <typename T>
+class fifo_que {
+public:
+	fifo_que( const offset_allocator<T>& a )
+	  : mtx_()
+	  , cond_()
+	  , que_( a )
+	{
+	}
+
+	void push( const T& v )
+	{
+		std::lock_guard<procshared_mutex> lk( mtx_ );
+		que_.emplace_back( v );
+	}
+	void push( T&& v )
+	{
+		std::lock_guard<procshared_mutex> lk( mtx_ );
+		que_.emplace_back( std::move( v ) );
+	}
+	T pop( void )
+	{
+		std::unique_lock<procshared_mutex> lk( mtx_ );
+		cond_.wait( lk, [this]() -> bool {
+			return !( que_.empty() );
+		} );
+		T ans = std::move( que_.front() );
+		que_.pop_front();
+		return ans;
+	}
+
+private:
+	procshared_mutex mtx_;
+	procshared_condition_variable cond_;
+	offset_list<T, offset_allocator<T>> que_;
+};
+
 TEST( Test_procshared_malloc, CanMsgChannel )
 {
 	// Arrange
 	constexpr int num_of_threads = 100;
+	constexpr int num_of_loop = 10000;
 	procshared_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
 	procshared_malloc shm_malloc_obj( p_shm_obj_name, "/tmp", 4096UL * 100UL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	fifo_que<int>* p_sut_list = make_obj_construct_using_allocator<fifo_que<int>>( shm_malloc_obj.get_allocator<fifo_que<int>>(), shm_malloc_obj.get_allocator<int>() );
 	proc_task_data pt_pack[num_of_threads];
-
 	// Act
 	for ( auto& e : pt_pack ) {
-		shm_malloc_obj.send( 0, 10 );
+		shm_malloc_obj.send( 0, p_sut_list );
 		std::packaged_task<child_proc_return_t( std::function<int()> )> task( call_pred_on_child_process );
 		e.f = task.get_future();
-		e.t = std::thread( std::move( task ), []() -> int {
+		e.t = std::thread( std::move( task ), [num_of_loop]() -> int {
 			procshared_malloc sut_secondary( p_shm_obj_name, "/tmp", 4096UL * 100UL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
-			int rcv_value = sut_secondary.receive( 0 );
-			sut_secondary.send( 1, rcv_value + 1 );
+			void* p_tmp = sut_secondary.receive( 0 );
+			fifo_que<int>* p_sut_list = reinterpret_cast<fifo_que<int>*>( p_tmp );
+
+			int v = 0;
+			for ( int i = 0; i < num_of_loop; i++ ) {
+				p_sut_list->push( v );
+				int vv = p_sut_list->pop();
+				v = vv + 1;
+			}
+
+			int* p_ret = make_obj_construct_using_allocator<int>( sut_secondary.get_allocator<int>(), v );
+			sut_secondary.send( 1, p_ret );
 			return EXIT_SUCCESS;
 		} );
 	}
 
 	// Assert
+	int sum_value = 0;
 	for ( auto& e : pt_pack ) {
 		child_proc_return_t ret = { 0 };
 		ASSERT_NO_THROW( ret = e.f.get() );
@@ -265,10 +314,16 @@ TEST( Test_procshared_malloc, CanMsgChannel )
 			e.t.join();
 		}
 
-		EXPECT_EQ( shm_malloc_obj.receive( 1 ), 11 );
+		void* p_tmp = shm_malloc_obj.receive( 1 );
+		int* p_ret = reinterpret_cast<int*>( p_tmp );
+		ASSERT_NE( p_ret, nullptr );
+		sum_value += *p_ret;
+		destruct_obj_usee_allocator( shm_malloc_obj.get_allocator<int>(), p_ret );
 	}
+	EXPECT_EQ( sum_value, num_of_loop * num_of_threads );
 
 	// Cleanup
+	destruct_obj_usee_allocator( shm_malloc_obj.get_allocator<fifo_que<int>>(), p_sut_list );
 }
 
 #endif   // TEST_ENABLE_ADDRESSSANITIZER

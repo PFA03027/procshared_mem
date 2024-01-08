@@ -58,8 +58,12 @@ public:
 
 	int get_bind_count( void ) const;
 
-	void send( int ch, int sending_value );   // 仮実装
-	int  receive( int ch );                   // 仮実装
+	template <typename T>
+	offset_allocator<T> get_allocator( void );
+
+	void                send( unsigned int ch, offset_ptr<void> sending_value );   // 仮実装
+	offset_ptr<void>    receive( unsigned int ch );                                // 仮実装
+	static unsigned int channel_size( void );
 
 private:
 	procshared_malloc( const procshared_malloc& src )            = delete;
@@ -71,5 +75,13 @@ private:
 	offset_malloc  shm_heap_;   //!< offset base memory allocator on shared memory. this member variable declaration order required like procshared_mem, then offset_malloc
 	msg_channel*   p_msgch_;
 };
+
+////////////////////////////////////////////////////////////////////
+// Implement
+template <typename T>
+offset_allocator<T> procshared_malloc::get_allocator( void )
+{
+	return offset_allocator<T>( shm_heap_ );
+}
 
 #endif   // PROCSHARED_MALLOC_HPP_
