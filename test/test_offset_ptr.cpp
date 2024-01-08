@@ -56,6 +56,18 @@ TEST( OffsetPtr, CanConstruct )
 	EXPECT_EQ( op_a.get(), &a );
 }
 
+TEST( OffsetPtr, CanConstruct2 )
+{
+	// Arrange
+	int a;
+
+	// Act
+	offset_ptr<void> op_a( reinterpret_cast<void*>( &a ) );
+
+	// Assert
+	EXPECT_EQ( op_a.get(), &a );
+}
+
 TEST( OffsetPtr, CanCopyConstruct )
 {
 	// Arrange

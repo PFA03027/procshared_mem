@@ -35,6 +35,9 @@
  * nullptrを表現するために、offset値ゼロをnullptr扱いとする。これにより、アドレス空間の異なるプロセス間でnullptr相当の意味をもつポインタ情報の交換が可能になる。
  * ただし、このことによる制約として、自身を指すことができない、また自身とその前後で連続しないアドレスを指すため、真にcontiguous_iteratorとは言えなくなる。
  *
+ * @note
+ * This is primary template class. type "void" is specialized
+ *
  * @tparam T
  */
 template <typename T>
@@ -42,10 +45,8 @@ class offset_ptr {
 public:
 	using value_type        = T;
 	using pointer           = value_type*;
-	using reference         = value_type&;   // std::add_lvalue_reference<value_type>::type;
-	using const_pointer     = const value_type*;
-	using const_reference   = const value_type&;   // std::add_lvalue_reference<value_type>::type;
-	using difference_type   = std::ptrdiff_t;      // using difference_type = decltype( std::declval<pointer>() - std::declval<pointer>() );
+	using reference         = value_type&;      // std::add_lvalue_reference<value_type>::type;
+	using difference_type   = std::ptrdiff_t;   // using difference_type = decltype( std::declval<pointer>() - std::declval<pointer>() );
 	using iterator_category = std::random_access_iterator_tag;
 
 	constexpr offset_ptr( void ) noexcept
@@ -305,6 +306,224 @@ private:
 		}
 	}
 	static inline constexpr uintptr_t calc_offset( const offset_ptr* base_p, T* p ) noexcept
+	{
+		if ( p == nullptr ) {
+			return 0;
+		} else {
+			return reinterpret_cast<uintptr_t>( p ) - reinterpret_cast<uintptr_t>( base_p );
+		}
+	}
+	static inline constexpr uintptr_t calc_offset_as_nullptr( const offset_ptr* base_p ) noexcept
+	{
+		return 0;
+		// return ( -reinterpret_cast<uintptr_t>( base_p ) );
+	}
+
+	uintptr_t offset_;
+
+	template <typename U>
+	friend class offset_ptr;
+};
+
+/////////////////////////////// xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+/**
+ * @brief Offset base pointer of void
+ *
+ * @warning
+ * nullptrを表現するために、offset値ゼロをnullptr扱いとする。これにより、アドレス空間の異なるプロセス間でnullptr相当の意味をもつポインタ情報の交換が可能になる。
+ * ただし、このことによる制約として、自身を指すことができない、また自身とその前後で連続しないアドレスを指すため、真にcontiguous_iteratorとは言えなくなる。
+ *
+ */
+template <>
+class offset_ptr<void> {
+public:
+	using value_type      = void;
+	using pointer         = void*;
+	using difference_type = std::ptrdiff_t;   // using difference_type = decltype( std::declval<pointer>() - std::declval<pointer>() );
+	// using iterator_category = std::random_access_iterator_tag;
+
+	constexpr offset_ptr( void ) noexcept
+	  : offset_( calc_offset_as_nullptr( this ) )
+	{
+	}
+
+	constexpr offset_ptr( pointer p ) noexcept
+	  : offset_( calc_offset( this, p ) )
+	{
+	}
+
+	constexpr offset_ptr( const offset_ptr& orig ) noexcept
+	  : offset_( calc_offset( this, orig.calc_address() ) )
+	{
+	}
+
+	constexpr offset_ptr( offset_ptr&& orig ) noexcept
+	  : offset_( calc_offset( this, orig.calc_address() ) )
+	{
+		orig = nullptr;
+	}
+
+	offset_ptr& operator=( const offset_ptr& orig ) noexcept
+	{
+		if ( this == &orig ) return *this;
+
+		offset_ = calc_offset( this, orig.calc_address() );
+		return *this;
+	}
+
+	offset_ptr& operator=( offset_ptr&& orig ) noexcept
+	{
+		if ( this == &orig ) return *this;
+
+		offset_ = calc_offset( this, orig.calc_address() );
+		orig    = nullptr;
+		return *this;
+	}
+
+	template <typename U = void,
+	          typename std::enable_if<
+				  !std::is_same<U, void>::value &&
+				  std::is_convertible<typename offset_ptr<U>::pointer, pointer>::value>::type* = nullptr>
+	constexpr offset_ptr( const offset_ptr<U>& orig ) noexcept
+	  : offset_( calc_offset( this, orig.calc_address() ) )
+	{
+	}
+
+	template <typename U = void,
+	          typename std::enable_if<
+				  !std::is_same<U, void>::value &&
+				  std::is_convertible<typename offset_ptr<U>::pointer, pointer>::value>::type* = nullptr>
+	constexpr offset_ptr( offset_ptr<U>&& orig ) noexcept
+	  : offset_( calc_offset( this, orig.calc_address() ) )
+	{
+		orig = nullptr;
+	}
+
+	template <typename U = void,
+	          typename std::enable_if<
+				  !std::is_same<U, void>::value &&
+				  std::is_convertible<typename offset_ptr<U>::pointer, pointer>::value>::type* = nullptr>
+	offset_ptr& operator=( const offset_ptr<U>& orig ) noexcept
+	{
+		offset_ = calc_offset( this, orig.calc_address() );
+		return *this;
+	}
+
+	template <typename U = void,
+	          typename std::enable_if<
+				  !std::is_same<U, void>::value &&
+				  std::is_convertible<typename offset_ptr<U>::pointer, pointer>::value>::type* = nullptr>
+	offset_ptr& operator=( offset_ptr<U>&& orig ) noexcept
+	{
+		offset_ = calc_offset( this, orig.calc_address() );
+		orig    = nullptr;
+		return *this;
+	}
+
+	constexpr offset_ptr( const std::nullptr_t& ) noexcept
+	  : offset_( calc_offset_as_nullptr( this ) )
+	{
+	}
+
+	offset_ptr& operator=( const std::nullptr_t& ) noexcept
+	{
+		offset_ = calc_offset_as_nullptr( this );
+		return *this;
+	}
+
+	constexpr pointer get() const noexcept
+	{
+		return reinterpret_cast<pointer>( calc_address() );
+	}
+
+	constexpr void swap( offset_ptr& x ) noexcept
+	{
+		pointer p_tmp_addr_my = calc_address();
+		pointer p_tmp_addr_x  = x.calc_address();
+		x.offset_             = calc_offset( &x, p_tmp_addr_my );
+		offset_               = calc_offset( this, p_tmp_addr_x );
+	}
+
+	constexpr uintptr_t get_offset() const noexcept
+	{
+		return offset_;
+	}
+
+	constexpr explicit operator bool() const noexcept
+	{
+		return ( get() != nullptr );
+	}
+
+#if ( __cpp_impl_three_way_comparison > 201907L )
+	constexpr bool operator==( const offset_ptr& c ) const noexcept
+	{
+		return ( calc_address() == c.calc_address() );
+	}
+	constexpr auto operator<=>( const offset_ptr& c ) const noexcept -> std::strong_ordering
+	{
+		return ( calc_address() <=> c.calc_address() );
+	}
+	constexpr bool operator==( const std::nullptr_t& c ) const noexcept
+	{
+		return ( calc_address() == nullptr );
+	}
+	constexpr auto operator<=>( const std::nullptr_t& c ) const noexcept -> std::strong_ordering
+	{
+		return ( calc_address() <=> nullptr );
+	}
+
+#else
+	template <typename U>
+	friend constexpr bool operator==( const offset_ptr<U>& a, const offset_ptr<U>& b ) noexcept;
+	template <typename U>
+	friend constexpr bool operator!=( const offset_ptr<U>& a, const offset_ptr<U>& b ) noexcept;
+	template <typename U>
+	friend constexpr bool operator<( const offset_ptr<U>& a, const offset_ptr<U>& b ) noexcept;
+	template <typename U>
+	friend constexpr bool operator<=( const offset_ptr<U>& a, const offset_ptr<U>& b ) noexcept;
+	template <typename U>
+	friend constexpr bool operator>( const offset_ptr<U>& a, const offset_ptr<U>& b ) noexcept;
+	template <typename U>
+	friend constexpr bool operator>=( const offset_ptr<U>& a, const offset_ptr<U>& b ) noexcept;
+
+	template <typename U>
+	friend constexpr bool operator==( const offset_ptr<U>& a, const std::nullptr_t& b ) noexcept;
+	template <typename U>
+	friend constexpr bool operator!=( const offset_ptr<U>& a, const std::nullptr_t& b ) noexcept;
+	template <typename U>
+	friend constexpr bool operator<( const offset_ptr<U>& a, const std::nullptr_t& b ) noexcept;
+	template <typename U>
+	friend constexpr bool operator<=( const offset_ptr<U>& a, const std::nullptr_t& b ) noexcept;
+	template <typename U>
+	friend constexpr bool operator>( const offset_ptr<U>& a, const std::nullptr_t& b ) noexcept;
+	template <typename U>
+	friend constexpr bool operator>=( const offset_ptr<U>& a, const std::nullptr_t& b ) noexcept;
+
+	template <typename U>
+	friend constexpr bool operator==( const std::nullptr_t& a, const offset_ptr<U>& b ) noexcept;
+	template <typename U>
+	friend constexpr bool operator!=( const std::nullptr_t& a, const offset_ptr<U>& b ) noexcept;
+	template <typename U>
+	friend constexpr bool operator<( const std::nullptr_t& a, const offset_ptr<U>& b ) noexcept;
+	template <typename U>
+	friend constexpr bool operator<=( const std::nullptr_t& a, const offset_ptr<U>& b ) noexcept;
+	template <typename U>
+	friend constexpr bool operator>( const std::nullptr_t& a, const offset_ptr<U>& b ) noexcept;
+	template <typename U>
+	friend constexpr bool operator>=( const std::nullptr_t& a, const offset_ptr<U>& b ) noexcept;
+
+#endif
+
+private:
+	inline constexpr pointer calc_address( void ) const noexcept
+	{
+		if ( offset_ == 0 ) {
+			return nullptr;
+		} else {
+			return reinterpret_cast<pointer>( reinterpret_cast<uintptr_t>( this ) + offset_ );
+		}
+	}
+	static inline constexpr uintptr_t calc_offset( const offset_ptr* base_p, void* p ) noexcept
 	{
 		if ( p == nullptr ) {
 			return 0;
