@@ -33,24 +33,20 @@
  *
  * @warning
  * nullptrを表現するために、offset値ゼロをnullptr扱いとする。これにより、アドレス空間の異なるプロセス間でnullptr相当の意味をもつポインタ情報の交換が可能になる。
- * ただし、このことによる制約として、自身を指すことができない、また自身の前後で連続しないアドレスを指すため、真にcontiguous_iteratorとは言えなくなる。
+ * ただし、このことによる制約として、自身を指すことができない、また自身とその前後で連続しないアドレスを指すため、真にcontiguous_iteratorとは言えなくなる。
  *
  * @tparam T
  */
 template <typename T>
 class offset_ptr {
 public:
-	using value_type      = T;
-	using pointer         = value_type*;
-	using reference       = value_type&;   // std::add_lvalue_reference<value_type>::type;
-	using const_pointer   = const value_type*;
-	using const_reference = const value_type&;   // std::add_lvalue_reference<value_type>::type;
-	using difference_type = std::ptrdiff_t;      // using difference_type = decltype( std::declval<pointer>() - std::declval<pointer>() );
-#if __cplusplus >= 202002L
-	using iterator_category = std::contiguous_iterator_tag;
-#else
+	using value_type        = T;
+	using pointer           = value_type*;
+	using reference         = value_type&;   // std::add_lvalue_reference<value_type>::type;
+	using const_pointer     = const value_type*;
+	using const_reference   = const value_type&;   // std::add_lvalue_reference<value_type>::type;
+	using difference_type   = std::ptrdiff_t;      // using difference_type = decltype( std::declval<pointer>() - std::declval<pointer>() );
 	using iterator_category = std::random_access_iterator_tag;
-#endif
 
 	constexpr offset_ptr( void ) noexcept
 	  : offset_( calc_offset_as_nullptr( this ) )

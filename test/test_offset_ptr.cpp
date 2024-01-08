@@ -19,7 +19,7 @@
 #include "offset_ptr.hpp"
 
 #if ( __cpp_concepts >= 201907L )
-template <std::contiguous_iterator I>
+template <std::random_access_iterator I>
 bool f( I x )
 {
 	return true;
