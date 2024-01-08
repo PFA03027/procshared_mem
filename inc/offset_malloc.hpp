@@ -14,6 +14,8 @@
 
 #include <cstddef>
 
+#include "offset_ptr.hpp"
+
 class offset_malloc {
 public:
 	class offset_malloc_impl;
@@ -44,7 +46,7 @@ public:
 	bool is_belong_to( void* p_mem ) const;
 
 private:
-	offset_malloc_impl* p_impl_;
+	offset_ptr<offset_malloc_impl> p_impl_;
 
 	friend constexpr bool operator==( const offset_malloc& a, const offset_malloc& b ) noexcept;
 	friend constexpr bool operator!=( const offset_malloc& a, const offset_malloc& b ) noexcept;

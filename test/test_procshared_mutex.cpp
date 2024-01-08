@@ -268,14 +268,15 @@ TEST( Test_procshared_mutex_bw_proc, CanLock_CanTryLock_CanUnlock )
 	procshared_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
 	procshared_mem shm_obj(
 		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
-		[]( void* p_mem, off_t len ) {
+		[]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
-				return;
+				return nullptr;
 			}
 			if ( len < 4096 ) {
-				return;
+				return nullptr;
 			}
 			[[maybe_unused]] procshared_mutex* p_ps_mtx = new ( p_mem ) procshared_mutex();
+			return nullptr;
 		},
 		[]( void*, size_t ) { /* 何もしない */ } );
 	procshared_mutex* p_ps_mtx = reinterpret_cast<procshared_mutex*>( shm_obj.get() );
@@ -318,14 +319,15 @@ TEST( Test_procshared_recursive_mutex_bw_proc, CanLock_CanTryLock_CanUnlock )
 	procshared_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
 	procshared_mem shm_obj(
 		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
-		[]( void* p_mem, off_t len ) {
+		[]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
-				return;
+				return nullptr;
 			}
 			if ( len < 4096 ) {
-				return;
+				return nullptr;
 			}
 			[[maybe_unused]] procshared_recursive_mutex* p_ps_mtx = new ( p_mem ) procshared_recursive_mutex();
+			return nullptr;
 		},
 		[]( void*, size_t ) { /* 何もしない */ } );
 	procshared_recursive_mutex* p_ps_mtx = reinterpret_cast<procshared_recursive_mutex*>( shm_obj.get() );

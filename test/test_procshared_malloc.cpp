@@ -198,7 +198,7 @@ TEST( Test_procshared_malloc, CanAllocateBwProcess )
 {
 	// Arrange
 	procshared_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
-	procshared_malloc shm_obj( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	procshared_malloc shm_malloc_obj( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 
 	std::packaged_task<child_proc_return_t( std::function<int()> )> task1( call_pred_on_child_process );   // 非同期実行する関数を登録する
 	std::future<child_proc_return_t> f1 = task1.get_future();
@@ -207,6 +207,7 @@ TEST( Test_procshared_malloc, CanAllocateBwProcess )
 	std::thread t1( std::move( task1 ), []() -> int {
 		procshared_malloc sut_secondary( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 		if ( sut_secondary.get_bind_count() != 2 ) {
+			fprintf( stderr, "Error: bind count is %d\n", sut_secondary.get_bind_count() );
 			return 3;
 		}
 		auto p = sut_secondary.allocate( 10 );
@@ -226,6 +227,48 @@ TEST( Test_procshared_malloc, CanAllocateBwProcess )
 	if ( t1.joinable() ) {
 		t1.join();
 	}
+}
+
+struct proc_task_data {
+	std::future<child_proc_return_t> f;
+	std::thread t;
+};
+
+TEST( Test_procshared_malloc, CanMsgChannel )
+{
+	// Arrange
+	constexpr int num_of_threads = 100;
+	procshared_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
+	procshared_malloc shm_malloc_obj( p_shm_obj_name, "/tmp", 4096UL * 100UL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	proc_task_data pt_pack[num_of_threads];
+
+	// Act
+	for ( auto& e : pt_pack ) {
+		shm_malloc_obj.send( 0, 10 );
+		std::packaged_task<child_proc_return_t( std::function<int()> )> task( call_pred_on_child_process );
+		e.f = task.get_future();
+		e.t = std::thread( std::move( task ), []() -> int {
+			procshared_malloc sut_secondary( p_shm_obj_name, "/tmp", 4096UL * 100UL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+			int rcv_value = sut_secondary.receive( 0 );
+			sut_secondary.send( 1, rcv_value + 1 );
+			return EXIT_SUCCESS;
+		} );
+	}
+
+	// Assert
+	for ( auto& e : pt_pack ) {
+		child_proc_return_t ret = { 0 };
+		ASSERT_NO_THROW( ret = e.f.get() );
+		EXPECT_TRUE( ret.is_exit_normaly_ );
+		EXPECT_EQ( ret.exit_code_, EXIT_SUCCESS );
+		if ( e.t.joinable() ) {
+			e.t.join();
+		}
+
+		EXPECT_EQ( shm_malloc_obj.receive( 1 ), 11 );
+	}
+
+	// Cleanup
 }
 
 #endif   // TEST_ENABLE_ADDRESSSANITIZER

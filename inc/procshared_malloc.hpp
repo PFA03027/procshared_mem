@@ -14,8 +14,14 @@
 
 #include <cstddef>
 
+#include "offset_allocator.hpp"
+#include "offset_list.hpp"
 #include "offset_malloc.hpp"
+#include "procshared_condition_variable.hpp"
 #include "procshared_mem.hpp"
+#include "procshared_mutex.hpp"
+
+struct msg_channel;
 
 class procshared_malloc {
 public:
@@ -52,6 +58,9 @@ public:
 
 	int get_bind_count( void ) const;
 
+	void send( int ch, int sending_value );   // 仮実装
+	int  receive( int ch );                   // 仮実装
+
 private:
 	procshared_malloc( const procshared_malloc& src )            = delete;
 	procshared_malloc& operator=( const procshared_malloc& src ) = delete;
@@ -60,6 +69,7 @@ private:
 
 	procshared_mem shm_obj_;    //!< shared memory object. this member variable declaration order required like procshared_mem, then offset_malloc
 	offset_malloc  shm_heap_;   //!< offset base memory allocator on shared memory. this member variable declaration order required like procshared_mem, then offset_malloc
+	msg_channel*   p_msgch_;
 };
 
 #endif   // PROCSHARED_MALLOC_HPP_

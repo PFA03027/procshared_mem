@@ -243,14 +243,15 @@ TEST( Test_procshared_condition_variable_bw_proc, CanWaitForPred_Timeout )
 	procshared_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
 	procshared_mem shm_obj(
 		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
-		[]( void* p_mem, off_t len ) {
+		[]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
-				return;
+				return nullptr;
 			}
 			if ( len < 4096 ) {
-				return;
+				return nullptr;
 			}
 			[[maybe_unused]] test_shared_data* p_sut = new ( p_mem ) test_shared_data();
+			return nullptr;
 		},
 		[]( void*, size_t ) { /* 何もしない */ } );
 	[[maybe_unused]] test_shared_data* p_sut = reinterpret_cast<test_shared_data*>( shm_obj.get() );
@@ -296,14 +297,15 @@ TEST( Test_procshared_condition_variable_bw_proc, CanWaitForPred_NoTimeout )
 	procshared_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
 	procshared_mem shm_obj(
 		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
-		[]( void* p_mem, off_t len ) {
+		[]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
-				return;
+				return nullptr;
 			}
 			if ( len < 4096 ) {
-				return;
+				return nullptr;
 			}
 			[[maybe_unused]] test_shared_data* p_sut = new ( p_mem ) test_shared_data();
+			return nullptr;
 		},
 		[]( void*, size_t ) { /* 何もしない */ } );
 	test_shared_data* p_sut = reinterpret_cast<test_shared_data*>( shm_obj.get() );

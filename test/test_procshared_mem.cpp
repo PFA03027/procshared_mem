@@ -38,14 +38,15 @@ TEST( Test_procshared_mem, CanConstruct_CanDestruct )
 	ASSERT_NO_THROW(
 		procshared_mem shm_obj(
 			p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
-			[&test_flag]( void* p_mem, off_t len ) {
+			[&test_flag]( void* p_mem, off_t len ) -> void* {
 				if ( p_mem == nullptr ) {
-					return;
+					return nullptr;
 				}
 				if ( len < 4096 ) {
-					return;
+					return nullptr;
 				}
 				test_flag = true;
+				return nullptr;
 			},
 			[]( void*, size_t ) { /* 何もしない */ } ) );
 
@@ -63,14 +64,15 @@ TEST( Test_procshared_mem, CanConstructDefer_CanDestruct )
 	// Act
 	shm_obj.allocate_shm_as_both(
 		p_shm_obj_name, "/tmp", 4096 - 16, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
-		[&test_flag]( void* p_mem, off_t len ) {
+		[&test_flag]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
-				return;
+				return nullptr;
 			}
 			if ( len < ( 4096 - 16 ) ) {
-				return;
+				return nullptr;
 			}
 			test_flag = true;
+			return nullptr;
 		},
 		[]( void*, size_t ) { /* 何もしない */ } );
 
@@ -90,14 +92,15 @@ TEST( Test_procshared_mem, CanConstructDefer_Primary )
 	// Act
 	shm_obj.allocate_shm_as_primary(
 		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
-		[&test_flag]( void* p_mem, off_t len ) {
+		[&test_flag]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
-				return;
+				return nullptr;
 			}
 			if ( len < 4096 ) {
-				return;
+				return nullptr;
 			}
 			test_flag = true;
+			return nullptr;
 		} );
 
 	// Assert
@@ -113,14 +116,15 @@ TEST( Test_procshared_mem, CanConstruct_Secondary )
 	bool           test_flag = false;
 	procshared_mem shm_obj(
 		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
-		[&test_flag]( void* p_mem, off_t len ) {
+		[&test_flag]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
-				return;
+				return nullptr;
 			}
 			if ( len < 4096 ) {
-				return;
+				return nullptr;
 			}
 			test_flag = true;
+			return nullptr;
 		},
 		[]( void*, size_t ) { /* 何もしない */ } );
 	EXPECT_TRUE( test_flag );
@@ -160,14 +164,15 @@ TEST( Test_procshared_mem, CanConstructDefer_Secondary )
 	bool           test_flag = false;
 	procshared_mem shm_obj(
 		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
-		[&test_flag]( void* p_mem, off_t len ) {
+		[&test_flag]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
-				return;
+				return nullptr;
 			}
 			if ( len < 4096 ) {
-				return;
+				return nullptr;
 			}
 			test_flag = true;
+			return nullptr;
 		},
 		[]( void*, size_t ) { /* 何もしない */ } );
 	EXPECT_TRUE( test_flag );
@@ -207,14 +212,15 @@ TEST( Test_procshared_mem, CanConstruct_Secondary_by_both )
 	bool           test_flag = false;
 	procshared_mem shm_obj(
 		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
-		[&test_flag]( void* p_mem, off_t len ) {
+		[&test_flag]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
-				return;
+				return nullptr;
 			}
 			if ( len < 4096 ) {
-				return;
+				return nullptr;
 			}
 			test_flag = true;
+			return nullptr;
 		},
 		[]( void*, size_t ) { /* 何もしない */ } );
 	EXPECT_TRUE( test_flag );
@@ -227,8 +233,9 @@ TEST( Test_procshared_mem, CanConstruct_Secondary_by_both )
 	std::thread t1( std::move( task1 ), []() -> int {
 		procshared_mem shm_obj_secondary_by_both(
 			p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
-			[]( void* p_mem, off_t len ) {
+			[]( void* p_mem, off_t len ) -> void* {
 				*( reinterpret_cast<int*>( p_mem ) ) = 22;   // nullptrチェックも行わない
+				return nullptr;
 			},
 			[]( void*, size_t ) { /* 何もしない */ } );
 		if ( not shm_obj_secondary_by_both.debug_test_integrity() ) {
@@ -256,14 +263,15 @@ TEST( Test_procshared_mem, CanConstructDefer_Secondary_by_both )
 	bool           test_flag = false;
 	procshared_mem shm_obj(
 		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
-		[&test_flag]( void* p_mem, off_t len ) {
+		[&test_flag]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
-				return;
+				return nullptr;
 			}
 			if ( len < 4096 ) {
-				return;
+				return nullptr;
 			}
 			test_flag = true;
+			return nullptr;
 		},
 		[]( void*, size_t ) { /* 何もしない */ } );
 	EXPECT_TRUE( test_flag );
@@ -277,8 +285,9 @@ TEST( Test_procshared_mem, CanConstructDefer_Secondary_by_both )
 		procshared_mem shm_obj_secondary;
 		shm_obj_secondary.allocate_shm_as_both(
 			p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
-			[]( void* p_mem, size_t len ) {
+			[]( void* p_mem, size_t len ) -> void* {
 				*( reinterpret_cast<int*>( p_mem ) ) = 22;   // nullptrチェックも行わない
+				return nullptr;
 			},
 			[]( void*, size_t ) { /* 何もしない */ } );
 		if ( not shm_obj_secondary.debug_test_integrity() ) {

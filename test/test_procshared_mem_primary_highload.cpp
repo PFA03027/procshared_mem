@@ -88,9 +88,10 @@ int main( void )
 
 	procshared_mem shm_obj(
 		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
-		[]( void* p_mem, size_t len ) {
+		[]( void* p_mem, size_t len ) -> void* {
 			std::atomic<unsigned char>* p_data = reinterpret_cast<std::atomic<unsigned char>*>( p_mem );
 			p_data->store( 122 );
+			return nullptr;
 		},
 		[]( void*, size_t ) { /* 何もしない */ } );
 	shm_obj.set_teardown(
