@@ -72,8 +72,8 @@ procshared_malloc::procshared_malloc( const char* p_shm_name, const char* p_id_d
 		p_shm_name, p_id_dirname, length, mode,
 		[this]( void* p_mem, size_t len ) -> void* {
 			shm_heap_ = offset_malloc( p_mem, len );
-			offset_allocator<msg_channel> msg_channel_allocator_obj( shm_heap_ );
-			offset_allocator<int>         int_allocator_obj( shm_heap_ );
+			offset_allocator<msg_channel>      msg_channel_allocator_obj( shm_heap_ );
+			offset_allocator<offset_ptr<void>> int_allocator_obj( shm_heap_ );
 
 			using target_allocator_traits_type = std::allocator_traits<offset_allocator<msg_channel>>;
 

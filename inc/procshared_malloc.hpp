@@ -81,7 +81,7 @@ private:
 template <typename T>
 offset_allocator<T> procshared_malloc::get_allocator( void )
 {
-	return offset_allocator<T>( shm_heap_ );
+	return offset_allocator<T>( shm_heap_ );   // NOLINT(clang-diagnostic-error)
 }
 
 #endif   // PROCSHARED_MALLOC_HPP_

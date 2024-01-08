@@ -290,7 +290,7 @@ TEST( Offset_Malloc_Highload, CanMulti_Thread_Calling )
 
 	// Act
 	for ( int i = 0; i < test_thread_num; i++ ) {
-		fail_count_tasks[i]        = std::packaged_task<int( offset_malloc )>( [alloc_size, loopcount]( offset_malloc ttsut ) -> int {
+		fail_count_tasks[i]        = std::packaged_task<int( offset_malloc )>( []( offset_malloc ttsut ) -> int {
             int fail_count_ret = 0;
             for ( int i = 0; i < loopcount; i++ ) {
                 auto p_ret = ttsut.allocate( 11 );

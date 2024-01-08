@@ -433,7 +433,7 @@ public:
 
 	constexpr pointer get() const noexcept
 	{
-		return reinterpret_cast<pointer>( calc_address() );
+		return static_cast<pointer>( calc_address() );
 	}
 
 	constexpr void swap( offset_ptr& x ) noexcept

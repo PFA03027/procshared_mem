@@ -125,7 +125,7 @@ offset_allocator<T> offset_allocator<T>::select_on_container_copy_construction( 
 	// メンバ変数として保持しているoffset_mallocは、デフォルト構築された場合、メモリ確保できない。
 	// そのため、いったん安全のために、offset_allocatorは、この実装を仮実装とする。
 	// offset_allocatorの仕様として、デフォルト構築した場合に、通常のヒープからメモリを確保するしようとするかの決断が必要。
-	return offset_allocator( *this );
+	return offset_allocator( *this );   // NOLINT(clang-diagnostic-error)
 }
 
 #endif   // OFFSET_ALLOCATOR_HPP_

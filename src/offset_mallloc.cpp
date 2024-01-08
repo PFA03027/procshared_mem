@@ -25,9 +25,9 @@ offset_malloc::offset_malloc( const offset_malloc& src )
 }
 
 offset_malloc::offset_malloc( offset_malloc&& src )
-  : p_impl_( src.p_impl_ )
+  : p_impl_( src.p_impl_ )   // NOLINT(cert-oop11-cpp)
 {
-	src.p_impl_ = nullptr;
+	src.p_impl_ = nullptr;   // p_impl_は基本型なので、move機能を持たない。よって、移動済みリソースを指すポインタをnullptrに更新する。
 }
 
 offset_malloc& offset_malloc::operator=( const offset_malloc& src )

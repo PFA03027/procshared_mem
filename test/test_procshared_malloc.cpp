@@ -285,7 +285,7 @@ TEST( Test_procshared_malloc, CanMsgChannel )
 		shm_malloc_obj.send( 0, p_sut_list );
 		std::packaged_task<child_proc_return_t( std::function<int()> )> task( call_pred_on_child_process );
 		e.f = task.get_future();
-		e.t = std::thread( std::move( task ), [num_of_loop]() -> int {
+		e.t = std::thread( std::move( task ), []() -> int {
 			procshared_malloc sut_secondary( p_shm_obj_name, "/tmp", 4096UL * 100UL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 			void* p_tmp = sut_secondary.receive( 0 );
 			fifo_que<int>* p_sut_list = reinterpret_cast<fifo_que<int>*>( p_tmp );
