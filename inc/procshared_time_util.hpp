@@ -14,6 +14,7 @@
 
 #include <chrono>
 #include <ctime>
+#include <type_traits>
 
 namespace time_util {
 
@@ -50,6 +51,20 @@ namespace time_util {
  *
  */
 
+struct is_allowed_convertion_impl {
+	template <typename ClockT, clockid_t CT>
+	static auto chk( ClockT* p1 ) -> typename std::enable_if<ClockT::is_steady && ( ( CT == CLOCK_MONOTONIC ) || ( CT == CLOCK_MONOTONIC_COARSE ) || ( CT == CLOCK_MONOTONIC_RAW ) ), std::true_type>::type;
+
+	template <typename ClockT, clockid_t CT>
+	static auto chk( ClockT* p1 ) -> typename std::enable_if<!ClockT::is_steady && std::is_same<ClockT, std::chrono::system_clock>::value && ( ( CT == CLOCK_REALTIME ) || ( CT == CLOCK_REALTIME_COARSE ) ), std::true_type>::type;
+
+	template <typename ClockT, clockid_t CT>
+	static auto chk( ... ) -> std::false_type;
+};
+
+template <typename ClockT, clockid_t CT>
+struct is_allowed_convertion : public decltype( is_allowed_convertion_impl::chk<ClockT, CT>( nullptr ) ) {};
+
 /**
  * @brief clock_gettime()によって取得できるクロックに基づくtime_point
  *
@@ -61,6 +76,18 @@ public:
 	constexpr timespec_ct( void )
 	  : tsp_ { 0 }
 	{
+	}
+
+	template <typename TimePointT, clockid_t CTX = CT, typename std::enable_if<is_allowed_convertion<typename TimePointT::clock, CTX>::value>::type* = nullptr>
+	timespec_ct( const TimePointT& src )
+	  : tsp_ { 0 }
+	{
+		auto timediff = src - TimePointT::clock::now();
+		// clock_gettime()よりも先にClockT::now()を呼び出さないと、原理的に正しく動作しない。
+		// 具体的には戻り値が、少なくともtpよりも早い時間となる可能性がある。その場合、Timeout時刻として仕様を満たさない。
+
+		timespec_ct target_timespec = timespec_ct::now() + timediff;
+		*this                       = target_timespec;
 	}
 
 	const struct timespec& get( void ) const

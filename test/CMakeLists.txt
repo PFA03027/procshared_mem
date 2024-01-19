@@ -48,6 +48,11 @@ add_executable(loadtest_procshared_mem_secondary_highload EXCLUDE_FROM_ALL test_
 target_link_libraries(loadtest_procshared_mem_secondary_highload procshared_mem )
 add_dependencies(build-test loadtest_procshared_mem_secondary_highload)
 
+add_executable(test_procshared_time_util EXCLUDE_FROM_ALL test_procshared_time_util.cpp)
+target_link_libraries(test_procshared_time_util procshared_mem gtest gtest_main )
+add_dependencies(build-test test_procshared_time_util)
+add_test(NAME test_procshared_time_util COMMAND $<TARGET_FILE:test_procshared_time_util>)
+
 add_executable(test_procshared_mutex EXCLUDE_FROM_ALL test_procshared_mutex.cpp)
 target_link_libraries(test_procshared_mutex procshared_mem test_procshared_common gtest gtest_main )
 add_dependencies(build-test test_procshared_mutex)

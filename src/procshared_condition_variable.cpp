@@ -92,16 +92,3 @@ std::cv_status procshared_condition_variable::wait_until(
 
 	return ans;
 }
-
-std::cv_status procshared_condition_variable::wait_until(
-	std::unique_lock<procshared_mutex>&          lock,
-	const std::chrono::steady_clock::time_point& abs_time )
-{
-	auto timediff = abs_time - std::chrono::steady_clock::now();
-	// clock_gettime()よりも先にsteady_clock::now()を呼び出さないと、原理的に正しく動作しない。
-	// 具体的には戻り値が、少なくともtpよりも早い時間となる可能性がある。その場合、Timeout時刻として仕様を満たさない。
-
-	time_util::timespec_monotonic target_timespec = time_util::timespec_monotonic::now() + timediff;
-
-	return wait_until( lock, target_timespec );
-}

@@ -52,26 +52,10 @@ public:
 	std::cv_status wait_until( std::unique_lock<procshared_mutex>&  lock,
 	                           const time_util::timespec_monotonic& abs_time );
 
-	std::cv_status wait_until( std::unique_lock<procshared_mutex>&          lock,
-	                           const std::chrono::steady_clock::time_point& abs_time );
-
 	template <class Predicate>
 	bool wait_until( std::unique_lock<procshared_mutex>&  lock,
 	                 const time_util::timespec_monotonic& abs_time,
 	                 Predicate                            pred )
-	{
-		while ( !pred() ) {
-			if ( wait_until( lock, abs_time ) == std::cv_status::timeout ) {
-				return pred();
-			}
-		}
-		return true;
-	}
-
-	template <class Predicate>
-	bool wait_until( std::unique_lock<procshared_mutex>&          lock,
-	                 const std::chrono::steady_clock::time_point& abs_time,
-	                 Predicate                                    pred )
 	{
 		while ( !pred() ) {
 			if ( wait_until( lock, abs_time ) == std::cv_status::timeout ) {
