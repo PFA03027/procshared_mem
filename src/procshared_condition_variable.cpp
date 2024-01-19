@@ -19,6 +19,7 @@
 
 #include "procshared_condition_variable.hpp"
 #include "procshared_logger.hpp"
+#include "procshared_time_util.hpp"
 
 procshared_condition_variable::procshared_condition_variable( void )
 {
@@ -60,26 +61,15 @@ void procshared_condition_variable::wait( std::unique_lock<procshared_mutex>& lo
 	pthread_cond_wait( &cond_steady_, lock.mutex()->native_handle() );
 }
 
-constexpr struct timespec timepointToTimespec( const std::chrono::steady_clock::time_point& tp )
-{
-	auto secs = std::chrono::time_point_cast<std::chrono::seconds>( tp );
-	auto ns   = std::chrono::time_point_cast<std::chrono::nanoseconds>( tp ) - std::chrono::time_point_cast<std::chrono::nanoseconds>( secs );
-
-	struct timespec ans = { secs.time_since_epoch().count(), ns.count() };
-	return ans;
-}
-
 std::cv_status procshared_condition_variable::wait_until(
-	std::unique_lock<procshared_mutex>&          lock,
-	const std::chrono::steady_clock::time_point& abs_time )
+	std::unique_lock<procshared_mutex>&  lock,
+	const time_util::timespec_monotonic& abs_time )
 {
-	// as the pre-condition, std::chrono::steady_clock is same to clock_gettime(MONOTONIC)
-	struct timespec target_abstime = timepointToTimespec( abs_time );
-	bool            loopflag       = true;
-	std::cv_status  ans            = std::cv_status::no_timeout;
+	bool           loopflag = true;
+	std::cv_status ans      = std::cv_status::no_timeout;
 
 	do {
-		int ret = pthread_cond_timedwait( &cond_steady_, lock.mutex()->native_handle(), &target_abstime );
+		int ret = pthread_cond_timedwait( &cond_steady_, lock.mutex()->native_handle(), &( abs_time.get() ) );
 		switch ( ret ) {
 			case 0: {
 				ans      = std::cv_status::no_timeout;
@@ -101,4 +91,17 @@ std::cv_status procshared_condition_variable::wait_until(
 	} while ( loopflag );
 
 	return ans;
+}
+
+std::cv_status procshared_condition_variable::wait_until(
+	std::unique_lock<procshared_mutex>&          lock,
+	const std::chrono::steady_clock::time_point& abs_time )
+{
+	auto timediff = abs_time - std::chrono::steady_clock::now();
+	// clock_gettime()よりも先にsteady_clock::now()を呼び出さないと、原理的に正しく動作しない。
+	// 具体的には戻り値が、少なくともtpよりも早い時間となる可能性がある。その場合、Timeout時刻として仕様を満たさない。
+
+	time_util::timespec_monotonic target_timespec = time_util::timespec_monotonic::now() + timediff;
+
+	return wait_until( lock, target_timespec );
 }

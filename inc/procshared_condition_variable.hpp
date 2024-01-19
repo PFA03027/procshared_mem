@@ -21,6 +21,7 @@
 #include <pthread.h>
 
 #include "procshared_mutex.hpp"
+#include "procshared_time_util.hpp"
 
 /**
  * @brief condition variable that is sharable b/w processes
@@ -48,8 +49,24 @@ public:
 		}
 	}
 
+	std::cv_status wait_until( std::unique_lock<procshared_mutex>&  lock,
+	                           const time_util::timespec_monotonic& abs_time );
+
 	std::cv_status wait_until( std::unique_lock<procshared_mutex>&          lock,
 	                           const std::chrono::steady_clock::time_point& abs_time );
+
+	template <class Predicate>
+	bool wait_until( std::unique_lock<procshared_mutex>&  lock,
+	                 const time_util::timespec_monotonic& abs_time,
+	                 Predicate                            pred )
+	{
+		while ( !pred() ) {
+			if ( wait_until( lock, abs_time ) == std::cv_status::timeout ) {
+				return pred();
+			}
+		}
+		return true;
+	}
 
 	template <class Predicate>
 	bool wait_until( std::unique_lock<procshared_mutex>&          lock,
@@ -68,7 +85,7 @@ public:
 	std::cv_status wait_for( std::unique_lock<procshared_mutex>&       lock,
 	                         const std::chrono::duration<Rep, Period>& rel_time )
 	{
-		return wait_until( lock, std::chrono::steady_clock::now() + rel_time );
+		return wait_until( lock, time_util::timespec_monotonic::now() + rel_time );
 	}
 
 	template <class Rep, class Period, class Predicate>
@@ -76,7 +93,7 @@ public:
 	               const std::chrono::duration<Rep, Period>& rel_time,
 	               Predicate                                 pred )
 	{
-		return wait_until( lock, std::chrono::steady_clock::now() + rel_time, pred );
+		return wait_until( lock, time_util::timespec_monotonic::now() + rel_time, pred );
 	}
 
 	native_handle_type native_handle()
