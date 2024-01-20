@@ -54,7 +54,7 @@ TEST( Test_procshared_time_util_meta_func, IsSteadyClock )
 
 TEST( Test_procshared_time_util_timespec_ct, CanConstruct_CanDestruct_MONOTONIC )
 {
-	ASSERT_NO_THROW( time_util::timespec_monotonic sut );
+	ASSERT_NO_THROW( time_util::timespec_monotonic sut );   // NOLINT(clang-diagnostic-unused-variable)
 }
 
 TEST( Test_procshared_time_util_timespec_ct, CanConstruct_CanDestruct_MONOTONIC_From_steady_clock1 )
@@ -93,5 +93,5 @@ TEST( Test_procshared_time_util_timespec_ct, CanConvert_steady_clock2_From_MONOT
 
 TEST( Test_procshared_time_util_timespec_ct, CanConstruct_CanDestruct_REALTIME )
 {
-	ASSERT_NO_THROW( time_util::timespec_realtime sut );
+	ASSERT_NO_THROW( time_util::timespec_realtime sut );   // NOLINT(clang-diagnostic-unused-variable)
 }
