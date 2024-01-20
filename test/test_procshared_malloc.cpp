@@ -267,7 +267,7 @@ public:
 
 private:
 	procshared_mutex mtx_;
-	procshared_condition_variable cond_;
+	procshared_condition_variable_monotonic cond_;
 	offset_list<T, offset_allocator<T>> que_;
 };
 

@@ -25,7 +25,7 @@
 
 TEST( Test_procshared_condition_variable, CanConstruct_CanDestruct )
 {
-	ASSERT_NO_THROW( procshared_condition_variable sut );
+	ASSERT_NO_THROW( procshared_condition_variable_monotonic sut );
 }
 
 TEST( Test_procshared_condition_variable, CanWait_CanNotifyAll )
@@ -33,8 +33,8 @@ TEST( Test_procshared_condition_variable, CanWait_CanNotifyAll )
 	// Arrange
 	bool                          shared_state_flag = false;
 	procshared_mutex              mtx;
-	procshared_condition_variable sut1;
-	procshared_condition_variable sut2;
+	procshared_condition_variable_monotonic sut1;
+	procshared_condition_variable_monotonic sut2;
 
 	std::packaged_task<bool()> task1( [&sut1, &mtx, &shared_state_flag]() {
 		std::unique_lock<procshared_mutex> lk( mtx );
@@ -82,7 +82,7 @@ TEST( Test_procshared_condition_variable, CanWaitFor_Timeout )
 	// Arrange
 	// bool                          shared_state_flag = false;
 	procshared_mutex              mtx;
-	procshared_condition_variable sut1;
+	procshared_condition_variable_monotonic sut1;
 
 	std::packaged_task<std::cv_status()> task1( [&sut1, &mtx]() {
 		std::unique_lock<procshared_mutex> lk( mtx );
@@ -119,7 +119,7 @@ TEST( Test_procshared_condition_variable, CanWaitFor_NoTimeout )
 
 	bool                          shared_state_flag = false;
 	procshared_mutex              mtx;
-	procshared_condition_variable sut1;
+	procshared_condition_variable_monotonic sut1;
 
 	std::packaged_task<std::cv_status()> task1( [&sut1, &mtx, &br_obj]() {
 		pthread_barrier_wait( &br_obj );
@@ -157,7 +157,7 @@ TEST( Test_procshared_condition_variable, CanWaitForPred_Timeout )
 	// Arrange
 	bool                          shared_state_flag = false;
 	procshared_mutex              mtx;
-	procshared_condition_variable sut1;
+	procshared_condition_variable_monotonic sut1;
 
 	std::packaged_task<bool()> task1( [&sut1, &mtx, &shared_state_flag]() {
 		std::unique_lock<procshared_mutex> lk( mtx );
@@ -188,7 +188,7 @@ TEST( Test_procshared_condition_variable, CanWaitForPred_NoTimeout )
 	// Arrange
 	bool                          shared_state_flag = false;
 	procshared_mutex              mtx;
-	procshared_condition_variable sut1;
+	procshared_condition_variable_monotonic sut1;
 
 	std::packaged_task<bool()> task1( [&sut1, &mtx, &shared_state_flag]() {
 		std::unique_lock<procshared_mutex> lk( mtx );
@@ -227,7 +227,7 @@ const char* p_shm_obj_name = "/my_test_shm_test_procshared_condition_variable";
 struct test_shared_data {
 	bool shared_state_flag_;
 	procshared_mutex mtx_;
-	procshared_condition_variable cond_;
+	procshared_condition_variable_monotonic cond_;
 
 	test_shared_data( void )
 	  : shared_state_flag_( false )

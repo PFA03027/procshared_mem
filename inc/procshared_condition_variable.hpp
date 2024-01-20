@@ -1,5 +1,5 @@
 /**
- * @file procshared_condition_variable.hpp
+ * @file procshared_condition_variable_base.hpp
  * @author PFA03027@nifty.com
  * @brief condition variable that is sharable b/w processes
  * @version 0.1
@@ -24,17 +24,17 @@
 #include "procshared_time_util.hpp"
 
 /**
- * @brief condition variable that is sharable b/w processes
+ * @brief base class of condition variable that is sharable b/w processes as common part
  *
  * @warning this class support std::chrono::steady_clock only.
  *
  */
-class procshared_condition_variable {
+class procshared_condition_variable_base {
 public:
 	using native_handle_type = pthread_cond_t*;
 
-	procshared_condition_variable( void );
-	~procshared_condition_variable();
+	procshared_condition_variable_base( clockid_t ct );
+	~procshared_condition_variable_base();
 
 	void notify_one() noexcept;
 	void notify_all() noexcept;
@@ -49,13 +49,48 @@ public:
 		}
 	}
 
-	std::cv_status wait_until( std::unique_lock<procshared_mutex>&  lock,
-	                           const time_util::timespec_monotonic& abs_time );
+	native_handle_type native_handle()
+	{
+		return &cond_;
+	}
+
+protected:
+	std::cv_status wait_until( std::unique_lock<procshared_mutex>& lock, const struct timespec& abs_time );
+
+private:
+	procshared_condition_variable_base( const procshared_condition_variable_base& )            = delete;
+	procshared_condition_variable_base& operator=( const procshared_condition_variable_base& ) = delete;
+
+	pthread_cond_t cond_;
+};
+
+template <clockid_t CT>
+class procshared_condition_variable : public procshared_condition_variable_base {
+public:
+	using native_handle_type = typename procshared_condition_variable_base::native_handle_type;
+
+	procshared_condition_variable( void )
+	  : procshared_condition_variable_base( CT )
+	{
+	}
+
+	// void notify_one() noexcept; is defined in parent class
+	// void notify_all() noexcept; is defined in parent class
+
+	// void wait( std::unique_lock<procshared_mutex>& lock ); is defined in parent class
+
+	// template <class Predicate>
+	// void wait( std::unique_lock<procshared_mutex>& lock, Predicate pred ) is defined in parent class
+
+	std::cv_status wait_until( std::unique_lock<procshared_mutex>& lock, const time_util::timespec_ct<CT>& abs_time )
+	{
+		return procshared_condition_variable_base::wait_until( lock, abs_time.get() );
+	}
 
 	template <class Predicate>
-	bool wait_until( std::unique_lock<procshared_mutex>&  lock,
-	                 const time_util::timespec_monotonic& abs_time,
-	                 Predicate                            pred )
+	bool wait_until( std::unique_lock<procshared_mutex>& lock,
+	                 const time_util::timespec_ct<CT>&   abs_time,
+	                 Predicate                           pred )
 	{
 		while ( !pred() ) {
 			if ( wait_until( lock, abs_time ) == std::cv_status::timeout ) {
@@ -65,34 +100,31 @@ public:
 		return true;
 	}
 
-	template <class Rep, class Period>
+	template <class Rep, class Period, clockid_t CTX = CT, typename std::enable_if<time_util::timespec_ct<CT>::is_steady>::type* = nullptr>
 	std::cv_status wait_for( std::unique_lock<procshared_mutex>&       lock,
 	                         const std::chrono::duration<Rep, Period>& rel_time )
 	{
-		return wait_until( lock, time_util::timespec_monotonic::now() + rel_time );
+		return wait_until( lock, time_util::timespec_ct<CT>::now() + rel_time );
 	}
 
-	template <class Rep, class Period, class Predicate>
+	template <class Rep, class Period, class Predicate, clockid_t CTX = CT, typename std::enable_if<time_util::timespec_ct<CT>::is_steady>::type* = nullptr>
 	bool wait_for( std::unique_lock<procshared_mutex>&       lock,
 	               const std::chrono::duration<Rep, Period>& rel_time,
 	               Predicate                                 pred )
 	{
-		return wait_until( lock, time_util::timespec_monotonic::now() + rel_time, pred );
+		return wait_until( lock, time_util::timespec_ct<CT>::now() + rel_time, pred );
 	}
 
-	native_handle_type native_handle()
-	{
-		return &cond_steady_;
-	}
+	// native_handle_type native_handle() is defined in parent class
 
 private:
 	procshared_condition_variable( const procshared_condition_variable& )            = delete;
 	procshared_condition_variable& operator=( const procshared_condition_variable& ) = delete;
-
-	pthread_cond_t cond_steady_;
-	// pthread_cond_t cond_system_;
 };
 
-static_assert( std::is_standard_layout<procshared_condition_variable>::value, "procshared_condition_variable needs standard layout" );
+using procshared_condition_variable_monotonic = procshared_condition_variable<CLOCK_MONOTONIC>;
+using procshared_condition_variable_realtime  = procshared_condition_variable<CLOCK_REALTIME>;
+
+static_assert( std::is_standard_layout<procshared_condition_variable_monotonic>::value, "procshared_condition_variable_base needs standard layout" );
 
 #endif

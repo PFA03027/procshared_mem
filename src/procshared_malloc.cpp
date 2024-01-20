@@ -25,7 +25,7 @@ unsigned int procshared_malloc::channel_size( void )
 struct msg_channel {
 	using data_type = offset_ptr<void>;
 	procshared_mutex                                    mtx_;
-	procshared_condition_variable                       cond_;
+	procshared_condition_variable_monotonic                       cond_;
 	offset_list<data_type, offset_allocator<data_type>> msgch_[default_channel_size];
 
 	msg_channel( const offset_allocator<data_type> a )
