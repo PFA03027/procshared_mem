@@ -51,19 +51,43 @@ namespace time_util {
  *
  */
 
-struct is_allowed_convertion_impl {
+/////////////////////////////////////////////////////////
+struct is_exchangable_timediff_impl {
 	template <typename ClockT, clockid_t CT>
 	static auto chk( ClockT* p1 ) -> typename std::enable_if<ClockT::is_steady && ( ( CT == CLOCK_MONOTONIC ) || ( CT == CLOCK_MONOTONIC_COARSE ) || ( CT == CLOCK_MONOTONIC_RAW ) ), std::true_type>::type;
 
 	template <typename ClockT, clockid_t CT>
 	static auto chk( ClockT* p1 ) -> typename std::enable_if<!ClockT::is_steady && std::is_same<ClockT, std::chrono::system_clock>::value && ( ( CT == CLOCK_REALTIME ) || ( CT == CLOCK_REALTIME_COARSE ) ), std::true_type>::type;
+	// 現時点の仕様としては、system_clockに制約する
 
 	template <typename ClockT, clockid_t CT>
 	static auto chk( ... ) -> std::false_type;
 };
 
 template <typename ClockT, clockid_t CT>
-struct is_allowed_convertion : public decltype( is_allowed_convertion_impl::chk<ClockT, CT>( nullptr ) ) {};
+struct is_exchangable_timediff : public decltype( is_exchangable_timediff_impl::chk<ClockT, CT>( nullptr ) ) {};
+
+/////////////////////////////////////////////////////////
+struct is_steady_clock_impl {
+	template <clockid_t CT>
+	static auto chk( clockid_t* p1 ) -> typename std::enable_if<( CT == CLOCK_MONOTONIC ) || ( CT == CLOCK_MONOTONIC_COARSE ) || ( CT == CLOCK_MONOTONIC_RAW ) || ( CT == CLOCK_BOOTTIME ), std::true_type>::type;
+
+	template <clockid_t CT>
+	static auto chk( ... ) -> std::false_type;
+
+	template <typename ClockT>
+	static auto chk( ClockT* p1 ) -> typename std::conditional<ClockT::is_steady, std::true_type, std::false_type>::type;
+
+	template <typename ClockT>
+	static auto chk( ... ) -> std::false_type;
+};
+
+// template <typename ClockT>
+// struct is_steady_clock : public decltype( is_steady_clock_impl::chk<ClockT>( nullptr ) ) {};
+// template <>
+// struct is_steady_clock<clockid_t> : public decltype( is_steady_clock_impl::chk<CTX>( nullptr ) ) {};
+
+/////////////////////////////////////////////////////////
 
 /**
  * @brief clock_gettime()によって取得できるクロックに基づくtime_point
@@ -78,7 +102,7 @@ public:
 	{
 	}
 
-	template <typename TimePointT, clockid_t CTX = CT, typename std::enable_if<is_allowed_convertion<typename TimePointT::clock, CTX>::value>::type* = nullptr>
+	template <typename TimePointT, clockid_t CTX = CT, typename std::enable_if<is_exchangable_timediff<typename TimePointT::clock, CTX>::value>::type* = nullptr>
 	timespec_ct( const TimePointT& src )
 	  : tsp_ { 0 }
 	{
@@ -110,7 +134,25 @@ public:
 		return ts2duration_nanoseconds( tsp_ ) - ts2duration_nanoseconds( op2.tsp_ );
 	}
 
+	/**
+	 * @brief Construct a new operator STD CTP object
+	 *
+	 * @tparam TimePointT time point type of std::chrono
+	 */
+	template <typename TimePointT, clockid_t CTX = CT, typename std::enable_if<is_exchangable_timediff<typename TimePointT::clock, CTX>::value>::type* = nullptr>
+	operator TimePointT( void ) const
+	{
+		auto timediff = ( *this ) - timespec_ct::now();
+		// ClockT::now()よりも先にをclock_gettime()呼び出さないと、原理的に正しく動作しない。
+		// 具体的には戻り値が、少なくともtsp_よりも早い時間となる可能性がある。その場合、Timeout時刻として仕様を満たさない。
+
+		TimePointT target_timespec = TimePointT::clock::now() + timediff;
+		return target_timespec;
+	}
+
 	static timespec_ct now( void );
+
+	static constexpr bool is_steady = decltype( is_steady_clock_impl::chk<CT>( nullptr ) )::value;
 
 private:
 	timespec_ct( const struct timespec& srcts )
