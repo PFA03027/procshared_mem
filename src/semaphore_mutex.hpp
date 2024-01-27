@@ -36,17 +36,17 @@
 
 ino_t get_inode_of_fd( int id_f_fd );
 
-class semaphore_resource_handler {
+class semaphore_mutex {
 public:
 	using native_handle_type = sem_t*;
 
-	semaphore_resource_handler( void ) noexcept
+	semaphore_mutex( void ) noexcept
 	  : sem_name_()
 	  , p_sem_( SEM_FAILED )
 	{
 	}
 
-	~semaphore_resource_handler()
+	~semaphore_mutex()
 	{
 		if ( is_valid() ) {
 			if ( sem_close( p_sem_ ) != 0 ) {
@@ -60,24 +60,24 @@ public:
 		p_sem_ = SEM_FAILED;
 	}
 
-	semaphore_resource_handler( semaphore_resource_handler&& src )
+	semaphore_mutex( semaphore_mutex&& src )
 	  : sem_name_( std::move( src.sem_name_ ) )
 	  , p_sem_( src.p_sem_ )
 	{
 		src.p_sem_ = SEM_FAILED;
 	}
 
-	semaphore_resource_handler& operator=( semaphore_resource_handler&& src )
+	semaphore_mutex& operator=( semaphore_mutex&& src )
 	{
 		if ( this == &src ) return *this;
 
-		semaphore_resource_handler( std::move( src ) ).swap( *this );
+		semaphore_mutex( std::move( src ) ).swap( *this );
 
 		return *this;
 	}
 
 	// this constructor try to create and open with mode_arg
-	semaphore_resource_handler( const std::string& sem_name, mode_t mode_arg )
+	semaphore_mutex( const std::string& sem_name, mode_t mode_arg )
 	  : sem_name_( sem_name )
 	  , p_sem_( SEM_FAILED )
 	{
@@ -85,7 +85,7 @@ public:
 	}
 
 	// this constructor try to create and open with mode_arg
-	semaphore_resource_handler( std::string&& sem_name, mode_t mode_arg )
+	semaphore_mutex( std::string&& sem_name, mode_t mode_arg )
 	  : sem_name_( std::move( sem_name ) )
 	  , p_sem_( SEM_FAILED )
 	{
@@ -93,7 +93,7 @@ public:
 	}
 
 	// this constructor try to open
-	explicit semaphore_resource_handler( const std::string& sem_name )
+	explicit semaphore_mutex( const std::string& sem_name )
 	  : sem_name_( sem_name )
 	  , p_sem_( SEM_FAILED )
 	{
@@ -101,7 +101,7 @@ public:
 	}
 
 	// this constructor try to open
-	explicit semaphore_resource_handler( std::string&& sem_name )
+	explicit semaphore_mutex( std::string&& sem_name )
 	  : sem_name_( std::move( sem_name ) )
 	  , p_sem_( SEM_FAILED )
 	{
@@ -140,20 +140,20 @@ public:
 		return sem_name_;
 	}
 
-	void swap( semaphore_resource_handler& b )
+	void swap( semaphore_mutex& b )
 	{
 		sem_name_.swap( b.sem_name_ );
 		std::swap( p_sem_, b.p_sem_ );
 	}
-
+#if 0
 	void release_resource( void )
 	{
-		semaphore_resource_handler().swap( *this );
+		semaphore_mutex().swap( *this );
 	}
-
+#endif
 private:
-	semaphore_resource_handler( const semaphore_resource_handler& )            = delete;
-	semaphore_resource_handler& operator=( const semaphore_resource_handler& ) = delete;
+	semaphore_mutex( const semaphore_mutex& )            = delete;
+	semaphore_mutex& operator=( const semaphore_mutex& ) = delete;
 
 	void try_create( mode_t mode_arg )
 	{
@@ -237,7 +237,7 @@ public:
 	 * @brief sem_wait()することなく、owns_acquire() == true の状態で初期化するコンストラクタ
 	 *
 	 */
-	constexpr semaphore_post_guard( semaphore_resource_handler& sem_arg, const semaphore_post_guard_adopt_acquire_t& ) noexcept
+	constexpr semaphore_post_guard( semaphore_mutex& sem_arg, const semaphore_post_guard_adopt_acquire_t& ) noexcept
 	  : p_sem_( sem_arg.native_handle() )
 	  , owns_acquire_flag_( true )
 	{
@@ -247,7 +247,7 @@ public:
 	 * @brief sem_wait()することなく、owns_acquire() == false の状態で初期化するコンストラクタ
 	 *
 	 */
-	constexpr semaphore_post_guard( semaphore_resource_handler& sem_arg, const semaphore_post_guard_defer_acquire_t& ) noexcept
+	constexpr semaphore_post_guard( semaphore_mutex& sem_arg, const semaphore_post_guard_defer_acquire_t& ) noexcept
 	  : p_sem_( sem_arg.native_handle() )
 	  , owns_acquire_flag_( false )
 	{
@@ -259,7 +259,7 @@ public:
 	 * sem_trywait()が成功した場合、owns_acquire() == true となる。そうでない場合は、owns_acquire() == false となる。
 	 *
 	 */
-	semaphore_post_guard( semaphore_resource_handler& sem_arg, const semaphore_post_guard_try_to_acquire_t& )
+	semaphore_post_guard( semaphore_mutex& sem_arg, const semaphore_post_guard_try_to_acquire_t& )
 	  : p_sem_( sem_arg.native_handle() )
 	  , owns_acquire_flag_( false )
 	{
@@ -270,7 +270,7 @@ public:
 	 * @brief sem_wait()を行い、owns_acquire() == true の状態で初期化するコンストラクタ
 	 *
 	 */
-	explicit semaphore_post_guard( const semaphore_resource_handler& sem_arg )
+	explicit semaphore_post_guard( const semaphore_mutex& sem_arg )
 	  : p_sem_( sem_arg.native_handle() )
 	  , owns_acquire_flag_( false )
 	{

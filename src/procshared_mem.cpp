@@ -256,7 +256,7 @@ procshared_mem::impl::~impl()
 	if ( p_mem_ == nullptr ) return;
 
 	try {
-		semaphore_resource_handler cur_sem( sem_name_ );   // セマフォを再オープン
+		semaphore_mutex cur_sem( sem_name_ );   // セマフォを再オープン
 
 		semaphore_post_guard spg( cur_sem );   // セマフォの取得をまつ。
 		                                       // デストラクタで、sem_postを行う。このsem_postは、ほかのプロセス向けにpostを行う。
@@ -392,14 +392,14 @@ bool procshared_mem::impl::try_setup_as_both(
 	}
 
 	bool                       is_primary = true;
-	semaphore_resource_handler cur_sem_res;
+	semaphore_mutex cur_sem_res;
 	semaphore_post_guard       spg;
 	switch ( role_type ) {
 		case 0: /* both role */ {
-			cur_sem_res = semaphore_resource_handler( p_shm_name_arg, mode_arg );
+			cur_sem_res = semaphore_mutex( p_shm_name_arg, mode_arg );
 			if ( !cur_sem_res.is_valid() ) {
 				// 作成オープンできなかったので、secondary扱いとして、オープンを再トライする。
-				cur_sem_res = semaphore_resource_handler( p_shm_name_arg );
+				cur_sem_res = semaphore_mutex( p_shm_name_arg );
 				if ( !cur_sem_res.is_valid() ) {
 					// psm_logoutput( psm_log_lv::kInfo, "Info: Fail semaphore open(%s) as cooperative", p_shm_name_arg );
 					return false;
@@ -413,7 +413,7 @@ bool procshared_mem::impl::try_setup_as_both(
 		} break;
 
 		case 1: /* primary */ {
-			cur_sem_res = semaphore_resource_handler( p_shm_name_arg, mode_arg );
+			cur_sem_res = semaphore_mutex( p_shm_name_arg, mode_arg );
 			if ( !cur_sem_res.is_valid() ) {
 				psm_logoutput( psm_log_lv::kWarn, "Warning: Fail semaphore open(%s) as primary", p_shm_name_arg );
 				return false;
@@ -422,7 +422,7 @@ bool procshared_mem::impl::try_setup_as_both(
 		} break;
 
 		case 2: /* secondary */ {
-			cur_sem_res = semaphore_resource_handler( p_shm_name_arg );
+			cur_sem_res = semaphore_mutex( p_shm_name_arg );
 			if ( !cur_sem_res.is_valid() ) {
 				psm_logoutput( psm_log_lv::kWarn, "Warning: Fail semaphore open(%s) as secondary", p_shm_name_arg );
 				return false;
