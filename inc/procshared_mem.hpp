@@ -20,16 +20,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-using type_of_errno = typename std::remove_reference<decltype( errno )>::type;
-
-class procshared_mem_error : public std::runtime_error {
-public:
-	procshared_mem_error( type_of_errno e_v );
-	procshared_mem_error( type_of_errno e_v, const std::string& additional_error_str );
-	procshared_mem_error( const char* p_error_str );
-	procshared_mem_error( const std::string& error_str );
-};
-
 /**
  * @brief Async initialized shared memory
  *

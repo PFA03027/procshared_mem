@@ -23,8 +23,10 @@
 
 #include "gtest/gtest.h"
 
+#include "misc_utility.hpp"
 #include "procshared_mem.hpp"
 #include "procshared_mem_internal.hpp"
+#include "semaphore_mutex.hpp"
 #include "test_procshared_common.hpp"
 
 constexpr const char* const p_shm_name = "/my_test_procshared_mem_internal_sem";
