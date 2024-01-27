@@ -30,6 +30,8 @@ public:
 
 	void swap( lockfile_mutex& src );
 
+	static void debug_force_cleanup( const char* p_lockfilename );
+
 private:
 	lockfile_mutex( const lockfile_mutex& )            = delete;
 	lockfile_mutex& operator=( const lockfile_mutex& ) = delete;

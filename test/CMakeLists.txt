@@ -165,3 +165,18 @@ add_test(NAME test_offset_list20 COMMAND $<TARGET_FILE:test_offset_list20>)
 target_compile_features(test_offset_unique_ptr20 PUBLIC cxx_std_20)
 # target_compile_options(test_offset_unique_ptr20 PUBLIC -fconcepts-diagnostics-depth=2)
 
+add_executable(test_misc_utility_and_other11 EXCLUDE_FROM_ALL test_misc_utility_and_other.cpp)
+target_include_directories(test_misc_utility_and_other11  PUBLIC ../inc ../src )
+target_link_libraries(test_misc_utility_and_other11 procshared_mem gtest gtest_main )
+add_dependencies(build-test test_misc_utility_and_other11)
+add_test(NAME test_misc_utility_and_other11 COMMAND $<TARGET_FILE:test_misc_utility_and_other11>)
+target_compile_features(test_misc_utility_and_other11 PUBLIC cxx_std_11)
+
+add_executable(test_misc_utility_and_other20 EXCLUDE_FROM_ALL test_misc_utility_and_other.cpp)
+target_include_directories(test_misc_utility_and_other20  PUBLIC ../inc ../src )
+target_link_libraries(test_misc_utility_and_other20 procshared_mem gtest gtest_main )
+add_dependencies(build-test test_misc_utility_and_other20)
+add_test(NAME test_misc_utility_and_other20 COMMAND $<TARGET_FILE:test_misc_utility_and_other20>)
+target_compile_features(test_misc_utility_and_other20 PUBLIC cxx_std_20)
+# target_compile_options(test_offset_unique_ptr20 PUBLIC -fconcepts-diagnostics-depth=2)
+

@@ -117,8 +117,10 @@ void test_func( void )
 	}
 }
 
-int main( void )
+int main( int argc, char* args[] )
 {
+	printf( "%s\n", args[0] );
+
 	pid_t my_pid = getpid();
 
 	procshared_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data

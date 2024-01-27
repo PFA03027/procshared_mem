@@ -24,6 +24,9 @@ enum class psm_log_lv {
 
 constexpr inline bool psm_filter( psm_log_lv ll )
 {
+#ifdef ENABLE_DEBUG_LOGOUTPUT
+	return true;
+#else
 #if 1
 	// C++11 and after
 	return ( ll == psm_log_lv::kTest ) ||
@@ -47,6 +50,7 @@ constexpr inline bool psm_filter( psm_log_lv ll )
 	}
 
 	return is_output;
+#endif
 #endif
 }
 

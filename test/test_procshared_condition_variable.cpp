@@ -31,8 +31,8 @@ TEST( Test_procshared_condition_variable, CanConstruct_CanDestruct )
 TEST( Test_procshared_condition_variable, CanWait_CanNotifyAll )
 {
 	// Arrange
-	bool                          shared_state_flag = false;
-	procshared_mutex              mtx;
+	bool                                    shared_state_flag = false;
+	procshared_mutex                        mtx;
 	procshared_condition_variable_monotonic sut1;
 	procshared_condition_variable_monotonic sut2;
 
@@ -81,7 +81,7 @@ TEST( Test_procshared_condition_variable, CanWaitFor_Timeout )
 {
 	// Arrange
 	// bool                          shared_state_flag = false;
-	procshared_mutex              mtx;
+	procshared_mutex                        mtx;
 	procshared_condition_variable_monotonic sut1;
 
 	std::packaged_task<std::cv_status()> task1( [&sut1, &mtx]() {
@@ -117,8 +117,8 @@ TEST( Test_procshared_condition_variable, CanWaitFor_NoTimeout )
 	pthread_barrier_t br_obj;
 	ASSERT_EQ( pthread_barrier_init( &br_obj, nullptr, 2 ), 0 );
 
-	bool                          shared_state_flag = false;
-	procshared_mutex              mtx;
+	bool                                    shared_state_flag = false;
+	procshared_mutex                        mtx;
 	procshared_condition_variable_monotonic sut1;
 
 	std::packaged_task<std::cv_status()> task1( [&sut1, &mtx, &br_obj]() {
@@ -130,13 +130,13 @@ TEST( Test_procshared_condition_variable, CanWaitFor_NoTimeout )
 	std::thread                          t1( std::move( task1 ) );
 
 	pthread_barrier_wait( &br_obj );
-	std::this_thread::sleep_for( std::chrono::milliseconds( 10 ) );
+	std::this_thread::sleep_for( std::chrono::milliseconds( 500 ) );
 
 	// Act
 	{
 		std::unique_lock<procshared_mutex> lk( mtx );
 		shared_state_flag = true;
-		sut1.notify_all();
+		sut1.notify_all();   // これが実行されるまでに、sut1.wait_for()で待機列に入っている必要がある。wait_for()はその保証が難しいため、notify_all()の呼び出しをなるべく遅くするようにチューニングするしかない。
 	}
 
 	// Assert
@@ -155,8 +155,8 @@ TEST( Test_procshared_condition_variable, CanWaitFor_NoTimeout )
 TEST( Test_procshared_condition_variable, CanWaitForPred_Timeout )
 {
 	// Arrange
-	bool                          shared_state_flag = false;
-	procshared_mutex              mtx;
+	bool                                    shared_state_flag = false;
+	procshared_mutex                        mtx;
 	procshared_condition_variable_monotonic sut1;
 
 	std::packaged_task<bool()> task1( [&sut1, &mtx, &shared_state_flag]() {
@@ -186,8 +186,8 @@ TEST( Test_procshared_condition_variable, CanWaitForPred_Timeout )
 TEST( Test_procshared_condition_variable, CanWaitForPred_NoTimeout )
 {
 	// Arrange
-	bool                          shared_state_flag = false;
-	procshared_mutex              mtx;
+	bool                                    shared_state_flag = false;
+	procshared_mutex                        mtx;
 	procshared_condition_variable_monotonic sut1;
 
 	std::packaged_task<bool()> task1( [&sut1, &mtx, &shared_state_flag]() {

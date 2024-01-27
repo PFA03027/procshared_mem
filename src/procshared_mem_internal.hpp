@@ -387,10 +387,10 @@ private:
 		if ( shm_fd_ < 0 ) {
 			auto cur_errno = errno;
 			auto es2       = make_strerror( cur_errno );
-			psm_logoutput( psm_log_lv::kInfo, "Info: Fail shm_open(%s, %x, %x), %s", shm_name_.c_str(), oflags_arg, mode_arg, es2.c_str() );
+			// psm_logoutput( psm_log_lv::kInfo, "Info: Fail shm_open(%s, %x, %x), %s", shm_name_.c_str(), oflags_arg, mode_arg, es2.c_str() );
 			return;
 		}
-		if ( ftruncate( shm_fd_, static_cast<off_t>( length_arg ) ) != 0 ) {
+		if ( ftruncate( shm_fd_, static_cast<off_t>( length_arg ) ) != 0 ) {   // TODO: fix this
 			auto cur_errno = errno;
 			char buff[1024];
 			auto es = make_strerror( cur_errno );

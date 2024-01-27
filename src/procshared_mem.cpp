@@ -12,6 +12,7 @@
 #include <atomic>
 #include <chrono>
 #include <functional>
+#include <mutex>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -28,6 +29,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "lockfile_mutex.hpp"
 #include "misc_utility.hpp"
 #include "offset_ptr.hpp"
 #include "procshared_logger.hpp"
@@ -169,10 +171,11 @@ private:
 	                         std::function<void( void*, size_t )>& secondary_functor_arg );
 
 	static std::string get_id_filename( const char* p_path_name_arg, const char* p_id_dirname_arg );
+	static std::string get_mutex_objname( const char* p_path_name_arg, const char* p_id_dirname_arg );
 	static size_t      calc_total_neccesary_len( size_t requested_length );
 	static size_t      calc_available_size( size_t allocated_shm_length );
 
-	std::string                                sem_name_;
+	std::string                                mutex_obj_name_;
 	id_file_resource_handler                   id_res_;
 	shm_resource_handler                       shm_res_;
 	std::function<void( bool, void*, size_t )> teardown_functor_;
@@ -228,13 +231,22 @@ void procshared_mem::impl::check_path_name( const char* p_shm_name )
 	}
 }
 
-std::string procshared_mem::impl::get_id_filename( const char* p_shm_name_arg, const char* p_id_dirname_arg )
+std::string procshared_mem::impl::get_id_filename( const char* p_path_name_arg, const char* p_id_dirname_arg )
 {
-	if ( p_shm_name_arg == nullptr ) {
-		throw procshared_mem_error( "p_shm_name_arg is nullptr" );
+	if ( p_path_name_arg == nullptr ) {
+		throw procshared_mem_error( "p_path_name_arg is nullptr" );
 	}
 	std::string ans( ( p_id_dirname_arg != nullptr ) ? p_id_dirname_arg : TMP_DIR_FOR_ID_FILE );
-	return ans + std::string( p_shm_name_arg );
+	return ans + std::string( p_path_name_arg );
+}
+
+std::string procshared_mem::impl::get_mutex_objname( const char* p_path_name_arg, const char* p_id_dirname_arg )
+{
+	if ( p_path_name_arg == nullptr ) {
+		throw procshared_mem_error( "p_path_name_arg is nullptr" );
+	}
+	std::string ans( ( p_id_dirname_arg != nullptr ) ? p_id_dirname_arg : TMP_DIR_FOR_ID_FILE );
+	return ans + std::string( p_path_name_arg ) + std::string( ".lock" );
 }
 
 size_t procshared_mem::impl::calc_available_size( size_t allocated_shm_length )
@@ -243,7 +255,7 @@ size_t procshared_mem::impl::calc_available_size( size_t allocated_shm_length )
 }
 
 procshared_mem::impl::impl( void )
-  : sem_name_()
+  : mutex_obj_name_()
   , id_res_()
   , shm_res_()
   , teardown_functor_()
@@ -255,11 +267,10 @@ procshared_mem::impl::~impl()
 {
 	if ( p_mem_ == nullptr ) return;
 
+	auto orig_final_ref_c = p_mem_->reference_count_.load();
 	try {
-		semaphore_mutex cur_sem( sem_name_ );   // セマフォを再オープン
-
-		semaphore_post_guard spg( cur_sem );   // セマフォの取得をまつ。
-		                                       // デストラクタで、sem_postを行う。このsem_postは、ほかのプロセス向けにpostを行う。
+		lockfile_mutex                  lf_mtx( mutex_obj_name_.c_str() );   // inter-process mutex via filesystem
+		std::lock_guard<lockfile_mutex> lk( lf_mtx );
 
 		auto                       final_ref_c = p_mem_->reference_count_.fetch_sub( 1 ) - 1;
 		procshared_mem_mem_header* p_cur_mem   = reinterpret_cast<procshared_mem_mem_header*>( shm_res_.get_shm_pointer() );
@@ -273,11 +284,10 @@ procshared_mem::impl::~impl()
 
 			id_res_.do_unlink();
 			shm_res_.do_unlink();
-			cur_sem.do_unlink();
 		}
 	} catch ( std::runtime_error& e ) {
 		// 握りつぶす
-		psm_logoutput( psm_log_lv::kErr, "Error: procshared_mem::impl destructor catch std::runtime_error exception: %s", e.what() );
+		psm_logoutput( psm_log_lv::kErr, "Error: procshared_mem::impl(ref count %d) destructor catch std::runtime_error exception: %s", orig_final_ref_c, e.what() );
 	} catch ( ... ) {
 		// 握りつぶす
 		psm_logoutput( psm_log_lv::kErr, "Error: procshared_mem::impl destructor catch unknown exception" );
@@ -291,16 +301,16 @@ procshared_mem::impl::impl(
 	mode_t                                mode,
 	std::function<void*( void*, size_t )> primary_functor_arg,
 	std::function<void( void*, size_t )>  secondary_functor_arg )
-  : sem_name_()
+  : mutex_obj_name_()
   , id_res_()
   , shm_res_()
   , teardown_functor_()
   , p_mem_( nullptr )
 {
 	check_path_name( p_shm_name );
+	mutex_obj_name_       = get_mutex_objname( p_shm_name, p_id_dirname );
 	size_t nessesary_size = calc_total_neccesary_len( length );
 	setup_as_both( p_shm_name, p_id_dirname, mode, nessesary_size, primary_functor_arg, secondary_functor_arg );
-	sem_name_ = p_shm_name;
 }
 
 procshared_mem::impl::impl(
@@ -310,16 +320,16 @@ procshared_mem::impl::impl(
 	size_t                                length,
 	mode_t                                mode,
 	std::function<void*( void*, size_t )> primary_functor_arg )
-  : sem_name_()
+  : mutex_obj_name_()
   , id_res_()
   , shm_res_()
   , teardown_functor_()
   , p_mem_( nullptr )
 {
 	check_path_name( p_shm_name );
+	mutex_obj_name_       = get_mutex_objname( p_shm_name, p_id_dirname );
 	size_t nessesary_size = calc_total_neccesary_len( length );
 	setup_as_primary( p_shm_name, p_id_dirname, mode, nessesary_size, primary_functor_arg );
-	sem_name_ = p_shm_name;
 }
 
 procshared_mem::impl::impl(
@@ -329,16 +339,16 @@ procshared_mem::impl::impl(
 	size_t                               length,
 	mode_t                               mode,
 	std::function<void( void*, size_t )> secondary_functor_arg )
-  : sem_name_()
+  : mutex_obj_name_()
   , id_res_()
   , shm_res_()
   , teardown_functor_()
   , p_mem_( nullptr )
 {
 	check_path_name( p_shm_name );
+	mutex_obj_name_       = get_mutex_objname( p_shm_name, p_id_dirname );
 	size_t nessesary_size = calc_total_neccesary_len( length );
 	setup_as_secondary( p_shm_name, p_id_dirname, mode, nessesary_size, secondary_functor_arg );
-	sem_name_ = p_shm_name;
 }
 
 void procshared_mem::impl::setup_as_both(
@@ -391,44 +401,59 @@ bool procshared_mem::impl::try_setup_as_both(
 		throw procshared_mem_error( "fail top open id file" );
 	}
 
-	bool                       is_primary = true;
-	semaphore_mutex cur_sem_res;
-	semaphore_post_guard       spg;
+	lockfile_mutex                  lf_mtx( mutex_obj_name_.c_str() );   // inter-process mutex via filesystem
+	std::lock_guard<lockfile_mutex> lk( lf_mtx );
+
+	id_file_resource_handler tmp_id_file = id_file_resource_handler( id_fname );
+	if ( !tmp_id_file.is_valid() ) {
+		psm_logoutput( psm_log_lv::kDebug, "Debug: ID file fail to open, try again" );
+		return false;
+	}
+	if ( cur_id_res.get_inode_number() != tmp_id_file.get_inode_number() ) {
+		psm_logoutput( psm_log_lv::kDebug, "Debug: ID file inode is mismatch, try again" );
+		return false;
+	}
+	// unlink済みであっても、ここを抜けてくる場合がある。
+
+	shm_resource_handler       cur_shm_res;
+	procshared_mem_mem_header* p_cur_mem;
+
+	bool is_primary = true;
 	switch ( role_type ) {
 		case 0: /* both role */ {
-			cur_sem_res = semaphore_mutex( p_shm_name_arg, mode_arg );
-			if ( !cur_sem_res.is_valid() ) {
-				// 作成オープンできなかったので、secondary扱いとして、オープンを再トライする。
-				cur_sem_res = semaphore_mutex( p_shm_name_arg );
-				if ( !cur_sem_res.is_valid() ) {
-					// psm_logoutput( psm_log_lv::kInfo, "Info: Fail semaphore open(%s) as cooperative", p_shm_name_arg );
+			// try as primary
+			cur_shm_res = shm_resource_handler( shm_resource_handler::try_create_tag(), p_shm_name_arg, length_arg, mode_arg );
+			if ( cur_shm_res.is_valid() ) {
+				is_primary = true;
+				psm_logoutput( psm_log_lv::kDebug, "Debug: shared memory open as primary, role_type=%d", role_type );
+			} else {
+				// try as secondary
+				cur_shm_res = shm_resource_handler( shm_resource_handler::try_open_tag(), p_shm_name_arg, length_arg, mode_arg );
+				if ( !cur_shm_res.is_valid() ) {
+					psm_logoutput( psm_log_lv::kInfo, "Info: shared memory open fail, role_type=%d", role_type );
 					return false;
 				}
 				is_primary = false;
-				spg        = semaphore_post_guard( cur_sem_res );   // セマフォ取得まで待つ。
-			} else {
-				// psm_logoutput( psm_log_lv::kDebug, "Debug: success semaphore creation, %s", p_shm_name_arg );
-				spg = semaphore_post_guard( cur_sem_res, semaphore_post_guard_adopt_acquire_t() );   // セマフォ作成をしたので、セマフォ取得済みとする。
+				psm_logoutput( psm_log_lv::kDebug, "Debug: shared memory open as secondary, role_type=%d", role_type );
 			}
 		} break;
 
 		case 1: /* primary */ {
-			cur_sem_res = semaphore_mutex( p_shm_name_arg, mode_arg );
-			if ( !cur_sem_res.is_valid() ) {
-				psm_logoutput( psm_log_lv::kWarn, "Warning: Fail semaphore open(%s) as primary", p_shm_name_arg );
+			cur_shm_res = shm_resource_handler( shm_resource_handler::try_create_tag(), p_shm_name_arg, length_arg, mode_arg );
+			if ( !cur_shm_res.is_valid() ) {
+				psm_logoutput( psm_log_lv::kWarn, "Warning: Fail shared memory open(%s) as primary, role_type=%d", p_shm_name_arg, role_type );
 				return false;
 			}
-			spg = semaphore_post_guard( cur_sem_res, semaphore_post_guard_adopt_acquire_t() );   // セマフォ作成をしたので、セマフォ取得済みとする。
+			is_primary = true;
 		} break;
 
 		case 2: /* secondary */ {
-			cur_sem_res = semaphore_mutex( p_shm_name_arg );
-			if ( !cur_sem_res.is_valid() ) {
-				psm_logoutput( psm_log_lv::kWarn, "Warning: Fail semaphore open(%s) as secondary", p_shm_name_arg );
+			cur_shm_res = shm_resource_handler( shm_resource_handler::try_open_tag(), p_shm_name_arg, length_arg, mode_arg );
+			if ( !cur_shm_res.is_valid() ) {
+				psm_logoutput( psm_log_lv::kWarn, "Warning: Fail shared memory open(%s) as secondary, role_type=%d", p_shm_name_arg, role_type );
 				return false;
 			}
 			is_primary = false;
-			spg        = semaphore_post_guard( cur_sem_res );   // セマフォ取得まで待つ。
 		} break;
 
 		default: {
@@ -437,53 +462,14 @@ bool procshared_mem::impl::try_setup_as_both(
 		} break;
 	}
 
-	id_file_resource_handler tmp_id_file = id_file_resource_handler( id_fname );
-	if ( !tmp_id_file.is_valid() ) {
-		// psm_logoutput( psm_log_lv::kInfo, "Info: ID file open fail, try again" );
-		if ( is_primary ) {
-			// セマフォ作成者だが、IDファイルの不一致を検出したので、ファイルやセマフォを削除してやり直す。
-			cur_id_res.do_unlink();
-			cur_sem_res.do_unlink();
-		}
-		return false;
-	}
-	if ( cur_id_res.get_inode_number() != tmp_id_file.get_inode_number() ) {
-		// psm_logoutput( psm_log_lv::kInfo, "Info: ID file inode is mismatch, try again" );
-		if ( is_primary ) {
-			// セマフォ作成者だが、IDファイルの不一致を検出したので、ファイルやセマフォを削除してやり直す。
-			cur_id_res.do_unlink();
-			cur_sem_res.do_unlink();
-		}
-		return false;
-	}
-	// unlink済みであっても、ここを抜けてくる場合がある。
-
-	shm_resource_handler       cur_shm_res;
-	procshared_mem_mem_header* p_cur_mem;
 	if ( is_primary ) {
 		// primary
-		cur_shm_res = shm_resource_handler( shm_resource_handler::try_create_tag(), p_shm_name_arg, length_arg, mode_arg );
-		if ( !cur_shm_res.is_valid() ) {
-			psm_logoutput( psm_log_lv::kInfo, "Info: shared memory open fail as primary, role_type=%d", role_type );
-			return false;
-		}
-
 		p_cur_mem = new ( cur_shm_res.get_shm_pointer() ) procshared_mem_mem_header( cur_id_res.get_inode_number(), length_arg );
 
 		void* p_tmp         = primary_functor_arg( p_cur_mem->shm_buff_, calc_available_size( cur_shm_res.allocated_size() ) );
 		p_cur_mem->op_void_ = reinterpret_cast<char*>( p_tmp );
 	} else {
 		// secondary
-		cur_shm_res = shm_resource_handler( shm_resource_handler::try_open_tag(), p_shm_name_arg, length_arg, mode_arg );
-		if ( !cur_shm_res.is_valid() ) {
-			if ( role_type == 0 ) {
-				psm_logoutput( psm_log_lv::kInfo, "Info: shared memory open fail as secondary, role_type=%d", role_type );
-			} else {
-				psm_logoutput( psm_log_lv::kWarn, "Warning: shared memory open fail as secondary, role_type=%d", role_type );
-			}
-			return false;
-		}
-
 		p_cur_mem                       = reinterpret_cast<procshared_mem_mem_header*>( cur_shm_res.get_shm_pointer() );
 		auto cur_inode_value_in_cur_mem = p_cur_mem->inode_val_.load( std::memory_order_acquire );
 		if ( cur_id_res.get_inode_number() != cur_inode_value_in_cur_mem ) {
@@ -597,6 +583,10 @@ void procshared_mem::impl::debug_force_cleanup( const char* p_shm_name, const ch
 		printf( "success to unlink shared memory: %s\n", p_shm_name );
 	}
 
+	std::string lock_fname = get_mutex_objname( p_shm_name, p_id_dirname );
+	lockfile_mutex::debug_force_cleanup( lock_fname.c_str() );
+
+#if 0
 	ret = sem_unlink( p_shm_name );   // セマフォの削除
 	if ( ret != 0 ) {
 		auto cur_errno = errno;
@@ -605,6 +595,7 @@ void procshared_mem::impl::debug_force_cleanup( const char* p_shm_name, const ch
 	} else {
 		printf( "success to unlink semaphore: %s\n", p_shm_name );
 	}
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////////////

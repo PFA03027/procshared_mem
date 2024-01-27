@@ -165,6 +165,8 @@ private:
 				char buff[1024];
 				snprintf( buff, 1024, "Error: Fail sem_open(%s, O_CREAT | O_EXCL | O_RDWR | O_CLOEXEC, %x, 0): ", sem_name_.c_str(), mode_arg );
 				throw procshared_mem_error( cur_errno, buff );
+			} else {
+				psm_logoutput( psm_log_lv::kDebug, "Debug: semaphore(%s) already exist", sem_name_.c_str() );
 			}
 		}
 	}
@@ -179,6 +181,8 @@ private:
 				char buff[1024];
 				snprintf( buff, 1024, "Error: Fail sem_open(%s, O_RDWR | O_CLOEXEC)", sem_name_.c_str() );
 				throw procshared_mem_error( cur_errno, buff );
+			} else {
+				psm_logoutput( psm_log_lv::kDebug, "Debug: semaphore(%s) is no entry", sem_name_.c_str() );
 			}
 		}
 	}
@@ -342,7 +346,7 @@ private:
 	{
 		if ( p_sem_ == SEM_FAILED ) {
 			char buff[1024];
-			snprintf( buff, 1024, "unexpected calling call_sem_wait() by this=%p", this );
+			snprintf( buff, 1024, "unexpected calling call_sem_trywait() by this=%p", this );
 			throw procshared_mem_error( buff );
 		}
 

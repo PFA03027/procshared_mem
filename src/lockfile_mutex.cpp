@@ -10,6 +10,8 @@
  */
 
 #include <chrono>
+#include <mutex>
+#include <random>
 #include <stdexcept>
 #include <thread>
 
@@ -19,6 +21,7 @@
 #include <unistd.h>
 
 #include "lockfile_mutex.hpp"
+#include "misc_utility.hpp"
 #include "procshared_logger.hpp"
 
 constexpr int invalid_fd = -1;
@@ -29,11 +32,28 @@ constexpr bool is_valid_fd( int tfd )
 	return tfd >= 0;
 }
 
+void lockfile_mutex::debug_force_cleanup( const char* p_lockfilename )
+{
+	if ( p_lockfilename == nullptr ) {
+		printf( "try to do lockfile_mutex::debug_force_cleanup(), but argument is nullptr\n" );
+		return;
+	}
+
+	int ret = unlink( p_lockfilename );
+	if ( ret != 0 ) {
+		auto cur_errno = errno;
+		auto es        = make_strerror( cur_errno );
+		printf( "%s by unlink(%s)\n", es.c_str(), p_lockfilename );
+	} else {
+		printf( "success to unlink id file: %s\n", p_lockfilename );
+	}
+}
+
 lockfile_mutex::lockfile_mutex( const char* p_lockfilename )
   : lockfilename_( ( p_lockfilename == nullptr ) ? "" : p_lockfilename )
   , lockfilefd_( invalid_fd )
 {
-	if ( p_lockfilename ) {
+	if ( p_lockfilename == nullptr ) {
 		throw std::runtime_error( "pointer to lock file name string is nullptr" );
 	}
 	if ( lockfilename_.empty() ) {
@@ -68,8 +88,13 @@ void lockfile_mutex::lock( void )
 		std::this_thread::sleep_for( std::chrono::milliseconds( cur_sleep_time ) );
 		cur_sleep_time *= 2;
 		if ( cur_sleep_time > maxdelay ) {
-			cur_sleep_time = maxdelay;
-			psm_logoutput( psm_log_lv::kWarn, "reach to max delay time for lockfile(%s) open", lockfilename_.c_str() );
+			thread_local pid_t                     seed_depens_on_thread = gettid();
+			static std::mutex                      mtx_for_random;
+			std::lock_guard<std::mutex>            lk( mtx_for_random );
+			static std::mt19937                    engine( static_cast<std::mt19937::result_type>( seed_depens_on_thread ) );
+			static std::uniform_int_distribution<> dist( 1, maxdelay );
+			cur_sleep_time = dist( engine );
+			psm_logoutput( psm_log_lv::kWarn, "Warning: reach to max delay time for lockfile(%s) open", lockfilename_.c_str() );
 		}
 	}
 }
@@ -103,7 +128,10 @@ bool lockfile_mutex::try_create_lockfile( void )
 	} else {
 		ans            = false;
 		auto cur_errno = errno;
-		psm_logoutput( psm_log_lv::kErr, "error(%d) when open lockfile(%s)", cur_errno, lockfilename_.c_str() );
+		if ( cur_errno != EEXIST ) {
+			std::string es = make_strerror( cur_errno );
+			psm_logoutput( psm_log_lv::kErr, "Error: fail open lockfile(%s): error(%d), %s", lockfilename_.c_str(), cur_errno, es.c_str() );
+		}
 	}
 
 	return ans;
@@ -111,31 +139,34 @@ bool lockfile_mutex::try_create_lockfile( void )
 
 void lockfile_mutex::discard_lockfile( void )
 {
-	if ( is_valid_fd( lockfilefd_ ) ) {
-		int ret = unlink( lockfilename_.c_str() );
-		if ( ret < 0 ) {
-			auto cur_errno = errno;
-			psm_logoutput( psm_log_lv::kErr, "error(%d) when unlink lockfile(%s)", cur_errno, lockfilename_.c_str() );
-		}
+	if ( !is_valid_fd( lockfilefd_ ) ) {
+		return;
+	}
 
-		ret         = close( lockfilefd_ );
-		lockfilefd_ = invalid_fd;
-		if ( ret < 0 ) {
-			auto cur_errno = errno;
-			switch ( cur_errno ) {
-				case EBADF: {
-					psm_logoutput( psm_log_lv::kErr, "EBADF error when closing lockfile" );
-				} break;
-				case EINTR: {
-					psm_logoutput( psm_log_lv::kErr, "EINTR error when closing lockfile" );
-				} break;
-				case EIO: {
-					psm_logoutput( psm_log_lv::kErr, "EIO error when closing lockfile" );
-				} break;
-				default: {
-					psm_logoutput( psm_log_lv::kErr, "unknown error(%d) when closing lockfile(%s)", cur_errno, lockfilename_.c_str() );
-				} break;
-			}
+	int ret = unlink( lockfilename_.c_str() );
+	if ( ret < 0 ) {
+		auto cur_errno = errno;
+		psm_logoutput( psm_log_lv::kErr, "error(%d) when unlink lockfile(%s)", cur_errno, lockfilename_.c_str() );
+	}
+
+	ret         = close( lockfilefd_ );
+	lockfilefd_ = invalid_fd;
+	if ( ret < 0 ) {
+		auto cur_errno = errno;
+		switch ( cur_errno ) {
+			case EBADF: {
+				psm_logoutput( psm_log_lv::kErr, "EBADF error when closing lockfile" );
+			} break;
+			case EINTR: {
+				psm_logoutput( psm_log_lv::kErr, "EINTR error when closing lockfile" );
+			} break;
+			case EIO: {
+				psm_logoutput( psm_log_lv::kErr, "EIO error when closing lockfile" );
+			} break;
+			default: {
+				std::string es = make_strerror( cur_errno );
+				psm_logoutput( psm_log_lv::kErr, "Error: fail close lockfile(%s), unknown error(%d), %s", lockfilename_.c_str(), cur_errno, es.c_str() );
+			} break;
 		}
 	}
 }

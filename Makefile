@@ -49,9 +49,9 @@ test: build-test
 	ctest -j ${JOBS} -v
 
 load-test: test
-	build/test/loadtest_procshared_malloc_highload
-	build/test/loadtest_procshared_mem_both_highload
 	build/test/loadtest_procshared_mem_primary_highload
+	build/test/loadtest_procshared_mem_both_highload
+	build/test/loadtest_procshared_malloc_highload
 
 build/test/loadtest_procshared_malloc_highload: build-test
 build/test/loadtest_procshared_mem_both_highload: build-test
