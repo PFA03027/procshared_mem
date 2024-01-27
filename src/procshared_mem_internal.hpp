@@ -315,7 +315,11 @@ public:
 	  , length_( 0 )
 	  , p_mem_( nullptr )
 	{
-		try_open( length_arg, mode_arg );
+		try_open( mode_arg );
+		if ( length_ < length_arg ) {
+			psm_logoutput( psm_log_lv::kWarn, "Warning: shared memory size(%zu) is smaller than required size(%zu)", length_, length_arg );
+			return;
+		}
 	}
 
 	void do_unlink( void ) noexcept
@@ -376,88 +380,108 @@ private:
 	shm_resource_handler( const shm_resource_handler& )            = delete;
 	shm_resource_handler& operator=( const shm_resource_handler& ) = delete;
 
-	void try_common_create_or_open( int oflags_arg, size_t length_arg, mode_t mode_arg )
+	void try_create( size_t length_arg, mode_t mode_arg )
 	{
+		// try_common_create_or_open( O_CREAT | O_EXCL | O_RDWR | O_CLOEXEC, length_arg, mode_arg );
+		// psm_logoutput( psm_log_lv::kDebug, "Debug: shared memory creation is requested, %s", shm_name_.c_str() );
 		// 共有メモリの作成
 		if ( std::numeric_limits<off_t>::max() < length_arg ) {
 			psm_logoutput( psm_log_lv::kInfo, "Error: too big memory is required, length_arg=%zu", length_arg );
 			return;
 		}
-		shm_fd_ = shm_open( shm_name_.c_str(), oflags_arg, mode_arg );
-		if ( shm_fd_ < 0 ) {
+
+		int tmp_shm_fd = shm_open( shm_name_.c_str(), O_CREAT | O_EXCL | O_RDWR | O_CLOEXEC, mode_arg );
+		if ( tmp_shm_fd < 0 ) {
 			auto cur_errno = errno;
 			auto es2       = make_strerror( cur_errno );
 			// psm_logoutput( psm_log_lv::kInfo, "Info: Fail shm_open(%s, %x, %x), %s", shm_name_.c_str(), oflags_arg, mode_arg, es2.c_str() );
 			return;
 		}
-		if ( ftruncate( shm_fd_, static_cast<off_t>( length_arg ) ) != 0 ) {   // TODO: fix this
+
+		if ( ftruncate( tmp_shm_fd, static_cast<off_t>( length_arg ) ) != 0 ) {   // TODO: fix this
 			auto cur_errno = errno;
 			char buff[1024];
 			auto es = make_strerror( cur_errno );
-			snprintf( buff, 1024, "Fail ftruncate(%d, %ld), %s", shm_fd_, length_arg, es.c_str() );
+			snprintf( buff, 1024, "Fail ftruncate(%d, %ld), %s", tmp_shm_fd, length_arg, es.c_str() );
 			std::string err_log = buff;
-
-			if ( shm_unlink( shm_name_.c_str() ) != 0 ) {
-				auto cur_errno = errno;
-				char buff[1024];
-				auto es2 = make_strerror( cur_errno );
-				snprintf( buff, 1024, ", then fail shm_unlink(%s), %s", shm_name_.c_str(), es2.c_str() );
-				err_log += buff;
-			}
-			if ( close( shm_fd_ ) != 0 ) {
-				auto cur_errno2 = errno;
-				char buff[1024];
-				auto es2 = make_strerror( cur_errno2 );
-				snprintf( buff, 1024, ", then fail close(%d), %s\n", shm_fd_, es2.c_str() );
-				err_log += buff;
-			}
-
-			shm_fd_ = -1;
+			err_log += discard_shm_fd_caused_by_any_error( tmp_shm_fd, shm_name_.c_str() );
 			throw procshared_mem_error( err_log.c_str() );
 		}
-		length_ = length_arg;
 
-		p_mem_ = mmap( NULL, length_, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd_, 0 );
-		if ( p_mem_ == MAP_FAILED ) {
+		void* p_tmp_mem = mmap( NULL, length_arg, PROT_READ | PROT_WRITE, MAP_SHARED, tmp_shm_fd, 0 );
+		if ( p_tmp_mem == MAP_FAILED ) {
 			auto cur_errno = errno;
 			char buff[1024];
 			auto es2 = make_strerror( cur_errno );
-			snprintf( buff, 1024, "Fail mmap(NULL, %ld, PROT_READ | PROT_WRITE, MAP_SHARED, %d, 0), %s", length_, shm_fd_, es2.c_str() );
+			snprintf( buff, 1024, "Fail mmap(NULL, %ld, PROT_READ | PROT_WRITE, MAP_SHARED, %d, 0), %s", length_arg, tmp_shm_fd, es2.c_str() );
 			std::string err_log = buff;
-
-			if ( shm_unlink( shm_name_.c_str() ) != 0 ) {
-				auto cur_errno = errno;
-				char buff[1024];
-				auto es2 = make_strerror( cur_errno );
-				snprintf( buff, 1024, ", then fail shm_unlink(%s), %s", shm_name_.c_str(), es2.c_str() );
-				err_log += buff;
-			}
-			if ( close( shm_fd_ ) != 0 ) {
-				auto cur_errno2 = errno;
-				char buff[1024];
-				auto es2 = make_strerror( cur_errno2 );
-				snprintf( buff, 1024, ", then fail close(%d), %s\n", shm_fd_, es2.c_str() );
-				err_log += buff;
-			}
-
-			shm_fd_ = -1;
-			length_ = 0;
-			p_mem_  = nullptr;
+			err_log += discard_shm_fd_caused_by_any_error( tmp_shm_fd, shm_name_.c_str() );
 			throw procshared_mem_error( err_log.c_str() );
 		}
 
-		return;
+		shm_fd_ = tmp_shm_fd;
+		length_ = length_arg;
+		p_mem_  = p_tmp_mem;
 	}
 
-	void try_create( size_t length_arg, mode_t mode_arg )
+	void try_open( mode_t mode_arg )
 	{
-		try_common_create_or_open( O_CREAT | O_EXCL | O_RDWR | O_CLOEXEC, length_arg, mode_arg );
-		// psm_logoutput( psm_log_lv::kDebug, "Debug: shared memory creation is requested, %s", shm_name_.c_str() );
+		int tmp_shm_fd = shm_open( shm_name_.c_str(), O_RDWR | O_CLOEXEC, mode_arg );
+		if ( tmp_shm_fd < 0 ) {
+			auto cur_errno = errno;
+			auto es2       = make_strerror( cur_errno );
+			// psm_logoutput( psm_log_lv::kInfo, "Info: Fail shm_open(%s, %x, %x), %s", shm_name_.c_str(), oflags_arg, mode_arg, es2.c_str() );
+			return;
+		}
+
+		struct stat buf;
+		int         ret = fstat( tmp_shm_fd, &buf );
+		if ( ret != 0 ) {
+			auto cur_errno = errno;
+			char buff[1024];
+			auto es = make_strerror( cur_errno );
+			snprintf( buff, 1024, "Fail fstat(%d), %s", tmp_shm_fd, es.c_str() );
+			std::string err_log = buff;
+			err_log += discard_shm_fd_caused_by_any_error( tmp_shm_fd, shm_name_.c_str() );
+			throw procshared_mem_error( err_log.c_str() );
+		}
+		size_t tmp_shm_length = buf.st_size;
+
+		void* p_tmp_mem = mmap( NULL, tmp_shm_length, PROT_READ | PROT_WRITE, MAP_SHARED, tmp_shm_fd, 0 );
+		if ( p_tmp_mem == MAP_FAILED ) {
+			auto cur_errno = errno;
+			char buff[1024];
+			auto es2 = make_strerror( cur_errno );
+			snprintf( buff, 1024, "Fail mmap(NULL, %ld, PROT_READ | PROT_WRITE, MAP_SHARED, %d, 0), %s", tmp_shm_length, tmp_shm_fd, es2.c_str() );
+			std::string err_log = buff;
+			err_log += discard_shm_fd_caused_by_any_error( tmp_shm_fd, shm_name_.c_str() );
+			throw procshared_mem_error( err_log.c_str() );
+		}
+
+		shm_fd_ = tmp_shm_fd;
+		length_ = tmp_shm_length;
+		p_mem_  = p_tmp_mem;
 	}
 
-	void try_open( size_t length_arg, mode_t mode_arg )
+	static std::string discard_shm_fd_caused_by_any_error( int tmp_shm_fd, const char* p_shm_name )
 	{
-		try_common_create_or_open( O_RDWR | O_CLOEXEC, length_arg, mode_arg );
+		std::string err_log;
+		if ( shm_unlink( p_shm_name ) != 0 ) {
+			auto cur_errno = errno;
+			char buff[1024];
+			auto es2 = make_strerror( cur_errno );
+			snprintf( buff, 1024, ", then fail shm_unlink(%s), %s", p_shm_name, es2.c_str() );
+			err_log += buff;
+		}
+		if ( close( tmp_shm_fd ) != 0 ) {
+			auto cur_errno2 = errno;
+			char buff[1024];
+			auto es2 = make_strerror( cur_errno2 );
+			snprintf( buff, 1024, ", then fail close(%d), %s\n", tmp_shm_fd, es2.c_str() );
+			err_log += buff;
+		}
+
+		return err_log;
 	}
 
 	std::string shm_name_;   //!< 共有メモリの名称
