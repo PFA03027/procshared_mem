@@ -62,7 +62,7 @@ inline T* make_obj_construct_using_allocator( const Allocator& alloc_arg, Args&&
 
 	target_allocator_type alloc( alloc_arg );
 
-	// Tをアロケーター付きのコンストラクタ呼び出しT(args...)として構築できることを想定した関数
+	// Tをアロケーター付きのコンストラクタ呼び出しT(std::allocator_arg_t(), alloc_arg, args...)として構築できることを想定した関数
 	auto p = target_allocator_traits_type::allocate( alloc, 1 );
 	target_allocator_traits_type::construct( alloc, p, std::allocator_arg_t(), alloc, std::forward<Args>( args )... );
 
@@ -79,7 +79,7 @@ inline T* make_obj_construct_using_allocator( const Allocator& alloc_arg, Args&&
 
 	target_allocator_type alloc( alloc_arg );
 
-	// Tをアロケーター付きのコンストラクタ呼び出しT(args...)として構築できることを想定した関数
+	// Tをアロケーター付きのコンストラクタ呼び出しT(args..., alloc_arg)として構築できることを想定した関数
 	auto p = target_allocator_traits_type::allocate( alloc, 1 );
 	target_allocator_traits_type::construct( alloc, p, std::forward<Args>( args )..., alloc );
 
