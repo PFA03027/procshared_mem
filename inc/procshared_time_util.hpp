@@ -16,6 +16,8 @@
 #include <ctime>
 #include <type_traits>
 
+namespace ipsm {
+
 namespace time_util {
 
 /*
@@ -258,5 +260,7 @@ timespec_ct<CT> operator-( const std::chrono::duration<Rep, Period>& op1, const 
 }
 
 }   // namespace time_util
+
+}   // namespace ipsm
 
 #endif   // PROCSHARED_TIME_UTIL_HPP_

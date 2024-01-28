@@ -22,6 +22,8 @@
 #include "procshared_mutex_base.hpp"
 #include "procshared_recursive_mutex.hpp"
 
+namespace ipsm {
+
 #ifdef ENABLE_BACKTRACE_LOGOUTPUT
 void backtrace_print( void )
 {
@@ -162,3 +164,5 @@ procshared_recursive_mutex::procshared_recursive_mutex( void )
   : mtx_( PTHREAD_MUTEX_RECURSIVE_NP )
 {
 }
+
+}   // namespace ipsm

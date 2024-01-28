@@ -21,6 +21,8 @@
 #include "offset_memory_util.hpp"
 #include "offset_ptr.hpp"
 
+namespace ipsm {
+
 template <typename T, typename Allocator>
 class offset_list;
 
@@ -1062,5 +1064,7 @@ bool operator!=( const reverse_iterator_impl<XCT1, XT, XAllocator>& a, const rev
 {
 	return ( a.op_cur_node_ != b.op_cur_node_ );
 }
+
+}   // namespace ipsm
 
 #endif   // OFFSET_LIST_HPP_

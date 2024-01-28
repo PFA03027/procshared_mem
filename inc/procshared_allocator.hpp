@@ -18,6 +18,8 @@
 
 #include "offset_malloc.hpp"
 
+namespace ipsm {
+
 /**
  * @brief allocator that is inter-process sharable memory
  *
@@ -99,5 +101,7 @@ constexpr bool operator!=( const procshared_allocator<T>& a, const procshared_al
 {
 	return ( a.p_malloc_ != b.p_malloc_ );
 }
+
+}   // namespace ipsm
 
 #endif   // PROCSHARED_ALLOCATOR_HPP

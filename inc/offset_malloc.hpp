@@ -16,6 +16,8 @@
 
 #include "offset_ptr.hpp"
 
+namespace ipsm {
+
 class offset_malloc {
 public:
 	class offset_malloc_impl;
@@ -60,5 +62,7 @@ constexpr bool operator!=( const offset_malloc& a, const offset_malloc& b ) noex
 {
 	return ( a.p_impl_ != b.p_impl_ );
 }
+
+}   // namespace ipsm
 
 #endif   // OFFSET_MALLOC_HPP_

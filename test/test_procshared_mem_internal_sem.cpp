@@ -29,6 +29,8 @@
 #include "semaphore_mutex.hpp"
 #include "test_procshared_common.hpp"
 
+using namespace ipsm;
+
 constexpr const char* const p_shm_name = "/my_test_procshared_mem_internal_sem";
 
 TEST( Test_semaphore_resource_handler, CanDefaultConstruct_CanDestruct )

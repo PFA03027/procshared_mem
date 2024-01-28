@@ -15,6 +15,8 @@
 #include <memory>
 #include <type_traits>
 
+namespace ipsm {
+
 template <typename T, typename Allocator, typename... Args,
           typename std::enable_if<
 			  ( !std::uses_allocator<T, Allocator>::value ) &&
@@ -97,5 +99,7 @@ inline void destruct_obj_usee_allocator( const Allocator& alloc_arg, T* p )
 	target_allocator_traits_type::destroy( alloc, p );
 	target_allocator_traits_type::deallocate( alloc, p, 1 );
 }
+
+}   // namespace ipsm
 
 #endif   // OFFSET_MEMORY_UTIL_HPP_

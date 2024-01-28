@@ -18,6 +18,8 @@
 
 #include "offset_ptr.hpp"
 
+using namespace ipsm;
+
 #if ( __cpp_concepts >= 201907L )
 template <std::random_access_iterator I>
 bool f( I x )

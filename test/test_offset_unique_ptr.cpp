@@ -16,6 +16,8 @@
 
 #include "offset_unique_ptr.hpp"
 
+using namespace ipsm;
+
 struct ArrowOpTest {
 	int x_;
 	int y_;

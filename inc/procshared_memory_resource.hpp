@@ -17,6 +17,8 @@
 
 #include "offset_malloc.hpp"
 
+namespace ipsm {
+
 class procshared_memory_resource : public std::pmr::memory_resource {
 public:
 	~procshared_memory_resource() noexcept = default;
@@ -60,5 +62,7 @@ private:
 
 	offset_malloc* p_malloc_;
 };
+
+}   // namespace ipsm
 
 #endif   // PROCSHARED_MEMORY_RESOURCE_HPP

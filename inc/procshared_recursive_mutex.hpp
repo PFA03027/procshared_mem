@@ -20,6 +20,8 @@
 
 #include "procshared_mutex_base.hpp"
 
+namespace ipsm {
+
 /**
  * @brief mutex that is sharable b/w processes
  *
@@ -56,5 +58,7 @@ private:
 };
 
 static_assert( std::is_standard_layout<procshared_recursive_mutex>::value, "procshared_recursive_mutex needs standard layout" );
+
+}   // namespace ipsm
 
 #endif   // PROCSHARED_RECURSIVE_MUTEX_HPP_

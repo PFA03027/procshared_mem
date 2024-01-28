@@ -19,6 +19,8 @@
 
 #include "test_procshared_common.hpp"
 
+using namespace ipsm;
+
 TEST( Offset_Malloc_Cntr, CanConstruct )
 {
 	// Arrange

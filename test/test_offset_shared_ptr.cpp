@@ -16,6 +16,8 @@
 
 #include "offset_shared_ptr.hpp"
 
+using namespace ipsm;
+
 struct ArrowOpTest {
 	int x_;
 	int y_;

@@ -19,7 +19,7 @@
 #include <sys/types.h>
 
 // interprocess shared memory
-// namespace ipsm {
+namespace ipsm {
 
 class lockfile_mutex {
 public:
@@ -48,6 +48,6 @@ private:
 	int         lockfilefd_;
 };
 
-// }
+}   // namespace ipsm
 
 #endif   // MUTEX_BY_LOCKFILE_HPP_

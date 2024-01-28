@@ -23,6 +23,8 @@
 #include "procshared_mutex.hpp"
 #include "procshared_time_util.hpp"
 
+namespace ipsm {
+
 /**
  * @brief base class of condition variable that is sharable b/w processes as common part
  *
@@ -126,5 +128,7 @@ using procshared_condition_variable_monotonic = procshared_condition_variable<CL
 using procshared_condition_variable_realtime  = procshared_condition_variable<CLOCK_REALTIME>;
 
 static_assert( std::is_standard_layout<procshared_condition_variable_monotonic>::value, "procshared_condition_variable_base needs standard layout" );
+
+}   // namespace ipsm
 
 #endif

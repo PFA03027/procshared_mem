@@ -15,6 +15,8 @@
 
 #include "test_procshared_common.hpp"
 
+using namespace ipsm;
+
 TEST( ProcShared_KRmalloc_Cntr, CanConstruct )
 {
 	// Arrange

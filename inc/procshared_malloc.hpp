@@ -21,6 +21,8 @@
 #include "procshared_mem.hpp"
 #include "procshared_mutex.hpp"
 
+namespace ipsm {
+
 struct msg_channel;
 
 class procshared_malloc {
@@ -83,5 +85,7 @@ offset_allocator<T> procshared_malloc::get_allocator( void )
 {
 	return offset_allocator<T>( shm_heap_ );   // NOLINT(clang-diagnostic-error)
 }
+
+}   // namespace ipsm
 
 #endif   // PROCSHARED_MALLOC_HPP_

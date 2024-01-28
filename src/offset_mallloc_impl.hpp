@@ -19,6 +19,8 @@
 #include "procshared_logger.hpp"
 #include "procshared_mutex.hpp"
 
+namespace ipsm {
+
 /**
  * @brief offset_malloc::offset_malloc_impl implementation
  *
@@ -150,5 +152,7 @@ private:
 };
 
 static_assert( std::is_standard_layout<offset_malloc::offset_malloc_impl>::value, "offset_malloc_impl should be standard layout" );
+
+}   // namespace ipsm
 
 #endif   // OFFSET_MALLOC_IMPL_HPP_

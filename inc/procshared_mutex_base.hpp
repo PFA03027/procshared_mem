@@ -18,6 +18,8 @@
 
 #include <pthread.h>
 
+namespace ipsm {
+
 /**
  * @brief mutex that is sharable b/w processes
  *
@@ -46,5 +48,7 @@ private:
 };
 
 static_assert( std::is_standard_layout<procshared_mutex_base>::value, "procshared_mutex_base needs standard layout" );
+
+}   // namespace ipsm
 
 #endif   // PROCSHARED_MUTEX_BASE_HPP_

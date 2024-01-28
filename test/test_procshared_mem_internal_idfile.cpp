@@ -27,6 +27,8 @@
 #include "procshared_mem_internal.hpp"
 #include "test_procshared_common.hpp"
 
+using namespace ipsm;
+
 constexpr const char* const p_id_fname = "/tmp/my_test_procshared_mem_internal_id";
 
 TEST( Test_id_file_resource_handler, CanDefaultConstruct_CanDestruct )

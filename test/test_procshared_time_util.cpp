@@ -18,6 +18,8 @@
 
 #include "procshared_time_util.hpp"
 
+using namespace ipsm;
+
 TEST( Test_procshared_time_util_meta_func, CanConvert )
 {
 	static_assert( time_util::is_exchangable_timediff<std::chrono::steady_clock, CLOCK_MONOTONIC>::value, "OK to exchange" );

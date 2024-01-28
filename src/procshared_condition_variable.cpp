@@ -21,6 +21,8 @@
 #include "procshared_logger.hpp"
 #include "procshared_time_util.hpp"
 
+namespace ipsm {
+
 procshared_condition_variable_base::procshared_condition_variable_base( clockid_t ct )
 {
 	pthread_condattr_t cond_attr;
@@ -92,3 +94,5 @@ std::cv_status procshared_condition_variable_base::wait_until(
 
 	return ans;
 }
+
+}   // namespace ipsm

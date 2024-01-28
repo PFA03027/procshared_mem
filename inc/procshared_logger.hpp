@@ -14,6 +14,8 @@
 
 #include <cstdio>
 
+namespace ipsm {
+
 enum class psm_log_lv {
 	kTest,
 	kDebug,
@@ -70,5 +72,7 @@ inline void psm_logoutput( psm_log_lv ll, const char* p_fmt )
 		fprintf( stderr, "%s\n", p_fmt );
 	}
 }
+
+}   // namespace ipsm
 
 #endif   // PROCSHARED_LOGGER_HPP_

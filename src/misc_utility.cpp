@@ -22,6 +22,8 @@
 #include "misc_utility.hpp"
 #include "procshared_logger.hpp"
 
+namespace ipsm {
+
 std::string make_strerror( type_of_errno e_v )
 {
 #if ( _POSIX_C_SOURCE >= 200112L ) && !_GNU_SOURCE
@@ -79,3 +81,5 @@ procshared_mem_error::procshared_mem_error( const std::string& error_str )
   : std::runtime_error( error_str )
 {
 }
+
+}   // namespace ipsm

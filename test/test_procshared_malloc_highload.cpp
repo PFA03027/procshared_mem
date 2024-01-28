@@ -20,6 +20,8 @@
 
 #include "procshared_mem.hpp"
 
+using namespace ipsm;
+
 const char*   p_shm_obj_name = "/my_test_shm_malloc_highload";
 constexpr int num_of_threads = 100;
 

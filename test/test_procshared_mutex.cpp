@@ -19,6 +19,8 @@
 #include "procshared_recursive_mutex.hpp"
 #include "test_procshared_common.hpp"
 
+using namespace ipsm;
+
 TEST( Test_procshared_mutex, CanConstruct_CanDestruct )
 {
 	ASSERT_NO_THROW( procshared_mutex sut );

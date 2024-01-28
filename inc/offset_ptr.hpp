@@ -28,6 +28,8 @@
 #include <compare>
 #endif
 
+namespace ipsm {
+
 /**
  * @brief Offset base pointer
  *
@@ -1002,5 +1004,7 @@ private:
 
 	std::atomic<uintptr_t> at_offset_;
 };
+
+}   // namespace ipsm
 
 #endif   // OFFSET_PTR_HPP_

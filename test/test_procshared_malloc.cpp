@@ -26,6 +26,8 @@
 #include "procshared_malloc.hpp"
 #include "test_procshared_common.hpp"
 
+using namespace ipsm;
+
 const char* p_shm_obj_name = "/my_test_shm_test_procshared_malloc";
 
 TEST( Test_procshared_malloc, CanDefaultConstruct_CanDestruct )

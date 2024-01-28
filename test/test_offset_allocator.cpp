@@ -14,6 +14,8 @@
 #include "offset_allocator.hpp"
 #include "offset_memory_util.hpp"
 
+using namespace ipsm;
+
 struct EmplacementTestData {
 	int    x_;
 	double y_;

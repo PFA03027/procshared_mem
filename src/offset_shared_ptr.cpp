@@ -14,6 +14,8 @@
 
 #include "offset_shared_ptr.hpp"
 
+namespace ipsm {
+
 namespace offset_shared_ptr_detail {
 
 void offset_shared_ptr_impl_if::try_dispose_com( offset_ptr<offset_shared_ptr_impl_if>& p, long offset_shared_ptr_impl_if::ctrl_data::*mp_tcnt )
@@ -41,3 +43,5 @@ void offset_shared_ptr_impl_if::try_dispose_com( offset_ptr<offset_shared_ptr_im
 }
 
 }   // namespace offset_shared_ptr_detail
+
+}   // namespace ipsm

@@ -14,6 +14,8 @@
 #include "lockfile_mutex.hpp"
 #include "test_procshared_common.hpp"
 
+using namespace ipsm;
+
 const char* p_lockfile_fname = "/tmp/my_test_misc_utility_and_other";
 
 TEST( Test_lockfile_mutex, CanConstruct_CanDestruct )

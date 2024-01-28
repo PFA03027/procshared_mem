@@ -13,6 +13,8 @@
 #include "offset_malloc.hpp"
 #include "procshared_logger.hpp"
 
+namespace ipsm {
+
 offset_malloc::~offset_malloc()
 {
 	offset_malloc_impl::teardown( p_impl_ );
@@ -106,3 +108,5 @@ bool offset_malloc::is_belong_to( void* p_mem ) const
 
 	return p_impl_->is_belong_to( p_mem );
 }
+
+}   // namespace ipsm

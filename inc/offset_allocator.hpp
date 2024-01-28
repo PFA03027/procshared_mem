@@ -18,6 +18,8 @@
 
 #include "offset_malloc.hpp"
 
+namespace ipsm {
+
 template <typename T>
 class offset_allocator {
 public:
@@ -127,5 +129,7 @@ offset_allocator<T> offset_allocator<T>::select_on_container_copy_construction( 
 	// offset_allocatorの仕様として、デフォルト構築した場合に、通常のヒープからメモリを確保するしようとするかの決断が必要。
 	return offset_allocator( *this );   // NOLINT(clang-diagnostic-error)
 }
+
+}   // namespace ipsm
 
 #endif   // OFFSET_ALLOCATOR_HPP_

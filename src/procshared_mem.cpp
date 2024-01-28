@@ -37,6 +37,8 @@
 #include "procshared_mem_internal.hpp"
 #include "semaphore_mutex.hpp"
 
+namespace ipsm {
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 class procshared_mem_retry : public std::runtime_error {
 public:
@@ -744,3 +746,5 @@ void procshared_mem::debug_force_cleanup( const char* p_shm_name, const char* p_
 {
 	procshared_mem::impl::debug_force_cleanup( p_shm_name, p_id_dirname );
 }
+
+}   // namespace ipsm

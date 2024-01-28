@@ -31,10 +31,11 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "misc_utility.hpp"
 #include "procshared_logger.hpp"
 #include "procshared_mem.hpp"
 
-ino_t get_inode_of_fd( int id_f_fd );
+namespace ipsm {
 
 class semaphore_mutex {
 public:
@@ -387,5 +388,7 @@ private:
 	sem_t* p_sem_;
 	bool   owns_acquire_flag_;
 };
+
+}   // namespace ipsm
 
 #endif   // SEMAPHORE_MUTEX_HPP_

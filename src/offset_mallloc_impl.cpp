@@ -17,6 +17,8 @@
 #include "offset_ptr.hpp"
 #include "procshared_logger.hpp"
 
+namespace ipsm {
+
 offset_malloc::offset_malloc_impl::block::block_header::block_header( offset_malloc::offset_malloc_impl::block* p_next_arg, std::size_t this_block_size )
   : op_next_block_( p_next_arg )
   , size_of_this_block_( this_block_size )
@@ -295,3 +297,5 @@ bool offset_malloc::offset_malloc_impl::teardown( offset_malloc::offset_malloc_i
 	}
 	return false;
 }
+
+}   // namespace ipsm

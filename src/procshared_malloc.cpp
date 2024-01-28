@@ -15,6 +15,8 @@
 #include "procshared_logger.hpp"
 #include "procshared_malloc.hpp"
 
+namespace ipsm {
+
 constexpr unsigned int default_channel_size = 2;
 
 unsigned int procshared_malloc::channel_size( void )
@@ -25,7 +27,7 @@ unsigned int procshared_malloc::channel_size( void )
 struct msg_channel {
 	using data_type = offset_ptr<void>;
 	procshared_mutex                                    mtx_;
-	procshared_condition_variable_monotonic                       cond_;
+	procshared_condition_variable_monotonic             cond_;
 	offset_list<data_type, offset_allocator<data_type>> msgch_[default_channel_size];
 
 	msg_channel( const offset_allocator<data_type> a )
@@ -152,3 +154,5 @@ offset_ptr<void> procshared_malloc::receive( unsigned int ch )
 	p_msgch_->msgch_[ch].pop_front();
 	return ans;
 }
+
+}   // namespace ipsm

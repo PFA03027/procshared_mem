@@ -18,6 +18,8 @@
 #include "offset_unique_ptr.hpp"
 #include "procshared_mutex.hpp"
 
+namespace ipsm {
+
 namespace offset_shared_ptr_detail {
 
 class alloc_if_abst;
@@ -702,5 +704,7 @@ offset_shared_ptr<T>::offset_shared_ptr( const offset_weak_ptr<Y>& orig )
 	p_        = orig.p_;
 	ac.ref().shrd_refc_++;
 }
+
+}   // namespace ipsm
 
 #endif   // OFFSET_SHARED_PTR_HPP_

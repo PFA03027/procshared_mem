@@ -20,6 +20,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+namespace ipsm {
+
 /**
  * @brief Async initialized shared memory
  *
@@ -130,5 +132,7 @@ private:
 	class impl;
 	impl* p_impl_;
 };
+
+}   // namespace ipsm
 
 #endif   // PROCSHARED_MEM_HPP_

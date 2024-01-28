@@ -36,6 +36,8 @@
 
 #define TMP_DIR_FOR_ID_FILE "/tmp"
 
+namespace ipsm {
+
 constexpr const char* const p_id_file_base_dir = TMP_DIR_FOR_ID_FILE;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -489,5 +491,7 @@ private:
 	size_t      length_;     //!< 共有メモリのサイズ
 	void*       p_mem_;      //!< 共有メモリへのポインタ
 };
+
+}   // namespace ipsm
 
 #endif   // PROCSHARED_MEM_INTERNAL_HPP_

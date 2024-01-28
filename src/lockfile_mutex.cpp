@@ -24,6 +24,8 @@
 #include "misc_utility.hpp"
 #include "procshared_logger.hpp"
 
+namespace ipsm {
+
 constexpr int invalid_fd = -1;
 constexpr int maxdelay   = 64;
 
@@ -173,3 +175,5 @@ void lockfile_mutex::discard_lockfile( void )
 		}
 	}
 }
+
+}   // namespace ipsm

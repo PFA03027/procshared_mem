@@ -17,6 +17,8 @@
 
 #include "procshared_time_util.hpp"
 
+namespace ipsm {
+
 namespace time_util {
 namespace internal {
 
@@ -52,3 +54,4 @@ struct timespec call_clock_gettime( const clockid_t clkid )
 
 }   // namespace internal
 }   // namespace time_util
+}   // namespace ipsm

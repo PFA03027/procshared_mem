@@ -27,6 +27,8 @@
 #include "procshared_mem_internal.hpp"
 #include "test_procshared_common.hpp"
 
+using namespace ipsm;
+
 constexpr const char* const p_shm_name = "/my_test_procshared_mem_internal_shm";
 constexpr size_t            shm_size   = 1024;
 
