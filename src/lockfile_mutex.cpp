@@ -22,7 +22,7 @@
 
 #include "lockfile_mutex.hpp"
 #include "misc_utility.hpp"
-#include "procshared_logger.hpp"
+#include "ipsm_logger.hpp"
 
 namespace ipsm {
 

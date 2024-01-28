@@ -1,5 +1,5 @@
 /**
- * @file procshared_mem_internal.hpp
+ * @file ipsm_mem_internal.hpp
  * @author PFA03027@nifty.com
  * @brief async open/close shared memory object
  * @version 0.1
@@ -24,12 +24,12 @@ namespace ipsm {
 
 using type_of_errno = typename std::remove_reference<decltype( errno )>::type;
 
-class procshared_mem_error : public std::runtime_error {
+class ipsm_mem_error : public std::runtime_error {
 public:
-	procshared_mem_error( type_of_errno e_v );
-	procshared_mem_error( type_of_errno e_v, const std::string& additional_error_str );
-	procshared_mem_error( const char* p_error_str );
-	procshared_mem_error( const std::string& error_str );
+	ipsm_mem_error( type_of_errno e_v );
+	ipsm_mem_error( type_of_errno e_v, const std::string& additional_error_str );
+	ipsm_mem_error( const char* p_error_str );
+	ipsm_mem_error( const std::string& error_str );
 };
 
 static_assert( std::is_integral<ino_t>::value, "ino_t is not integral..." );

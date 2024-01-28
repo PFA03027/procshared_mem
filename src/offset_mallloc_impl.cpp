@@ -1,5 +1,5 @@
 /**
- * @file procshared_krmalloc.cpp
+ * @file ipsm_krmalloc.cpp
  * @author PFA03027@nifty.com
  * @brief
  * @version 0.1
@@ -15,7 +15,7 @@
 #include "offset_mallloc_impl.hpp"
 #include "offset_malloc.hpp"
 #include "offset_ptr.hpp"
-#include "procshared_logger.hpp"
+#include "ipsm_logger.hpp"
 
 namespace ipsm {
 
@@ -77,7 +77,7 @@ void* offset_malloc::offset_malloc_impl::allocate( size_t req_bytes, size_t alig
 
 	size_t req_num_of_blocks_w_header = bytes2blocksize( req_bytes + additional_size ) + 1;
 
-	std::lock_guard<procshared_mutex> lk( mtx_ );
+	std::lock_guard<ipsm_mutex> lk( mtx_ );
 
 	block* p_end_blk = op_freep_.get();
 	block* p_cur_blk = p_end_blk;
@@ -164,7 +164,7 @@ void offset_malloc::offset_malloc_impl::deallocate( void* p, size_t alignment )
 	uintptr_t    addr_target_blk = ( addr_p / size_of_block_header() - 1 ) * size_of_block_header();
 	block* const p_target_blk    = reinterpret_cast<block*>( addr_target_blk );
 
-	std::lock_guard<procshared_mutex> lk( mtx_ );
+	std::lock_guard<ipsm_mutex> lk( mtx_ );
 
 	block* p_end_blk = op_freep_.get();
 	block* p_pre_blk = p_end_blk;
@@ -211,7 +211,7 @@ void offset_malloc::offset_malloc_impl::deallocate( void* p, size_t alignment )
 
 int offset_malloc::offset_malloc_impl::bind( void )
 {
-	std::lock_guard<procshared_mutex> lk( mtx_ );
+	std::lock_guard<ipsm_mutex> lk( mtx_ );
 
 	if ( bind_cnt_ <= 0 ) {
 		// 0の場合、すでに解放済みの領域を指している。rece conditionと考えられるため、あえて例外を投げる。
@@ -223,7 +223,7 @@ int offset_malloc::offset_malloc_impl::bind( void )
 }
 int offset_malloc::offset_malloc_impl::unbind( void )
 {
-	std::lock_guard<procshared_mutex> lk( mtx_ );
+	std::lock_guard<ipsm_mutex> lk( mtx_ );
 	if ( bind_cnt_ >= 0 ) {
 		bind_cnt_--;
 	}
@@ -232,7 +232,7 @@ int offset_malloc::offset_malloc_impl::unbind( void )
 
 int offset_malloc::offset_malloc_impl::get_bind_count( void ) const
 {
-	std::lock_guard<procshared_mutex> lk( mtx_ );
+	std::lock_guard<ipsm_mutex> lk( mtx_ );
 	return bind_cnt_;
 }
 

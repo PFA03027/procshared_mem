@@ -1,5 +1,5 @@
 /**
- * @file procshared_mem.hpp
+ * @file ipsm_mem.hpp
  * @author PFA03027@nifty.com
  * @brief async open/close shared memory object
  * @version 0.1
@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef PROCSHARED_MEM_HPP_
-#define PROCSHARED_MEM_HPP_
+#ifndef IPSM_MEM_HPP_
+#define IPSM_MEM_HPP_
 
 #include <functional>
 #include <stdexcept>
@@ -30,16 +30,16 @@ namespace ipsm {
  * sem_open return a same object of semaphore, even if sem_open is called by a different instance.
  * this will lead unexpected creation/destruction rece condition.
  */
-class procshared_mem {
+class ipsm_mem {
 public:
 	/**
 	 * @brief Construct a new procshared mem object that is empty
 	 *
 	 */
-	procshared_mem( void );
-	~procshared_mem();
-	procshared_mem( procshared_mem&& src );
-	procshared_mem& operator=( procshared_mem&& src );
+	ipsm_mem( void );
+	~ipsm_mem();
+	ipsm_mem( ipsm_mem&& src );
+	ipsm_mem& operator=( ipsm_mem&& src );
 
 	/**
 	 * @brief Construct and allocate a new cooperative startup shared memory object
@@ -51,13 +51,13 @@ public:
 	 *
 	 * @note p_shm_name string AAA must follow POSIX semaphore name specifications. please refer sem_open or sem_overview
 	 */
-	procshared_mem(
+	ipsm_mem(
 		const char*                           p_shm_name,             //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
 		const char*                           p_id_dirname,           //!< [in] directory name of id file. e.g. "/tmp"
 		size_t                                length,                 //!< [in] shared memory size
 		mode_t                                mode,                   //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
 		std::function<void*( void*, size_t )> primary_functor_arg,    //!< [in] a functor to initialize a shared memory area. first argument is the pointer to the top of memory. second argument is the assigned memory length. return value is set to opt_info.
-		std::function<void( void*, size_t )>  secondary_functor_arg   //!< [in] a functor as secondary role that is initialized by other procshared_mem instance. first argument is the pointer to the top of memory. second argument is the assigned memory length
+		std::function<void( void*, size_t )>  secondary_functor_arg   //!< [in] a functor as secondary role that is initialized by other ipsm_mem instance. first argument is the pointer to the top of memory. second argument is the assigned memory length
 	);
 
 	/**
@@ -65,7 +65,7 @@ public:
 	 *
 	 * @pre this instance is default constructed instance
 	 *
-	 * @exception procshared_mem_error
+	 * @exception ipsm_mem_error
 	 */
 	void allocate_shm_as_both(
 		const char*                           p_shm_name,             //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
@@ -73,7 +73,7 @@ public:
 		size_t                                length,                 //!< [in] shared memory size
 		mode_t                                mode,                   //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
 		std::function<void*( void*, size_t )> primary_functor_arg,    //!< [in] a functor to initialize a shared memory area. first argument is the pointer to the top of memory. second argument is the assigned memory length. return value is set to opt_info.
-		std::function<void( void*, size_t )>  secondary_functor_arg   //!< [in] a functor as secondary role that is initialized by other procshared_mem instance. first argument is the pointer to the top of memory. second argument is the assigned memory length
+		std::function<void( void*, size_t )>  secondary_functor_arg   //!< [in] a functor as secondary role that is initialized by other ipsm_mem instance. first argument is the pointer to the top of memory. second argument is the assigned memory length
 	);
 
 	/**
@@ -81,7 +81,7 @@ public:
 	 *
 	 * @pre this instance is default constructed instance
 	 *
-	 * @exception procshared_mem_error
+	 * @exception ipsm_mem_error
 	 */
 	void allocate_shm_as_primary(
 		const char*                           p_shm_name,           //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
@@ -96,14 +96,14 @@ public:
 	 *
 	 * @pre this instance is default constructed instance
 	 *
-	 * @exception procshared_mem_error
+	 * @exception ipsm_mem_error
 	 */
 	void allocate_shm_as_secondary(
 		const char*                          p_shm_name,             //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
 		const char*                          p_id_dirname,           //!< [in] directory name of id file. e.g. "/tmp"
 		size_t                               length,                 //!< [in] shared memory size
 		mode_t                               mode,                   //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
-		std::function<void( void*, size_t )> secondary_functor_arg   //!< [in] a functor as secondary role that is initialized by other procshared_mem instance. first argument is the pointer to the top of memory. second argument is the assigned memory length
+		std::function<void( void*, size_t )> secondary_functor_arg   //!< [in] a functor as secondary role that is initialized by other ipsm_mem instance. first argument is the pointer to the top of memory. second argument is the assigned memory length
 	);
 
 	void*  get( void );   //!< get top address of memory area
@@ -112,7 +112,7 @@ public:
 	void* get_opt_info( void ) const;
 	void  set_opt_info( void* p );
 
-	void swap( procshared_mem& src );
+	void swap( ipsm_mem& src );
 
 	void set_teardown(
 		std::function<void( bool, void*, size_t )> teardown_functor_arg   //!< [in]  a functor that is called when final deletion. this functor is stored in this instance
@@ -126,8 +126,8 @@ public:
 	static void debug_force_cleanup( const char* p_shm_name, const char* p_id_dirname );
 
 private:
-	procshared_mem( const procshared_mem& )            = delete;
-	procshared_mem& operator=( const procshared_mem& ) = delete;
+	ipsm_mem( const ipsm_mem& )            = delete;
+	ipsm_mem& operator=( const ipsm_mem& ) = delete;
 
 	class impl;
 	impl* p_impl_;
@@ -135,4 +135,4 @@ private:
 
 }   // namespace ipsm
 
-#endif   // PROCSHARED_MEM_HPP_
+#endif   // IPSM_MEM_HPP_

@@ -1,5 +1,5 @@
 /**
- * @file test_procshared_mutex.cpp
+ * @file test_ipsm_mutex.cpp
  * @author PFA03027@nifty.com
  * @brief
  * @version 0.1
@@ -16,11 +16,11 @@
 
 #include "gtest/gtest.h"
 
-#include "procshared_time_util.hpp"
+#include "ipsm_time_util.hpp"
 
 using namespace ipsm;
 
-TEST( Test_procshared_time_util_meta_func, CanConvert )
+TEST( Test_ipsm_time_util_meta_func, CanConvert )
 {
 	static_assert( time_util::is_exchangable_timediff<std::chrono::steady_clock, CLOCK_MONOTONIC>::value, "OK to exchange" );
 	static_assert( time_util::is_exchangable_timediff<std::chrono::steady_clock, CLOCK_MONOTONIC_COARSE>::value, "OK to exchange" );
@@ -37,7 +37,7 @@ TEST( Test_procshared_time_util_meta_func, CanConvert )
 	static_assert( time_util::is_exchangable_timediff<std::chrono::system_clock, CLOCK_REALTIME_COARSE>::value, "Not OK to exchange" );
 }
 
-TEST( Test_procshared_time_util_meta_func, IsSteadyClock )
+TEST( Test_ipsm_time_util_meta_func, IsSteadyClock )
 {
 	static_assert( decltype( time_util::is_steady_clock_impl::chk<std::chrono::steady_clock>( nullptr ) )::value, "Steady clock" );
 	static_assert( !( decltype( time_util::is_steady_clock_impl::chk<std::chrono::system_clock>( nullptr ) )::value ), "Not steady clock" );
@@ -54,17 +54,17 @@ TEST( Test_procshared_time_util_meta_func, IsSteadyClock )
 	// static_assert( !time_util::is_steady_clock<CLOCK_REALTIME>::value, "Not steady clock" );
 }
 
-TEST( Test_procshared_time_util_timespec_ct, CanConstruct_CanDestruct_MONOTONIC )
+TEST( Test_ipsm_time_util_timespec_ct, CanConstruct_CanDestruct_MONOTONIC )
 {
 	ASSERT_NO_THROW( time_util::timespec_monotonic sut );   // NOLINT(clang-diagnostic-unused-variable)
 }
 
-TEST( Test_procshared_time_util_timespec_ct, CanConstruct_CanDestruct_MONOTONIC_From_steady_clock1 )
+TEST( Test_ipsm_time_util_timespec_ct, CanConstruct_CanDestruct_MONOTONIC_From_steady_clock1 )
 {
 	ASSERT_NO_THROW( time_util::timespec_monotonic sut( std::chrono::steady_clock::now() ) );
 }
 
-TEST( Test_procshared_time_util_timespec_ct, CanConstruct_CanDestruct_MONOTONIC_From_steady_clock2 )
+TEST( Test_ipsm_time_util_timespec_ct, CanConstruct_CanDestruct_MONOTONIC_From_steady_clock2 )
 {
 	// Arrange
 	time_util::timespec_monotonic sut;
@@ -78,7 +78,7 @@ TEST( Test_procshared_time_util_timespec_ct, CanConstruct_CanDestruct_MONOTONIC_
 	EXPECT_LE( std::chrono::milliseconds( 0 ), diff );
 }
 
-TEST( Test_procshared_time_util_timespec_ct, CanConvert_steady_clock2_From_MONOTONIC )
+TEST( Test_ipsm_time_util_timespec_ct, CanConvert_steady_clock2_From_MONOTONIC )
 {
 	// Arrange
 	time_util::timespec_monotonic sut;
@@ -93,7 +93,7 @@ TEST( Test_procshared_time_util_timespec_ct, CanConvert_steady_clock2_From_MONOT
 	EXPECT_LE( std::chrono::milliseconds( 0 ), diff );
 }
 
-TEST( Test_procshared_time_util_timespec_ct, CanConstruct_CanDestruct_REALTIME )
+TEST( Test_ipsm_time_util_timespec_ct, CanConstruct_CanDestruct_REALTIME )
 {
 	ASSERT_NO_THROW( time_util::timespec_realtime sut );   // NOLINT(clang-diagnostic-unused-variable)
 }

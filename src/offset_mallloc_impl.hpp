@@ -16,8 +16,8 @@
 
 #include "offset_malloc.hpp"
 #include "offset_ptr.hpp"
-#include "procshared_logger.hpp"
-#include "procshared_mutex.hpp"
+#include "ipsm_logger.hpp"
+#include "ipsm_mutex.hpp"
 
 namespace ipsm {
 
@@ -145,7 +145,7 @@ private:
 	static constexpr size_t bytes2blocksize( size_t bytes );
 
 	const offset_ptr<unsigned char> op_end_;
-	mutable procshared_mutex        mtx_;
+	mutable ipsm_mutex        mtx_;
 	int                             bind_cnt_;
 	offset_ptr<block>               op_freep_;
 	block                           base_blk_;   //!< bigger address of this member variable is allocation memory area

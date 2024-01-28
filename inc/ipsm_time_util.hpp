@@ -1,5 +1,5 @@
 /**
- * @file procshared_time_util.hpp
+ * @file ipsm_time_util.hpp
  * @author Teruaki Ata (PFA03027@nifty.com)
  * @brief
  * @version 0.1
@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef PROCSHARED_TIME_UTIL_HPP_
-#define PROCSHARED_TIME_UTIL_HPP_
+#ifndef IPSM_TIME_UTIL_HPP_
+#define IPSM_TIME_UTIL_HPP_
 
 #include <chrono>
 #include <ctime>
@@ -263,4 +263,4 @@ timespec_ct<CT> operator-( const std::chrono::duration<Rep, Period>& op1, const 
 
 }   // namespace ipsm
 
-#endif   // PROCSHARED_TIME_UTIL_HPP_
+#endif   // IPSM_TIME_UTIL_HPP_

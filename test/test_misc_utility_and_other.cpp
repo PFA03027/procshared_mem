@@ -12,7 +12,7 @@
 #include "gtest/gtest.h"
 
 #include "lockfile_mutex.hpp"
-#include "test_procshared_common.hpp"
+#include "test_ipsm_common.hpp"
 
 using namespace ipsm;
 

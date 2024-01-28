@@ -1,5 +1,5 @@
 /**
- * @file procshared_mem_internal.hpp
+ * @file ipsm_mem_internal.hpp
  * @author PFA03027@nifty.com
  * @brief async open/close shared memory object
  * @version 0.1
@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef PROCSHARED_MEM_INTERNAL_HPP_
-#define PROCSHARED_MEM_INTERNAL_HPP_
+#ifndef IPSM_MEM_INTERNAL_HPP_
+#define IPSM_MEM_INTERNAL_HPP_
 
 #include <atomic>
 #include <chrono>
@@ -31,8 +31,8 @@
 #include <unistd.h>
 
 #include "misc_utility.hpp"
-#include "procshared_logger.hpp"
-#include "procshared_mem.hpp"
+#include "ipsm_logger.hpp"
+#include "ipsm_mem.hpp"
 
 #define TMP_DIR_FOR_ID_FILE "/tmp"
 
@@ -407,7 +407,7 @@ private:
 			snprintf( buff, 1024, "Fail ftruncate(%d, %ld), %s", tmp_shm_fd, length_arg, es.c_str() );
 			std::string err_log = buff;
 			err_log += discard_shm_fd_caused_by_any_error( tmp_shm_fd, shm_name_.c_str() );
-			throw procshared_mem_error( err_log.c_str() );
+			throw ipsm_mem_error( err_log.c_str() );
 		}
 
 		void* p_tmp_mem = mmap( NULL, length_arg, PROT_READ | PROT_WRITE, MAP_SHARED, tmp_shm_fd, 0 );
@@ -418,7 +418,7 @@ private:
 			snprintf( buff, 1024, "Fail mmap(NULL, %ld, PROT_READ | PROT_WRITE, MAP_SHARED, %d, 0), %s", length_arg, tmp_shm_fd, es2.c_str() );
 			std::string err_log = buff;
 			err_log += discard_shm_fd_caused_by_any_error( tmp_shm_fd, shm_name_.c_str() );
-			throw procshared_mem_error( err_log.c_str() );
+			throw ipsm_mem_error( err_log.c_str() );
 		}
 
 		shm_fd_ = tmp_shm_fd;
@@ -445,7 +445,7 @@ private:
 			snprintf( buff, 1024, "Fail fstat(%d), %s", tmp_shm_fd, es.c_str() );
 			std::string err_log = buff;
 			err_log += discard_shm_fd_caused_by_any_error( tmp_shm_fd, shm_name_.c_str() );
-			throw procshared_mem_error( err_log.c_str() );
+			throw ipsm_mem_error( err_log.c_str() );
 		}
 		size_t tmp_shm_length = buf.st_size;
 
@@ -457,7 +457,7 @@ private:
 			snprintf( buff, 1024, "Fail mmap(NULL, %ld, PROT_READ | PROT_WRITE, MAP_SHARED, %d, 0), %s", tmp_shm_length, tmp_shm_fd, es2.c_str() );
 			std::string err_log = buff;
 			err_log += discard_shm_fd_caused_by_any_error( tmp_shm_fd, shm_name_.c_str() );
-			throw procshared_mem_error( err_log.c_str() );
+			throw ipsm_mem_error( err_log.c_str() );
 		}
 
 		shm_fd_ = tmp_shm_fd;
@@ -494,4 +494,4 @@ private:
 
 }   // namespace ipsm
 
-#endif   // PROCSHARED_MEM_INTERNAL_HPP_
+#endif   // IPSM_MEM_INTERNAL_HPP_

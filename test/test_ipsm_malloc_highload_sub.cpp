@@ -1,5 +1,5 @@
 /**
- * @file test_procshared_mem.cpp
+ * @file test_ipsm_mem.cpp
  * @author your name (you@domain.com)
  * @brief
  * @version 0.1
@@ -18,7 +18,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include "procshared_malloc.hpp"
+#include "ipsm_malloc.hpp"
 
 using namespace ipsm;
 
@@ -30,7 +30,7 @@ int main( void )
 	{
 		// child process side
 		try {
-			procshared_malloc shm_heap( p_shm_obj_name, "/tmp", 1024UL * 100UL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+			ipsm_malloc shm_heap( p_shm_obj_name, "/tmp", 1024UL * 100UL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 			exit_code = 2;
 			for ( int i = 0; i < 100; i++ ) {
 				exit_code = 3;
@@ -45,11 +45,11 @@ int main( void )
 			}
 			exit_code = 122;
 		} catch ( std::runtime_error& e ) {
-			fprintf( stderr, "procshared_malloc throws std::runtime_error: %s, code=%d\n", e.what(), exit_code );
+			fprintf( stderr, "ipsm_malloc throws std::runtime_error: %s, code=%d\n", e.what(), exit_code );
 			abort();
 		}
 		if ( exit_code != 122 ) {
-			fprintf( stderr, "procshared_malloc is not expected %d\n", static_cast<int>( exit_code ) );
+			fprintf( stderr, "ipsm_malloc is not expected %d\n", static_cast<int>( exit_code ) );
 		}
 	}
 

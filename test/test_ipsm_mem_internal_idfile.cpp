@@ -1,5 +1,5 @@
 /**
- * @file test_procshared_mem.cpp
+ * @file test_ipsm_mem.cpp
  * @author PFA03027@nifty.com
  * @brief
  * @version 0.1
@@ -23,13 +23,13 @@
 
 #include "gtest/gtest.h"
 
-#include "procshared_mem.hpp"
-#include "procshared_mem_internal.hpp"
-#include "test_procshared_common.hpp"
+#include "ipsm_mem.hpp"
+#include "ipsm_mem_internal.hpp"
+#include "test_ipsm_common.hpp"
 
 using namespace ipsm;
 
-constexpr const char* const p_id_fname = "/tmp/my_test_procshared_mem_internal_id";
+constexpr const char* const p_id_fname = "/tmp/my_test_ipsm_mem_internal_id";
 
 TEST( Test_id_file_resource_handler, CanDefaultConstruct_CanDestruct )
 {

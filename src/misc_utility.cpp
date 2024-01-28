@@ -1,5 +1,5 @@
 /**
- * @file procshared_mem.cpp
+ * @file ipsm_mem.cpp
  * @author PFA03027@nifty.com
  * @brief async open/close shared memory object
  * @version 0.1
@@ -20,7 +20,7 @@
 #include <unistd.h>
 
 #include "misc_utility.hpp"
-#include "procshared_logger.hpp"
+#include "ipsm_logger.hpp"
 
 namespace ipsm {
 
@@ -58,26 +58,26 @@ ino_t get_inode_of_fd( int id_f_fd )
 		char buff[1024];
 		snprintf( buff, 1024, "Error: Fail to fstat(%d)", id_f_fd );
 		psm_logoutput( psm_log_lv::kErr, "Error: %s", buff );
-		throw procshared_mem_error( cur_errno, buff );
+		throw ipsm_mem_error( cur_errno, buff );
 	}
 
 	return stat_buff.st_ino;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
-procshared_mem_error::procshared_mem_error( type_of_errno e_v )
+ipsm_mem_error::ipsm_mem_error( type_of_errno e_v )
   : std::runtime_error( make_strerror( e_v ) )
 {
 }
-procshared_mem_error::procshared_mem_error( type_of_errno e_v, const std::string& additional_error_str )
+ipsm_mem_error::ipsm_mem_error( type_of_errno e_v, const std::string& additional_error_str )
   : std::runtime_error( make_strerror( e_v ) + additional_error_str )
 {
 }
-procshared_mem_error::procshared_mem_error( const char* p_error_str )
+ipsm_mem_error::ipsm_mem_error( const char* p_error_str )
   : std::runtime_error( p_error_str )
 {
 }
-procshared_mem_error::procshared_mem_error( const std::string& error_str )
+ipsm_mem_error::ipsm_mem_error( const std::string& error_str )
   : std::runtime_error( error_str )
 {
 }

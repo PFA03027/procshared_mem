@@ -1,5 +1,5 @@
 /**
- * @file procshared_malloc.cpp
+ * @file ipsm_malloc.cpp
  * @author PFA03027@nifty.com
  * @brief
  * @version 0.1
@@ -12,22 +12,22 @@
 #include <memory>
 #include <type_traits>
 
-#include "procshared_logger.hpp"
-#include "procshared_malloc.hpp"
+#include "ipsm_logger.hpp"
+#include "ipsm_malloc.hpp"
 
 namespace ipsm {
 
 constexpr unsigned int default_channel_size = 2;
 
-unsigned int procshared_malloc::channel_size( void )
+unsigned int ipsm_malloc::channel_size( void )
 {
 	return default_channel_size;
 }
 
 struct msg_channel {
 	using data_type = offset_ptr<void>;
-	procshared_mutex                                    mtx_;
-	procshared_condition_variable_monotonic             cond_;
+	ipsm_mutex                                    mtx_;
+	ipsm_condition_variable_monotonic             cond_;
 	offset_list<data_type, offset_allocator<data_type>> msgch_[default_channel_size];
 
 	msg_channel( const offset_allocator<data_type> a )
@@ -38,39 +38,39 @@ struct msg_channel {
 	}
 };
 
-procshared_malloc::procshared_malloc( void )
+ipsm_malloc::ipsm_malloc( void )
   : shm_obj_()
   , shm_heap_()
   , p_msgch_( nullptr )
 {
 }
 
-procshared_malloc::~procshared_malloc()
+ipsm_malloc::~ipsm_malloc()
 {
 	shm_obj_.set_teardown(
 		[this]( bool final_teardown, void* p_mem, size_t len ) {
 			shm_heap_ = offset_malloc();
 		} );
-	shm_obj_ = procshared_mem();
+	shm_obj_ = ipsm_mem();
 	p_msgch_ = nullptr;   // p_msgch_の実体は、shm_obj_内に存在しているため、とくに解放処理は行わない。
 }
 
-procshared_malloc& procshared_malloc::operator=( procshared_malloc&& src )
+ipsm_malloc& ipsm_malloc::operator=( ipsm_malloc&& src )
 {
 	if ( this == &src ) return *this;
 
 	// メンバ変数の開放順を守るため、デストラクタの処理を利用する。
-	procshared_malloc( std::move( src ) ).swap( *this );
+	ipsm_malloc( std::move( src ) ).swap( *this );
 
 	return *this;
 }
 
-procshared_malloc::procshared_malloc( const char* p_shm_name, const char* p_id_dirname, size_t length, mode_t mode )
+ipsm_malloc::ipsm_malloc( const char* p_shm_name, const char* p_id_dirname, size_t length, mode_t mode )
   : shm_obj_()
   , shm_heap_()
   , p_msgch_( nullptr )
 {
-	shm_obj_ = procshared_mem(
+	shm_obj_ = ipsm_mem(
 		p_shm_name, p_id_dirname, length, mode,
 		[this]( void* p_mem, size_t len ) -> void* {
 			shm_heap_ = offset_malloc( p_mem, len );
@@ -97,56 +97,56 @@ procshared_malloc::procshared_malloc( const char* p_shm_name, const char* p_id_d
 [[nodiscard]]
 #endif
 void*
-procshared_malloc::allocate( size_t n, size_t alignment )
+ipsm_malloc::allocate( size_t n, size_t alignment )
 {
 	return shm_heap_.allocate( n, alignment );
 }
 
-void procshared_malloc::deallocate( void* p, size_t alignment )
+void ipsm_malloc::deallocate( void* p, size_t alignment )
 {
 	shm_heap_.deallocate( p, alignment );
 }
 
-void procshared_malloc::swap( procshared_malloc& src )
+void ipsm_malloc::swap( ipsm_malloc& src )
 {
 	shm_obj_.swap( src.shm_obj_ );
 	shm_heap_.swap( src.shm_heap_ );
 	std::swap( p_msgch_, src.p_msgch_ );
 }
 
-int procshared_malloc::get_bind_count( void ) const
+int ipsm_malloc::get_bind_count( void ) const
 {
 	return shm_obj_.get_bind_count();
 }
 
-void procshared_malloc::send( unsigned int ch, offset_ptr<void> sending_value )
+void ipsm_malloc::send( unsigned int ch, offset_ptr<void> sending_value )
 {
 	if ( p_msgch_ == nullptr ) {
-		psm_logoutput( psm_log_lv::kErr, "Error: in procshared_malloc::send(), p_msgch_ of procshared_malloc is nullptr" );
+		psm_logoutput( psm_log_lv::kErr, "Error: in ipsm_malloc::send(), p_msgch_ of ipsm_malloc is nullptr" );
 		return;
 	}
 	if ( ch >= default_channel_size ) {
-		psm_logoutput( psm_log_lv::kErr, "Error: in procshared_malloc::send(), ch is too big, ch=%u", ch );
+		psm_logoutput( psm_log_lv::kErr, "Error: in ipsm_malloc::send(), ch is too big, ch=%u", ch );
 		return;
 	}
 
-	std::lock_guard<procshared_mutex> lk( p_msgch_->mtx_ );
+	std::lock_guard<ipsm_mutex> lk( p_msgch_->mtx_ );
 	p_msgch_->msgch_[ch].emplace_back( sending_value );
 	return;
 }
-offset_ptr<void> procshared_malloc::receive( unsigned int ch )
+offset_ptr<void> ipsm_malloc::receive( unsigned int ch )
 {
 	if ( p_msgch_ == nullptr ) {
-		psm_logoutput( psm_log_lv::kErr, "Error: in procshared_malloc::receive(), p_msgch_ of procshared_malloc is nullptr" );
+		psm_logoutput( psm_log_lv::kErr, "Error: in ipsm_malloc::receive(), p_msgch_ of ipsm_malloc is nullptr" );
 		// TODO: should throw exception?
 		return nullptr;
 	}
 	if ( ch >= default_channel_size ) {
-		psm_logoutput( psm_log_lv::kErr, "Error: in procshared_malloc::send(), ch is too big, ch=%u", ch );
+		psm_logoutput( psm_log_lv::kErr, "Error: in ipsm_malloc::send(), ch is too big, ch=%u", ch );
 		return nullptr;
 	}
 
-	std::unique_lock<procshared_mutex> lk( p_msgch_->mtx_ );
+	std::unique_lock<ipsm_mutex> lk( p_msgch_->mtx_ );
 	p_msgch_->cond_.wait( lk, [this, ch]() -> bool {
 		return !( p_msgch_->msgch_[ch].empty() );
 	} );

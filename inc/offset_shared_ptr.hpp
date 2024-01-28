@@ -16,7 +16,7 @@
 #include <mutex>
 
 #include "offset_unique_ptr.hpp"
-#include "procshared_mutex.hpp"
+#include "ipsm_mutex.hpp"
 
 namespace ipsm {
 
@@ -79,7 +79,7 @@ public:
 
 		friend offset_shared_ptr_impl_if;
 
-		std::unique_lock<procshared_mutex> lk_;
+		std::unique_lock<ipsm_mutex> lk_;
 		ctrl_data*                         p_ctrl_;
 	};
 
@@ -119,7 +119,7 @@ public:
 
 		friend offset_shared_ptr_impl_if;
 
-		std::unique_lock<procshared_mutex> lk_;
+		std::unique_lock<ipsm_mutex> lk_;
 		const ctrl_data*                   p_ctrl_;
 	};
 
@@ -149,7 +149,7 @@ public:
 private:
 	static void try_dispose_com( offset_ptr<offset_shared_ptr_impl_if>& p, long ctrl_data::*mp_tcnt );
 
-	mutable procshared_mutex mtx_;   // mutex for exclusive access control
+	mutable ipsm_mutex mtx_;   // mutex for exclusive access control
 	ctrl_data                ctrl_;
 };
 

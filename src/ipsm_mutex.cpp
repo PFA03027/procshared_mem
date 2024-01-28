@@ -1,7 +1,7 @@
 /**
- * @file procshared_mutex_base.cpp
+ * @file ipsm_mutex_base.cpp
  * @author PFA03027@nifty.com
- * @brief utility class of procshared_mem
+ * @brief utility class of ipsm_mem
  * @version 0.1
  * @date 2023-09-24
  *
@@ -17,10 +17,10 @@
 #include <execinfo.h>
 #include <pthread.h>
 
-#include "procshared_logger.hpp"
-#include "procshared_mutex.hpp"
-#include "procshared_mutex_base.hpp"
-#include "procshared_recursive_mutex.hpp"
+#include "ipsm_logger.hpp"
+#include "ipsm_mutex.hpp"
+#include "ipsm_mutex_base.hpp"
+#include "ipsm_recursive_mutex.hpp"
 
 namespace ipsm {
 
@@ -45,7 +45,7 @@ void backtrace_print( void )
 }
 #endif
 
-procshared_mutex_base::procshared_mutex_base( int kind )
+ipsm_mutex_base::ipsm_mutex_base( int kind )
 {
 	pthread_mutexattr_t attr;
 	pthread_mutexattr_init( &attr );
@@ -71,7 +71,7 @@ procshared_mutex_base::procshared_mutex_base( int kind )
 	pthread_mutexattr_destroy( &attr );
 }
 
-procshared_mutex_base::~procshared_mutex_base()
+ipsm_mutex_base::~ipsm_mutex_base()
 {
 	int ret = pthread_mutex_destroy( &fastmutex_ );
 	if ( ret == EBUSY ) {
@@ -80,7 +80,7 @@ procshared_mutex_base::~procshared_mutex_base()
 	}
 }
 
-void procshared_mutex_base::lock( void )
+void ipsm_mutex_base::lock( void )
 {
 	int ret = pthread_mutex_lock( &fastmutex_ );
 	if ( ret == 0 ) {
@@ -107,7 +107,7 @@ void procshared_mutex_base::lock( void )
 		throw std::system_error( ec, "Fail to call pthread_mutex_lock()" );
 	}
 }
-bool procshared_mutex_base::try_lock( void )
+bool ipsm_mutex_base::try_lock( void )
 {
 	bool ans = false;
 	int  ret = pthread_mutex_trylock( &fastmutex_ );
@@ -137,7 +137,7 @@ bool procshared_mutex_base::try_lock( void )
 	}
 	return ans;
 }
-void procshared_mutex_base::unlock( void )
+void ipsm_mutex_base::unlock( void )
 {
 	int ret = pthread_mutex_unlock( &fastmutex_ );
 	if ( ret == 0 ) {
@@ -151,7 +151,7 @@ void procshared_mutex_base::unlock( void )
 	}
 }
 
-procshared_mutex::procshared_mutex( void )
+ipsm_mutex::ipsm_mutex( void )
 #ifdef ENABLE_PTHREAD_MUTEX_ERRORTYPE
   : mtx_( PTHREAD_MUTEX_ERRORCHECK_NP )
 #else
@@ -160,7 +160,7 @@ procshared_mutex::procshared_mutex( void )
 {
 }
 
-procshared_recursive_mutex::procshared_recursive_mutex( void )
+ipsm_recursive_mutex::ipsm_recursive_mutex( void )
   : mtx_( PTHREAD_MUTEX_RECURSIVE_NP )
 {
 }

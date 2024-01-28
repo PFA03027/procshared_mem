@@ -1,5 +1,5 @@
 /**
- * @file procshared_condition_variable_base.cpp
+ * @file ipsm_condition_variable_base.cpp
  * @author PFA03027@nifty.com
  * @brief condition variable that is sharable b/w processes
  * @version 0.1
@@ -17,13 +17,13 @@
 
 #include <pthread.h>
 
-#include "procshared_condition_variable.hpp"
-#include "procshared_logger.hpp"
-#include "procshared_time_util.hpp"
+#include "ipsm_condition_variable.hpp"
+#include "ipsm_logger.hpp"
+#include "ipsm_time_util.hpp"
 
 namespace ipsm {
 
-procshared_condition_variable_base::procshared_condition_variable_base( clockid_t ct )
+ipsm_condition_variable_base::ipsm_condition_variable_base( clockid_t ct )
 {
 	pthread_condattr_t cond_attr;
 	pthread_condattr_init( &cond_attr );
@@ -41,7 +41,7 @@ procshared_condition_variable_base::procshared_condition_variable_base( clockid_
 	pthread_condattr_destroy( &cond_attr );
 }
 
-procshared_condition_variable_base::~procshared_condition_variable_base()
+ipsm_condition_variable_base::~ipsm_condition_variable_base()
 {
 	int ret = pthread_cond_destroy( &cond_ );
 	if ( ret == EBUSY ) {
@@ -49,23 +49,23 @@ procshared_condition_variable_base::~procshared_condition_variable_base()
 	}
 }
 
-void procshared_condition_variable_base::notify_one() noexcept
+void ipsm_condition_variable_base::notify_one() noexcept
 {
 	pthread_cond_signal( &cond_ );
 }
-void procshared_condition_variable_base::notify_all() noexcept
+void ipsm_condition_variable_base::notify_all() noexcept
 {
 	pthread_cond_broadcast( &cond_ );
 }
 
-void procshared_condition_variable_base::wait( std::unique_lock<procshared_mutex>& lock )
+void ipsm_condition_variable_base::wait( std::unique_lock<ipsm_mutex>& lock )
 {
 	pthread_cond_wait( &cond_, lock.mutex()->native_handle() );
 }
 
-std::cv_status procshared_condition_variable_base::wait_until(
-	std::unique_lock<procshared_mutex>& lock,
-	const struct timespec&              abs_time )
+std::cv_status ipsm_condition_variable_base::wait_until(
+	std::unique_lock<ipsm_mutex>& lock,
+	const struct timespec&        abs_time )
 {
 	bool           loopflag = true;
 	std::cv_status ans      = std::cv_status::no_timeout;

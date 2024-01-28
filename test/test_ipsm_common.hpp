@@ -1,5 +1,5 @@
 /**
- * @file test_procshared_common.hpp
+ * @file test_ipsm_common.hpp
  * @author PFA03027@nifty.com
  * @brief
  * @version 0.1
@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef TEST_PROCSHARED_COMMON_HPP_
-#define TEST_PROCSHARED_COMMON_HPP_
+#ifndef TEST_IPSM_COMMON_HPP_
+#define TEST_IPSM_COMMON_HPP_
 
 #include <functional>
 
@@ -22,4 +22,4 @@ struct child_proc_return_t {
 
 child_proc_return_t call_pred_on_child_process( std::function<int()> pred_func_in_child_process );
 
-#endif   // TEST_PROCSHARED_COMMON_HPP_
+#endif   // TEST_IPSM_COMMON_HPP_

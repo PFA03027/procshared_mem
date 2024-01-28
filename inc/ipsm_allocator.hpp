@@ -1,5 +1,5 @@
 /**
- * @file procshared_allocator.hpp
+ * @file ipsm_allocator.hpp
  * @author PFA03027@nifty.com
  * @brief
  * @version 0.1
@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef PROCSHARED_ALLOCATOR_HPP
-#define PROCSHARED_ALLOCATOR_HPP
+#ifndef IPSM_ALLOCATOR_HPP
+#define IPSM_ALLOCATOR_HPP
 
 #include <exception>
 #include <memory>
@@ -26,7 +26,7 @@ namespace ipsm {
  * @tparam T type to allocate
  */
 template <typename T>
-class procshared_allocator {
+class ipsm_allocator {
 public:
 	using value_type                             = T;
 	using propagate_on_container_move_assignment = std::false_type;
@@ -35,34 +35,34 @@ public:
 	using difference_type                        = ptrdiff_t;
 	using is_always_equal                        = std::false_type;
 
-	constexpr procshared_allocator() noexcept
+	constexpr ipsm_allocator() noexcept
 	  : p_malloc_( nullptr )
 	  , sp_malloc_( nullptr )
 	{
 	}
 
-	constexpr explicit procshared_allocator( offset_malloc* p ) noexcept
+	constexpr explicit ipsm_allocator( offset_malloc* p ) noexcept
 	  : p_malloc_( p )
 	  , sp_malloc_( nullptr )
 	{
 	}
 
-	constexpr explicit procshared_allocator( const std::shared_ptr<offset_malloc>& sp ) noexcept
+	constexpr explicit ipsm_allocator( const std::shared_ptr<offset_malloc>& sp ) noexcept
 	  : p_malloc_( sp.get() )
 	  , sp_malloc_( sp )
 	{
 	}
 
-	constexpr procshared_allocator( const procshared_allocator& ) noexcept = default;
+	constexpr ipsm_allocator( const ipsm_allocator& ) noexcept = default;
 
 	template <class U>
-	constexpr procshared_allocator( const procshared_allocator<U>& orig ) noexcept
+	constexpr ipsm_allocator( const ipsm_allocator<U>& orig ) noexcept
 	  : p_malloc_( orig.p_malloc_ )
 	  , sp_malloc_( orig.sp_malloc_ )
 	{
 	}
 
-	constexpr procshared_allocator& operator=( const procshared_allocator& ) = default;
+	constexpr ipsm_allocator& operator=( const ipsm_allocator& ) = default;
 
 #if __has_cpp_attribute( nodiscard )
 	[[nodiscard]]
@@ -92,16 +92,16 @@ private:
 };
 
 template <class T, class U>
-constexpr bool operator==( const procshared_allocator<T>& a, const procshared_allocator<U>& b ) noexcept
+constexpr bool operator==( const ipsm_allocator<T>& a, const ipsm_allocator<U>& b ) noexcept
 {
 	return ( a.p_malloc_ == b.p_malloc_ );
 }
 template <class T, class U>
-constexpr bool operator!=( const procshared_allocator<T>& a, const procshared_allocator<U>& b ) noexcept
+constexpr bool operator!=( const ipsm_allocator<T>& a, const ipsm_allocator<U>& b ) noexcept
 {
 	return ( a.p_malloc_ != b.p_malloc_ );
 }
 
 }   // namespace ipsm
 
-#endif   // PROCSHARED_ALLOCATOR_HPP
+#endif   // IPSM_ALLOCATOR_HPP

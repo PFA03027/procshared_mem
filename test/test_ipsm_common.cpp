@@ -1,5 +1,5 @@
 /**
- * @file test_procshared_common.cpp
+ * @file test_ipsm_common.cpp
  * @author PFA03027@nifty.com
  * @brief
  * @version 0.1

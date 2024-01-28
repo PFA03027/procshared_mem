@@ -1,5 +1,5 @@
 /**
- * @file test_procshared_mutex.cpp
+ * @file test_ipsm_mutex.cpp
  * @author PFA03027@nifty.com
  * @brief
  * @version 0.1
@@ -17,35 +17,35 @@
 
 #include "gtest/gtest.h"
 
-#include "procshared_condition_variable.hpp"
-#include "procshared_mem.hpp"
-#include "procshared_mutex.hpp"
-#include "procshared_recursive_mutex.hpp"
-#include "test_procshared_common.hpp"
+#include "ipsm_condition_variable.hpp"
+#include "ipsm_mem.hpp"
+#include "ipsm_mutex.hpp"
+#include "ipsm_recursive_mutex.hpp"
+#include "test_ipsm_common.hpp"
 
 using namespace ipsm;
 
-TEST( Test_procshared_condition_variable, CanConstruct_CanDestruct )
+TEST( Test_ipsm_condition_variable, CanConstruct_CanDestruct )
 {
-	ASSERT_NO_THROW( procshared_condition_variable_monotonic sut );
+	ASSERT_NO_THROW( ipsm_condition_variable_monotonic sut );
 }
 
-TEST( Test_procshared_condition_variable, CanWait_CanNotifyAll )
+TEST( Test_ipsm_condition_variable, CanWait_CanNotifyAll )
 {
 	// Arrange
 	bool                                    shared_state_flag = false;
-	procshared_mutex                        mtx;
-	procshared_condition_variable_monotonic sut1;
-	procshared_condition_variable_monotonic sut2;
+	ipsm_mutex                        mtx;
+	ipsm_condition_variable_monotonic sut1;
+	ipsm_condition_variable_monotonic sut2;
 
 	std::packaged_task<bool()> task1( [&sut1, &mtx, &shared_state_flag]() {
-		std::unique_lock<procshared_mutex> lk( mtx );
+		std::unique_lock<ipsm_mutex> lk( mtx );
 		sut1.wait( lk, [&shared_state_flag]() { return shared_state_flag; } );
 		return true;
 	} );   // 非同期実行する関数を登録する
 	std::future<bool>          f1 = task1.get_future();
 	std::packaged_task<bool()> task2( [&sut2, &mtx, &shared_state_flag]() {
-		std::unique_lock<procshared_mutex> lk( mtx );
+		std::unique_lock<ipsm_mutex> lk( mtx );
 		sut2.wait( lk, [&shared_state_flag]() { return shared_state_flag; } );
 		return true;
 	} );   // 非同期実行する関数を登録する
@@ -57,7 +57,7 @@ TEST( Test_procshared_condition_variable, CanWait_CanNotifyAll )
 
 	// Act
 	{
-		std::unique_lock<procshared_mutex> lk( mtx );
+		std::unique_lock<ipsm_mutex> lk( mtx );
 		shared_state_flag = true;
 		sut1.notify_all();
 		sut2.notify_all();
@@ -79,15 +79,15 @@ TEST( Test_procshared_condition_variable, CanWait_CanNotifyAll )
 	}
 }
 
-TEST( Test_procshared_condition_variable, CanWaitFor_Timeout )
+TEST( Test_ipsm_condition_variable, CanWaitFor_Timeout )
 {
 	// Arrange
 	// bool                          shared_state_flag = false;
-	procshared_mutex                        mtx;
-	procshared_condition_variable_monotonic sut1;
+	ipsm_mutex                        mtx;
+	ipsm_condition_variable_monotonic sut1;
 
 	std::packaged_task<std::cv_status()> task1( [&sut1, &mtx]() {
-		std::unique_lock<procshared_mutex> lk( mtx );
+		std::unique_lock<ipsm_mutex> lk( mtx );
 		return sut1.wait_for( lk, std::chrono::milliseconds( 10 ) );
 	} );   // 非同期実行する関数を登録する
 	std::future<std::cv_status>          f1 = task1.get_future();
@@ -96,7 +96,7 @@ TEST( Test_procshared_condition_variable, CanWaitFor_Timeout )
 	std::thread t1( std::move( task1 ) );
 	std::this_thread::sleep_for( std::chrono::milliseconds( 20 ) );
 	// {
-	// 	std::unique_lock<procshared_mutex> lk( mtx );
+	// 	std::unique_lock<ipsm_mutex> lk( mtx );
 	// 	shared_state_flag = true;
 	// 	sut1.notify_all();
 	// 	sut2.notify_all();
@@ -113,19 +113,19 @@ TEST( Test_procshared_condition_variable, CanWaitFor_Timeout )
 	}
 }
 
-TEST( Test_procshared_condition_variable, CanWaitFor_NoTimeout )
+TEST( Test_ipsm_condition_variable, CanWaitFor_NoTimeout )
 {
 	// Arrange
 	pthread_barrier_t br_obj;
 	ASSERT_EQ( pthread_barrier_init( &br_obj, nullptr, 2 ), 0 );
 
 	bool                                    shared_state_flag = false;
-	procshared_mutex                        mtx;
-	procshared_condition_variable_monotonic sut1;
+	ipsm_mutex                        mtx;
+	ipsm_condition_variable_monotonic sut1;
 
 	std::packaged_task<std::cv_status()> task1( [&sut1, &mtx, &br_obj]() {
 		pthread_barrier_wait( &br_obj );
-		std::unique_lock<procshared_mutex> lk( mtx );
+		std::unique_lock<ipsm_mutex> lk( mtx );
 		return sut1.wait_for( lk, std::chrono::milliseconds( 2000 ) );
 	} );   // 非同期実行する関数を登録する
 	std::future<std::cv_status>          f1 = task1.get_future();
@@ -136,7 +136,7 @@ TEST( Test_procshared_condition_variable, CanWaitFor_NoTimeout )
 
 	// Act
 	{
-		std::unique_lock<procshared_mutex> lk( mtx );
+		std::unique_lock<ipsm_mutex> lk( mtx );
 		shared_state_flag = true;
 		sut1.notify_all();   // これが実行されるまでに、sut1.wait_for()で待機列に入っている必要がある。wait_for()はその保証が難しいため、notify_all()の呼び出しをなるべく遅くするようにチューニングするしかない。
 	}
@@ -154,15 +154,15 @@ TEST( Test_procshared_condition_variable, CanWaitFor_NoTimeout )
 	pthread_barrier_destroy( &br_obj );
 }
 
-TEST( Test_procshared_condition_variable, CanWaitForPred_Timeout )
+TEST( Test_ipsm_condition_variable, CanWaitForPred_Timeout )
 {
 	// Arrange
 	bool                                    shared_state_flag = false;
-	procshared_mutex                        mtx;
-	procshared_condition_variable_monotonic sut1;
+	ipsm_mutex                        mtx;
+	ipsm_condition_variable_monotonic sut1;
 
 	std::packaged_task<bool()> task1( [&sut1, &mtx, &shared_state_flag]() {
-		std::unique_lock<procshared_mutex> lk( mtx );
+		std::unique_lock<ipsm_mutex> lk( mtx );
 		return sut1.wait_for(
 			lk,
 			std::chrono::milliseconds( 10 ),
@@ -185,15 +185,15 @@ TEST( Test_procshared_condition_variable, CanWaitForPred_Timeout )
 	}
 }
 
-TEST( Test_procshared_condition_variable, CanWaitForPred_NoTimeout )
+TEST( Test_ipsm_condition_variable, CanWaitForPred_NoTimeout )
 {
 	// Arrange
 	bool                                    shared_state_flag = false;
-	procshared_mutex                        mtx;
-	procshared_condition_variable_monotonic sut1;
+	ipsm_mutex                        mtx;
+	ipsm_condition_variable_monotonic sut1;
 
 	std::packaged_task<bool()> task1( [&sut1, &mtx, &shared_state_flag]() {
-		std::unique_lock<procshared_mutex> lk( mtx );
+		std::unique_lock<ipsm_mutex> lk( mtx );
 		return sut1.wait_for(
 			lk,
 			std::chrono::milliseconds( 20 ),
@@ -205,7 +205,7 @@ TEST( Test_procshared_condition_variable, CanWaitForPred_NoTimeout )
 
 	// Act
 	{
-		std::unique_lock<procshared_mutex> lk( mtx );
+		std::unique_lock<ipsm_mutex> lk( mtx );
 		shared_state_flag = true;
 		sut1.notify_one();
 	}
@@ -224,12 +224,12 @@ TEST( Test_procshared_condition_variable, CanWaitForPred_NoTimeout )
 #if defined( TEST_ENABLE_ADDRESSSANITIZER ) || defined( TEST_ENABLE_LEAKSANITIZER )
 #else
 //===========================================
-const char* p_shm_obj_name = "/my_test_shm_test_procshared_condition_variable";
+const char* p_shm_obj_name = "/my_test_shm_test_ipsm_condition_variable";
 
 struct test_shared_data {
 	bool shared_state_flag_;
-	procshared_mutex mtx_;
-	procshared_condition_variable_monotonic cond_;
+	ipsm_mutex mtx_;
+	ipsm_condition_variable_monotonic cond_;
 
 	test_shared_data( void )
 	  : shared_state_flag_( false )
@@ -239,11 +239,11 @@ struct test_shared_data {
 	}
 };
 
-TEST( Test_procshared_condition_variable_bw_proc, CanWaitForPred_Timeout )
+TEST( Test_ipsm_condition_variable_bw_proc, CanWaitForPred_Timeout )
 {
 	// Arrange
-	procshared_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
-	procshared_mem shm_obj(
+	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
+	ipsm_mem shm_obj(
 		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 		[]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
@@ -263,7 +263,7 @@ TEST( Test_procshared_condition_variable_bw_proc, CanWaitForPred_Timeout )
 
 	// Act
 	std::thread t1( std::move( task1 ), []() -> int {
-		procshared_mem shm_obj_secondary;
+		ipsm_mem shm_obj_secondary;
 		shm_obj_secondary.allocate_shm_as_secondary(
 			p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 			[]( void*, size_t ) { /* 何もしない */ } );
@@ -272,7 +272,7 @@ TEST( Test_procshared_condition_variable_bw_proc, CanWaitForPred_Timeout )
 		}
 		test_shared_data* p_sut = reinterpret_cast<test_shared_data*>( shm_obj_secondary.get() );
 
-		std::unique_lock<procshared_mutex> lk( p_sut->mtx_ );
+		std::unique_lock<ipsm_mutex> lk( p_sut->mtx_ );
 		bool ret = p_sut->cond_.wait_for(
 			lk,
 			std::chrono::milliseconds( 10 ),
@@ -293,11 +293,11 @@ TEST( Test_procshared_condition_variable_bw_proc, CanWaitForPred_Timeout )
 	}
 }
 
-TEST( Test_procshared_condition_variable_bw_proc, CanWaitForPred_NoTimeout )
+TEST( Test_ipsm_condition_variable_bw_proc, CanWaitForPred_NoTimeout )
 {
 	// Arrange
-	procshared_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
-	procshared_mem shm_obj(
+	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
+	ipsm_mem shm_obj(
 		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 		[]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
@@ -316,7 +316,7 @@ TEST( Test_procshared_condition_variable_bw_proc, CanWaitForPred_NoTimeout )
 	std::future<child_proc_return_t> f1 = task1.get_future();
 
 	std::thread t1( std::move( task1 ), []() -> int {
-		procshared_mem shm_obj_secondary;
+		ipsm_mem shm_obj_secondary;
 		shm_obj_secondary.allocate_shm_as_secondary(
 			p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 			[]( void*, size_t ) { /* 何もしない */ } );
@@ -325,7 +325,7 @@ TEST( Test_procshared_condition_variable_bw_proc, CanWaitForPred_NoTimeout )
 		}
 		test_shared_data* p_sut = reinterpret_cast<test_shared_data*>( shm_obj_secondary.get() );
 
-		std::unique_lock<procshared_mutex> lk( p_sut->mtx_ );
+		std::unique_lock<ipsm_mutex> lk( p_sut->mtx_ );
 		bool ret = p_sut->cond_.wait_for(
 			lk,
 			std::chrono::milliseconds( 20 ),
@@ -336,7 +336,7 @@ TEST( Test_procshared_condition_variable_bw_proc, CanWaitForPred_NoTimeout )
 
 	// Act
 	{
-		std::unique_lock<procshared_mutex> lk( p_sut->mtx_ );
+		std::unique_lock<ipsm_mutex> lk( p_sut->mtx_ );
 		p_sut->shared_state_flag_ = true;
 		p_sut->cond_.notify_one();
 	}

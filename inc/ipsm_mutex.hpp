@@ -1,5 +1,5 @@
 /**
- * @file procshared_mutex.hpp
+ * @file ipsm_mutex.hpp
  * @author PFA03027@nifty.com
  * @brief mutex that is sharable b/w processes
  * @version 0.1
@@ -11,14 +11,14 @@
  * This class requires pthread library
  */
 
-#ifndef PROCSHARED_MUTEX_HPP_
-#define PROCSHARED_MUTEX_HPP_
+#ifndef IPSM_MUTEX_HPP_
+#define IPSM_MUTEX_HPP_
 
 #include <type_traits>
 
 #include <pthread.h>
 
-#include "procshared_mutex_base.hpp"
+#include "ipsm_mutex_base.hpp"
 
 namespace ipsm {
 
@@ -26,12 +26,12 @@ namespace ipsm {
  * @brief mutex that is sharable b/w processes
  *
  */
-class procshared_mutex {
+class ipsm_mutex {
 public:
-	using native_handle_type = typename procshared_mutex_base::native_handle_type;
+	using native_handle_type = typename ipsm_mutex_base::native_handle_type;
 
-	procshared_mutex( void );
-	~procshared_mutex() = default;
+	ipsm_mutex( void );
+	~ipsm_mutex() = default;
 
 	void lock( void )
 	{
@@ -51,14 +51,14 @@ public:
 	}
 
 private:
-	procshared_mutex( const procshared_mutex& )            = delete;
-	procshared_mutex& operator=( const procshared_mutex& ) = delete;
+	ipsm_mutex( const ipsm_mutex& )            = delete;
+	ipsm_mutex& operator=( const ipsm_mutex& ) = delete;
 
-	procshared_mutex_base mtx_;
+	ipsm_mutex_base mtx_;
 };
 
-static_assert( std::is_standard_layout<procshared_mutex>::value, "procshared_mutex should be standard layout" );
+static_assert( std::is_standard_layout<ipsm_mutex>::value, "ipsm_mutex should be standard layout" );
 
 }   // namespace ipsm
 
-#endif   // PROCSHARED_MUTEX_HPP_
+#endif   // IPSM_MUTEX_HPP_

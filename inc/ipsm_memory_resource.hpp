@@ -1,5 +1,5 @@
 /**
- * @file procshared_memory_resource.hpp
+ * @file ipsm_memory_resource.hpp
  * @author PFA03027@nifty.com
  * @brief
  * @version 0.1
@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef PROCSHARED_MEMORY_RESOURCE_HPP
-#define PROCSHARED_MEMORY_RESOURCE_HPP
+#ifndef IPSM_MEMORY_RESOURCE_HPP
+#define IPSM_MEMORY_RESOURCE_HPP
 
 #include <cstddef>
 #include <memory_resource>
@@ -19,17 +19,17 @@
 
 namespace ipsm {
 
-class procshared_memory_resource : public std::pmr::memory_resource {
+class ipsm_memory_resource : public std::pmr::memory_resource {
 public:
-	~procshared_memory_resource() noexcept = default;
+	~ipsm_memory_resource() noexcept = default;
 
-	constexpr procshared_memory_resource() noexcept
+	constexpr ipsm_memory_resource() noexcept
 	  : p_malloc_( nullptr )
 	{
 	}
 
-	constexpr procshared_memory_resource( const procshared_memory_resource& ) noexcept = default;
-	procshared_memory_resource& operator=( const procshared_memory_resource& )         = default;
+	constexpr ipsm_memory_resource( const ipsm_memory_resource& ) noexcept = default;
+	ipsm_memory_resource& operator=( const ipsm_memory_resource& )         = default;
 
 private:
 	void* do_allocate( std::size_t bytes, std::size_t alignment ) override
@@ -52,7 +52,7 @@ private:
 
 	bool do_is_equal( const memory_resource& other ) const noexcept override
 	{
-		const procshared_memory_resource* p_other = dynamic_cast<const procshared_memory_resource*>( &other );
+		const ipsm_memory_resource* p_other = dynamic_cast<const ipsm_memory_resource*>( &other );
 		if ( p_other == nullptr ) {
 			return false;
 		}
@@ -65,4 +65,4 @@ private:
 
 }   // namespace ipsm
 
-#endif   // PROCSHARED_MEMORY_RESOURCE_HPP
+#endif   // IPSM_MEMORY_RESOURCE_HPP

@@ -1,5 +1,5 @@
 /**
- * @file test_procshared_mem.cpp
+ * @file test_ipsm_mem.cpp
  * @author PFA03027@nifty.com
  * @brief
  * @version 0.1
@@ -23,22 +23,22 @@
 
 #include "gtest/gtest.h"
 
-#include "procshared_mem.hpp"
-#include "test_procshared_common.hpp"
+#include "ipsm_mem.hpp"
+#include "test_ipsm_common.hpp"
 
 using namespace ipsm;
 
-const char* p_shm_obj_name = "/my_test_shm_test_procshared_mem";
+const char* p_shm_obj_name = "/my_test_shm_test_ipsm_mem";
 
-TEST( Test_procshared_mem, CanConstruct_CanDestruct )
+TEST( Test_ipsm_mem, CanConstruct_CanDestruct )
 {
 	// Arrange
-	procshared_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
+	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
 	bool test_flag = false;
 
 	// Act
 	ASSERT_NO_THROW(
-		procshared_mem shm_obj(
+		ipsm_mem shm_obj(
 			p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 			[&test_flag]( void* p_mem, off_t len ) -> void* {
 				if ( p_mem == nullptr ) {
@@ -56,12 +56,12 @@ TEST( Test_procshared_mem, CanConstruct_CanDestruct )
 	EXPECT_TRUE( test_flag );
 }
 
-TEST( Test_procshared_mem, CanConstructDefer_CanDestruct )
+TEST( Test_ipsm_mem, CanConstructDefer_CanDestruct )
 {
 	// Arrange
-	procshared_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
+	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
 	bool           test_flag = false;
-	procshared_mem shm_obj;
+	ipsm_mem shm_obj;
 
 	// Act
 	shm_obj.allocate_shm_as_both(
@@ -84,12 +84,12 @@ TEST( Test_procshared_mem, CanConstructDefer_CanDestruct )
 	EXPECT_NE( shm_obj.get(), nullptr );
 }
 
-TEST( Test_procshared_mem, CanConstructDefer_Primary )
+TEST( Test_ipsm_mem, CanConstructDefer_Primary )
 {
 	// Arrange
-	procshared_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
+	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
 	bool           test_flag = false;
-	procshared_mem shm_obj;
+	ipsm_mem shm_obj;
 
 	// Act
 	shm_obj.allocate_shm_as_primary(
@@ -111,12 +111,12 @@ TEST( Test_procshared_mem, CanConstructDefer_Primary )
 
 #if defined( TEST_ENABLE_ADDRESSSANITIZER ) || defined( TEST_ENABLE_LEAKSANITIZER )
 #else
-TEST( Test_procshared_mem, CanConstruct_Secondary )
+TEST( Test_ipsm_mem, CanConstruct_Secondary )
 {
 	// Arrange
-	procshared_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
+	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
 	bool           test_flag = false;
-	procshared_mem shm_obj(
+	ipsm_mem shm_obj(
 		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 		[&test_flag]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
@@ -137,7 +137,7 @@ TEST( Test_procshared_mem, CanConstruct_Secondary )
 
 	// Act
 	std::thread t1( std::move( task1 ), []() -> int {
-		procshared_mem shm_obj_secondary;
+		ipsm_mem shm_obj_secondary;
 		shm_obj_secondary.allocate_shm_as_secondary(
 			p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 			[]( void*, size_t ) { /* 何もしない */ } );
@@ -159,12 +159,12 @@ TEST( Test_procshared_mem, CanConstruct_Secondary )
 	}
 }
 
-TEST( Test_procshared_mem, CanConstructDefer_Secondary )
+TEST( Test_ipsm_mem, CanConstructDefer_Secondary )
 {
 	// Arrange
-	procshared_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
+	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
 	bool           test_flag = false;
-	procshared_mem shm_obj(
+	ipsm_mem shm_obj(
 		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 		[&test_flag]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
@@ -185,7 +185,7 @@ TEST( Test_procshared_mem, CanConstructDefer_Secondary )
 
 	// Act
 	std::thread t1( std::move( task1 ), []() -> int {
-		procshared_mem shm_obj_secondary;
+		ipsm_mem shm_obj_secondary;
 		shm_obj_secondary.allocate_shm_as_secondary(
 			p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 			[]( void*, size_t ) { /* 何もしない */ } );
@@ -207,12 +207,12 @@ TEST( Test_procshared_mem, CanConstructDefer_Secondary )
 	}
 }
 
-TEST( Test_procshared_mem, CanConstruct_Secondary_by_both )
+TEST( Test_ipsm_mem, CanConstruct_Secondary_by_both )
 {
 	// Arrange
-	procshared_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
+	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
 	bool           test_flag = false;
-	procshared_mem shm_obj(
+	ipsm_mem shm_obj(
 		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 		[&test_flag]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
@@ -233,7 +233,7 @@ TEST( Test_procshared_mem, CanConstruct_Secondary_by_both )
 
 	// Act
 	std::thread t1( std::move( task1 ), []() -> int {
-		procshared_mem shm_obj_secondary_by_both(
+		ipsm_mem shm_obj_secondary_by_both(
 			p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 			[]( void* p_mem, off_t len ) -> void* {
 				*( reinterpret_cast<int*>( p_mem ) ) = 22;   // nullptrチェックも行わない
@@ -258,12 +258,12 @@ TEST( Test_procshared_mem, CanConstruct_Secondary_by_both )
 	}
 }
 
-TEST( Test_procshared_mem, CanConstructDefer_Secondary_by_both )
+TEST( Test_ipsm_mem, CanConstructDefer_Secondary_by_both )
 {
 	// Arrange
-	procshared_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
+	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
 	bool           test_flag = false;
-	procshared_mem shm_obj(
+	ipsm_mem shm_obj(
 		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 		[&test_flag]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
@@ -284,7 +284,7 @@ TEST( Test_procshared_mem, CanConstructDefer_Secondary_by_both )
 
 	// Act
 	std::thread t1( std::move( task1 ), []() -> int {
-		procshared_mem shm_obj_secondary;
+		ipsm_mem shm_obj_secondary;
 		shm_obj_secondary.allocate_shm_as_both(
 			p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 			[]( void* p_mem, size_t len ) -> void* {

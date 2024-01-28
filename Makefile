@@ -19,9 +19,9 @@ BUILDTARGET?=common
 BUILDTYPE?=Release
 
 # Select build library type
-# PROCSHARED_BUILD_SHARED_LIBS=OFF -> static library
-# PROCSHARED_BUILD_SHARED_LIBS=ON -> shared library
-PROCSHARED_BUILD_SHARED_LIBS?=OFF
+# IPSM_BUILD_SHARED_LIBS=OFF -> static library
+# IPSM_BUILD_SHARED_LIBS=ON -> shared library
+IPSM_BUILD_SHARED_LIBS?=OFF
 
 # Sanitizer test option:
 # SANITIZER_TYPE= 1 ~ 20 or ""
@@ -40,7 +40,7 @@ JOBS=$(shell expr ${CPUS} + ${CPUS} / 2)
 all: build
 	set -e; \
 	cd ${BUILD_DIR}; \
-	cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=${BUILDTYPE} -DBUILD_TARGET=${BUILDTARGET} -DSANITIZER_TYPE=${SANITIZER_TYPE} -DPROCSHARED_BUILD_SHARED_LIBS=${PROCSHARED_BUILD_SHARED_LIBS} -G "Unix Makefiles" ../; \
+	cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=${BUILDTYPE} -DBUILD_TARGET=${BUILDTARGET} -DSANITIZER_TYPE=${SANITIZER_TYPE} -DIPSM_BUILD_SHARED_LIBS=${IPSM_BUILD_SHARED_LIBS} -G "Unix Makefiles" ../; \
 	cmake --build . -j ${JOBS} -v --target ${BUILDIMPLTARGET}
 
 test: build-test
@@ -49,13 +49,13 @@ test: build-test
 	ctest -j ${JOBS} -v
 
 load-test: test
-	build/test/loadtest_procshared_mem_primary_highload
-	build/test/loadtest_procshared_mem_both_highload
-	build/test/loadtest_procshared_malloc_highload
+	build/test/loadtest_ipsm_mem_primary_highload
+	build/test/loadtest_ipsm_mem_both_highload
+	build/test/loadtest_ipsm_malloc_highload
 
-build/test/loadtest_procshared_malloc_highload: build-test
-build/test/loadtest_procshared_mem_both_highload: build-test
-build/test/loadtest_procshared_mem_primary_highload: build-test
+build/test/loadtest_ipsm_malloc_highload: build-test
+build/test/loadtest_ipsm_mem_both_highload: build-test
+build/test/loadtest_ipsm_mem_primary_highload: build-test
 
 build-test:
 	make BUILDIMPLTARGET=build-test all

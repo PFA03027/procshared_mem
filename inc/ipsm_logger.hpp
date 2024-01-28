@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef PROCSHARED_LOGGER_HPP_
-#define PROCSHARED_LOGGER_HPP_
+#ifndef IPSM_LOGGER_HPP_
+#define IPSM_LOGGER_HPP_
 
 #include <cstdio>
 
@@ -75,4 +75,4 @@ inline void psm_logoutput( psm_log_lv ll, const char* p_fmt )
 
 }   // namespace ipsm
 
-#endif   // PROCSHARED_LOGGER_HPP_
+#endif   // IPSM_LOGGER_HPP_

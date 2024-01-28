@@ -1,5 +1,5 @@
 /**
- * @file test_procshared_mutex.cpp
+ * @file test_ipsm_mutex.cpp
  * @author PFA03027@nifty.com
  * @brief
  * @version 0.1
@@ -14,22 +14,22 @@
 
 #include "gtest/gtest.h"
 
-#include "procshared_mem.hpp"
-#include "procshared_mutex.hpp"
-#include "procshared_recursive_mutex.hpp"
-#include "test_procshared_common.hpp"
+#include "ipsm_mem.hpp"
+#include "ipsm_mutex.hpp"
+#include "ipsm_recursive_mutex.hpp"
+#include "test_ipsm_common.hpp"
 
 using namespace ipsm;
 
-TEST( Test_procshared_mutex, CanConstruct_CanDestruct )
+TEST( Test_ipsm_mutex, CanConstruct_CanDestruct )
 {
-	ASSERT_NO_THROW( procshared_mutex sut );
+	ASSERT_NO_THROW( ipsm_mutex sut );
 }
 
-TEST( Test_procshared_mutex, CanLock_CanTryLock_CanUnlock )
+TEST( Test_ipsm_mutex, CanLock_CanTryLock_CanUnlock )
 {
 	// Arrange
-	procshared_mutex sut;
+	ipsm_mutex sut;
 
 	// Act
 	sut.lock();
@@ -41,10 +41,10 @@ TEST( Test_procshared_mutex, CanLock_CanTryLock_CanUnlock )
 	sut.unlock();
 }
 
-TEST( Test_procshared_mutex, CanTryLock_CanTryLock_CanUnlock )
+TEST( Test_ipsm_mutex, CanTryLock_CanTryLock_CanUnlock )
 {
 	// Arrange
-	procshared_mutex sut;
+	ipsm_mutex sut;
 
 	// Act
 	bool ret = sut.try_lock();
@@ -57,10 +57,10 @@ TEST( Test_procshared_mutex, CanTryLock_CanTryLock_CanUnlock )
 	sut.unlock();
 }
 
-TEST( Test_procshared_mutex, CanNativeHandle )
+TEST( Test_ipsm_mutex, CanNativeHandle )
 {
 	// Arrange
-	procshared_mutex sut;
+	ipsm_mutex sut;
 
 	// Act
 	auto ret = sut.native_handle();
@@ -71,10 +71,10 @@ TEST( Test_procshared_mutex, CanNativeHandle )
 	// Cleanup
 }
 
-TEST( Test_procshared_mutex, CanRecoverByRobustnessViaLock )
+TEST( Test_ipsm_mutex, CanRecoverByRobustnessViaLock )
 {
 	// Arrange
-	procshared_mutex sut;
+	ipsm_mutex sut;
 	std::thread      lock_owner_terminating( [&sut]( void ) {
         sut.lock();
     } );
@@ -89,10 +89,10 @@ TEST( Test_procshared_mutex, CanRecoverByRobustnessViaLock )
 	sut.unlock();
 }
 
-TEST( Test_procshared_mutex, CanRecoverByRobustnessViaTryLock )
+TEST( Test_ipsm_mutex, CanRecoverByRobustnessViaTryLock )
 {
 	// Arrange
-	procshared_mutex sut;
+	ipsm_mutex sut;
 	std::thread      lock_owner_terminating( [&sut]( void ) {
         sut.lock();
     } );
@@ -110,10 +110,10 @@ TEST( Test_procshared_mutex, CanRecoverByRobustnessViaTryLock )
 }
 
 #ifdef ENABLE_PTHREAD_MUTEX_ERRORTYPE
-TEST( Test_procshared_mutex, CanDetectDeadLock )
+TEST( Test_ipsm_mutex, CanDetectDeadLock )
 {
 	// Arrange
-	procshared_mutex sut;
+	ipsm_mutex sut;
 	sut.lock();
 
 	// Act
@@ -127,15 +127,15 @@ TEST( Test_procshared_mutex, CanDetectDeadLock )
 #else
 #endif
 
-TEST( Test_procshared_recursive_mutex, CanConstruct_CanDestruct )
+TEST( Test_ipsm_recursive_mutex, CanConstruct_CanDestruct )
 {
-	ASSERT_NO_THROW( procshared_recursive_mutex sut );
+	ASSERT_NO_THROW( ipsm_recursive_mutex sut );
 }
 
-TEST( Test_procshared_recursive_mutex, CanLock_CanTryLock_CanUnlock )
+TEST( Test_ipsm_recursive_mutex, CanLock_CanTryLock_CanUnlock )
 {
 	// Arrange
-	procshared_recursive_mutex sut;
+	ipsm_recursive_mutex sut;
 
 	// Act
 	sut.lock();
@@ -148,10 +148,10 @@ TEST( Test_procshared_recursive_mutex, CanLock_CanTryLock_CanUnlock )
 	sut.unlock();
 }
 
-TEST( Test_procshared_recursive_mutex, CanTryLock_CanTryLock_CanUnlock )
+TEST( Test_ipsm_recursive_mutex, CanTryLock_CanTryLock_CanUnlock )
 {
 	// Arrange
-	procshared_recursive_mutex sut;
+	ipsm_recursive_mutex sut;
 
 	// Act
 	bool ret = sut.try_lock();
@@ -165,10 +165,10 @@ TEST( Test_procshared_recursive_mutex, CanTryLock_CanTryLock_CanUnlock )
 	sut.unlock();
 }
 
-TEST( Test_procshared_recursive_mutex, CanLock_OtherThreadCanTryLock_CanUnlock )
+TEST( Test_ipsm_recursive_mutex, CanLock_OtherThreadCanTryLock_CanUnlock )
 {
 	// Arrange
-	procshared_recursive_mutex sut;
+	ipsm_recursive_mutex sut;
 	sut.lock();
 	std::packaged_task<bool()> task( [&sut]() { return sut.try_lock(); } );   // 非同期実行する関数を登録する
 	std::future<bool>          f = task.get_future();
@@ -186,10 +186,10 @@ TEST( Test_procshared_recursive_mutex, CanLock_OtherThreadCanTryLock_CanUnlock )
 	sut.unlock();
 }
 
-TEST( Test_procshared_recursive_mutex, CanTryLock_OtherThreadCanTryLock_CanUnlock )
+TEST( Test_ipsm_recursive_mutex, CanTryLock_OtherThreadCanTryLock_CanUnlock )
 {
 	// Arrange
-	procshared_recursive_mutex sut;
+	ipsm_recursive_mutex sut;
 	sut.try_lock();
 	std::packaged_task<bool()> task( [&sut]() { return sut.try_lock(); } );   // 非同期実行する関数を登録する
 	std::future<bool>          f = task.get_future();
@@ -207,10 +207,10 @@ TEST( Test_procshared_recursive_mutex, CanTryLock_OtherThreadCanTryLock_CanUnloc
 	sut.unlock();
 }
 
-TEST( Test_procshared_recursive_mutex, CanNativeHandle )
+TEST( Test_ipsm_recursive_mutex, CanNativeHandle )
 {
 	// Arrange
-	procshared_recursive_mutex sut;
+	ipsm_recursive_mutex sut;
 
 	// Act
 	auto ret = sut.native_handle();
@@ -221,10 +221,10 @@ TEST( Test_procshared_recursive_mutex, CanNativeHandle )
 	// Cleanup
 }
 
-TEST( Test_procshared_recursive_mutex, CanRecoverByRobustnessViaLock )
+TEST( Test_ipsm_recursive_mutex, CanRecoverByRobustnessViaLock )
 {
 	// Arrange
-	procshared_recursive_mutex sut;
+	ipsm_recursive_mutex sut;
 	std::thread                lock_owner_terminating( [&sut]( void ) {
         sut.lock();
     } );
@@ -239,10 +239,10 @@ TEST( Test_procshared_recursive_mutex, CanRecoverByRobustnessViaLock )
 	sut.unlock();
 }
 
-TEST( Test_procshared_recursive_mutex, CanRecoverByRobustnessViaTryLock )
+TEST( Test_ipsm_recursive_mutex, CanRecoverByRobustnessViaTryLock )
 {
 	// Arrange
-	procshared_recursive_mutex sut;
+	ipsm_recursive_mutex sut;
 	std::thread                lock_owner_terminating( [&sut]( void ) {
         sut.lock();
     } );
@@ -262,13 +262,13 @@ TEST( Test_procshared_recursive_mutex, CanRecoverByRobustnessViaTryLock )
 #if defined( TEST_ENABLE_ADDRESSSANITIZER ) || defined( TEST_ENABLE_LEAKSANITIZER )
 #else
 //===========================================
-const char* p_shm_obj_name = "/my_test_shm_test_procshared_mutex";
+const char* p_shm_obj_name = "/my_test_shm_test_ipsm_mutex";
 
-TEST( Test_procshared_mutex_bw_proc, CanLock_CanTryLock_CanUnlock )
+TEST( Test_ipsm_mutex_bw_proc, CanLock_CanTryLock_CanUnlock )
 {
 	// Arrange
-	procshared_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
-	procshared_mem shm_obj(
+	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
+	ipsm_mem shm_obj(
 		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 		[]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
@@ -277,11 +277,11 @@ TEST( Test_procshared_mutex_bw_proc, CanLock_CanTryLock_CanUnlock )
 			if ( len < 4096 ) {
 				return nullptr;
 			}
-			[[maybe_unused]] procshared_mutex* p_ps_mtx = new ( p_mem ) procshared_mutex();
+			[[maybe_unused]] ipsm_mutex* p_ps_mtx = new ( p_mem ) ipsm_mutex();
 			return nullptr;
 		},
 		[]( void*, size_t ) { /* 何もしない */ } );
-	procshared_mutex* p_ps_mtx = reinterpret_cast<procshared_mutex*>( shm_obj.get() );
+	ipsm_mutex* p_ps_mtx = reinterpret_cast<ipsm_mutex*>( shm_obj.get() );
 	p_ps_mtx->lock();
 
 	std::packaged_task<child_proc_return_t( std::function<int()> )> task1( call_pred_on_child_process );   // 非同期実行する関数を登録する
@@ -289,14 +289,14 @@ TEST( Test_procshared_mutex_bw_proc, CanLock_CanTryLock_CanUnlock )
 
 	// Act
 	std::thread t1( std::move( task1 ), []() -> int {
-		procshared_mem shm_obj_secondary;
+		ipsm_mem shm_obj_secondary;
 		shm_obj_secondary.allocate_shm_as_secondary(
 			p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 			[]( void*, size_t ) { /* 何もしない */ } );
 		if ( not shm_obj_secondary.debug_test_integrity() ) {
 			return 1;
 		}
-		procshared_mutex* p_ps_mtx = reinterpret_cast<procshared_mutex*>( shm_obj_secondary.get() );
+		ipsm_mutex* p_ps_mtx = reinterpret_cast<ipsm_mutex*>( shm_obj_secondary.get() );
 
 		return ( p_ps_mtx->try_lock() ) ? 2 : 3;
 	} );
@@ -315,11 +315,11 @@ TEST( Test_procshared_mutex_bw_proc, CanLock_CanTryLock_CanUnlock )
 	p_ps_mtx->unlock();
 }
 
-TEST( Test_procshared_recursive_mutex_bw_proc, CanLock_CanTryLock_CanUnlock )
+TEST( Test_ipsm_recursive_mutex_bw_proc, CanLock_CanTryLock_CanUnlock )
 {
 	// Arrange
-	procshared_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
-	procshared_mem shm_obj(
+	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
+	ipsm_mem shm_obj(
 		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 		[]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
@@ -328,11 +328,11 @@ TEST( Test_procshared_recursive_mutex_bw_proc, CanLock_CanTryLock_CanUnlock )
 			if ( len < 4096 ) {
 				return nullptr;
 			}
-			[[maybe_unused]] procshared_recursive_mutex* p_ps_mtx = new ( p_mem ) procshared_recursive_mutex();
+			[[maybe_unused]] ipsm_recursive_mutex* p_ps_mtx = new ( p_mem ) ipsm_recursive_mutex();
 			return nullptr;
 		},
 		[]( void*, size_t ) { /* 何もしない */ } );
-	procshared_recursive_mutex* p_ps_mtx = reinterpret_cast<procshared_recursive_mutex*>( shm_obj.get() );
+	ipsm_recursive_mutex* p_ps_mtx = reinterpret_cast<ipsm_recursive_mutex*>( shm_obj.get() );
 	p_ps_mtx->lock();
 
 	std::packaged_task<child_proc_return_t( std::function<int()> )> task1( call_pred_on_child_process );   // 非同期実行する関数を登録する
@@ -340,14 +340,14 @@ TEST( Test_procshared_recursive_mutex_bw_proc, CanLock_CanTryLock_CanUnlock )
 
 	// Act
 	std::thread t1( std::move( task1 ), []() -> int {
-		procshared_mem shm_obj_secondary;
+		ipsm_mem shm_obj_secondary;
 		shm_obj_secondary.allocate_shm_as_secondary(
 			p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 			[]( void*, size_t ) { /* 何もしない */ } );
 		if ( not shm_obj_secondary.debug_test_integrity() ) {
 			return 1;
 		}
-		procshared_recursive_mutex* p_ps_mtx = reinterpret_cast<procshared_recursive_mutex*>( shm_obj_secondary.get() );
+		ipsm_recursive_mutex* p_ps_mtx = reinterpret_cast<ipsm_recursive_mutex*>( shm_obj_secondary.get() );
 
 		return ( p_ps_mtx->try_lock() ) ? 2 : 3;
 	} );

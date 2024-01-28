@@ -13,7 +13,7 @@
 
 #include "offset_mallloc_impl.hpp"
 
-#include "test_procshared_common.hpp"
+#include "test_ipsm_common.hpp"
 
 using namespace ipsm;
 

@@ -1,5 +1,5 @@
 /**
- * @file procshared_mem_internal.hpp
+ * @file ipsm_mem_internal.hpp
  * @author PFA03027@nifty.com
  * @brief async open/close shared memory object
  * @version 0.1
@@ -32,8 +32,8 @@
 #include <unistd.h>
 
 #include "misc_utility.hpp"
-#include "procshared_logger.hpp"
-#include "procshared_mem.hpp"
+#include "ipsm_logger.hpp"
+#include "ipsm_mem.hpp"
 
 namespace ipsm {
 
@@ -165,7 +165,7 @@ private:
 				auto cur_errno = errno;
 				char buff[1024];
 				snprintf( buff, 1024, "Error: Fail sem_open(%s, O_CREAT | O_EXCL | O_RDWR | O_CLOEXEC, %x, 0): ", sem_name_.c_str(), mode_arg );
-				throw procshared_mem_error( cur_errno, buff );
+				throw ipsm_mem_error( cur_errno, buff );
 			} else {
 				psm_logoutput( psm_log_lv::kDebug, "Debug: semaphore(%s) already exist", sem_name_.c_str() );
 			}
@@ -181,7 +181,7 @@ private:
 				auto cur_errno = errno;
 				char buff[1024];
 				snprintf( buff, 1024, "Error: Fail sem_open(%s, O_RDWR | O_CLOEXEC)", sem_name_.c_str() );
-				throw procshared_mem_error( cur_errno, buff );
+				throw ipsm_mem_error( cur_errno, buff );
 			} else {
 				psm_logoutput( psm_log_lv::kDebug, "Debug: semaphore(%s) is no entry", sem_name_.c_str() );
 			}
@@ -330,7 +330,7 @@ private:
 		if ( p_sem_ == SEM_FAILED ) {
 			char buff[1024];
 			snprintf( buff, 1024, "unexpected calling call_sem_wait() by this=%p", this );
-			throw procshared_mem_error( buff );
+			throw ipsm_mem_error( buff );
 		}
 
 		int ret = sem_wait( p_sem_ );
@@ -338,7 +338,7 @@ private:
 			auto cur_errno = errno;
 			char buff[1024];
 			snprintf( buff, 1024, " by sem_wait(%p)", p_sem_ );
-			throw procshared_mem_error( cur_errno, buff );
+			throw ipsm_mem_error( cur_errno, buff );
 		}
 
 		owns_acquire_flag_ = true;
@@ -348,7 +348,7 @@ private:
 		if ( p_sem_ == SEM_FAILED ) {
 			char buff[1024];
 			snprintf( buff, 1024, "unexpected calling call_sem_trywait() by this=%p", this );
-			throw procshared_mem_error( buff );
+			throw ipsm_mem_error( buff );
 		}
 
 		int ret = sem_trywait( p_sem_ );
@@ -359,7 +359,7 @@ private:
 			if ( cur_errno != EAGAIN ) {
 				char buff[1024];
 				snprintf( buff, 1024, " by sem_trywait(%p)\n", p_sem_ );
-				throw procshared_mem_error( cur_errno, buff );
+				throw ipsm_mem_error( cur_errno, buff );
 			}
 
 			psm_logoutput( psm_log_lv::kErr, "Error: sem_trywait(%p), but semaphore value is already 0(Zero)", p_sem_ );

@@ -1,5 +1,5 @@
 /**
- * @file procshared_time_util.cpp
+ * @file ipsm_time_util.cpp
  * @author Teruaki Ata (PFA03027@nifty.com)
  * @brief
  * @version 0.1
@@ -15,7 +15,7 @@
 
 #include <pthread.h>
 
-#include "procshared_time_util.hpp"
+#include "ipsm_time_util.hpp"
 
 namespace ipsm {
 

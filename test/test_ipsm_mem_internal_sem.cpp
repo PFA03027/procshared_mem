@@ -1,5 +1,5 @@
 /**
- * @file test_procshared_mem.cpp
+ * @file test_ipsm_mem.cpp
  * @author PFA03027@nifty.com
  * @brief
  * @version 0.1
@@ -24,14 +24,14 @@
 #include "gtest/gtest.h"
 
 #include "misc_utility.hpp"
-#include "procshared_mem.hpp"
-#include "procshared_mem_internal.hpp"
+#include "ipsm_mem.hpp"
+#include "ipsm_mem_internal.hpp"
 #include "semaphore_mutex.hpp"
-#include "test_procshared_common.hpp"
+#include "test_ipsm_common.hpp"
 
 using namespace ipsm;
 
-constexpr const char* const p_shm_name = "/my_test_procshared_mem_internal_sem";
+constexpr const char* const p_shm_name = "/my_test_ipsm_mem_internal_sem";
 
 TEST( Test_semaphore_resource_handler, CanDefaultConstruct_CanDestruct )
 {

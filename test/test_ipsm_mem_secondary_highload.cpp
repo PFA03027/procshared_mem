@@ -1,5 +1,5 @@
 /**
- * @file test_procshared_mem.cpp
+ * @file test_ipsm_mem.cpp
  * @author your name (you@domain.com)
  * @brief
  * @version 0.1
@@ -18,7 +18,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include "procshared_mem.hpp"
+#include "ipsm_mem.hpp"
 
 using namespace ipsm;
 
@@ -30,7 +30,7 @@ int main( void )
 	{
 		// child process side
 		try {
-			procshared_mem shm_obj(
+			ipsm_mem shm_obj(
 				p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 				[]( void* p_mem, size_t len ) -> void* {
 					std::atomic<unsigned char>* p_data = reinterpret_cast<std::atomic<unsigned char>*>( p_mem );
@@ -53,7 +53,7 @@ int main( void )
 			exit_code                          = p_data->load();
 			// std::this_thread::sleep_for( std::chrono::milliseconds( 10 ) );
 		} catch ( std::runtime_error& e ) {
-			fprintf( stderr, "procshared_mem throws std::runtime_error %s\n", e.what() );
+			fprintf( stderr, "ipsm_mem throws std::runtime_error %s\n", e.what() );
 			abort();
 		}
 		if ( exit_code != 122 ) {

@@ -1,5 +1,5 @@
 /**
- * @file procshared_malloc.hpp
+ * @file ipsm_malloc.hpp
  * @author PFA03027@nifty.com
  * @brief memory allocator from procshared memory
  * @version 0.1
@@ -9,28 +9,28 @@
  *
  */
 
-#ifndef PROCSHARED_MALLOC_HPP_
-#define PROCSHARED_MALLOC_HPP_
+#ifndef IPSM_MALLOC_HPP_
+#define IPSM_MALLOC_HPP_
 
 #include <cstddef>
 
 #include "offset_allocator.hpp"
 #include "offset_list.hpp"
 #include "offset_malloc.hpp"
-#include "procshared_condition_variable.hpp"
-#include "procshared_mem.hpp"
-#include "procshared_mutex.hpp"
+#include "ipsm_condition_variable.hpp"
+#include "ipsm_mem.hpp"
+#include "ipsm_mutex.hpp"
 
 namespace ipsm {
 
 struct msg_channel;
 
-class procshared_malloc {
+class ipsm_malloc {
 public:
-	procshared_malloc( void );
-	~procshared_malloc();
-	procshared_malloc( procshared_malloc&& src ) = default;
-	procshared_malloc& operator=( procshared_malloc&& src );
+	ipsm_malloc( void );
+	~ipsm_malloc();
+	ipsm_malloc( ipsm_malloc&& src ) = default;
+	ipsm_malloc& operator=( ipsm_malloc&& src );
 
 	/**
 	 * @brief Construct and allocate a new cooperative startup shared memory object
@@ -48,7 +48,7 @@ public:
 	 *
 	 * @note p_shm_name string AAA must follow POSIX semaphore name specifications. please refer sem_open or sem_overview
 	 */
-	procshared_malloc( const char* p_shm_name, const char* p_id_dirname, size_t length, mode_t mode );
+	ipsm_malloc( const char* p_shm_name, const char* p_id_dirname, size_t length, mode_t mode );
 
 #if __has_cpp_attribute( nodiscard )
 	[[nodiscard]]
@@ -68,24 +68,24 @@ public:
 	static unsigned int channel_size( void );
 
 private:
-	procshared_malloc( const procshared_malloc& src )            = delete;
-	procshared_malloc& operator=( const procshared_malloc& src ) = delete;
+	ipsm_malloc( const ipsm_malloc& src )            = delete;
+	ipsm_malloc& operator=( const ipsm_malloc& src ) = delete;
 
-	void swap( procshared_malloc& src );
+	void swap( ipsm_malloc& src );
 
-	procshared_mem shm_obj_;    //!< shared memory object. this member variable declaration order required like procshared_mem, then offset_malloc
-	offset_malloc  shm_heap_;   //!< offset base memory allocator on shared memory. this member variable declaration order required like procshared_mem, then offset_malloc
+	ipsm_mem shm_obj_;    //!< shared memory object. this member variable declaration order required like ipsm_mem, then offset_malloc
+	offset_malloc  shm_heap_;   //!< offset base memory allocator on shared memory. this member variable declaration order required like ipsm_mem, then offset_malloc
 	msg_channel*   p_msgch_;
 };
 
 ////////////////////////////////////////////////////////////////////
 // Implement
 template <typename T>
-offset_allocator<T> procshared_malloc::get_allocator( void )
+offset_allocator<T> ipsm_malloc::get_allocator( void )
 {
 	return offset_allocator<T>( shm_heap_ );   // NOLINT(clang-diagnostic-error)
 }
 
 }   // namespace ipsm
 
-#endif   // PROCSHARED_MALLOC_HPP_
+#endif   // IPSM_MALLOC_HPP_
