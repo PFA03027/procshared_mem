@@ -49,8 +49,9 @@ void lockfile_mutex::debug_force_cleanup( const char* p_lockfilename )
 	}
 }
 
-lockfile_mutex::lockfile_mutex( const char* p_lockfilename )
+lockfile_mutex::lockfile_mutex( const char* p_lockfilename, mode_t mode_arg )
   : lockfilename_( ( p_lockfilename == nullptr ) ? "" : p_lockfilename )
+  , file_access_permission_( mode_arg )
   , lockfilefd_( invalid_fd )
 {
 	if ( p_lockfilename == nullptr ) {
@@ -68,9 +69,11 @@ lockfile_mutex::~lockfile_mutex()
 
 lockfile_mutex::lockfile_mutex( lockfile_mutex&& src )
   : lockfilename_( std::move( src.lockfilename_ ) )
+  , file_access_permission_( src.file_access_permission_ )
   , lockfilefd_( src.lockfilefd_ )
 {
-	src.lockfilefd_ = invalid_fd;
+	src.lockfilefd_             = invalid_fd;
+	src.file_access_permission_ = 0;
 	src.lockfilename_.clear();
 }
 lockfile_mutex& lockfile_mutex::operator=( lockfile_mutex&& src )
@@ -117,11 +120,11 @@ bool lockfile_mutex::try_create_lockfile( void )
 {
 	bool ans = false;
 	if ( is_valid_fd( lockfilefd_ ) ) {
-		psm_logoutput( psm_log_lv::kWarn, "lockfile(%s) is already acquired. this means dual lock is happened", lockfilename_.c_str() );
+		psm_logoutput( psm_log_lv::kWarn, "Warning: lockfile(%s) is already acquired. this means dual lock is happened", lockfilename_.c_str() );
 		return false;
 	}
 
-	int tmpfd = open( lockfilename_.c_str(), O_RDWR | O_CLOEXEC | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
+	int tmpfd = open( lockfilename_.c_str(), O_RDWR | O_CLOEXEC | O_CREAT | O_EXCL, file_access_permission_ );
 	if ( tmpfd >= 0 ) {
 		lockfilefd_ = tmpfd;
 		ans         = true;

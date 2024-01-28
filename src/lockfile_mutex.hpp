@@ -14,12 +14,16 @@
 
 #include <string>
 
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
 // interprocess shared memory
 // namespace ipsm {
 
 class lockfile_mutex {
 public:
-	lockfile_mutex( const char* p_lockfilename );
+	lockfile_mutex( const char* p_lockfilename, mode_t mode_arg = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 	~lockfile_mutex();
 	lockfile_mutex( lockfile_mutex&& src );
 	lockfile_mutex& operator=( lockfile_mutex&& src );
@@ -40,6 +44,7 @@ private:
 	void discard_lockfile( void );
 
 	std::string lockfilename_;
+	mode_t      file_access_permission_;
 	int         lockfilefd_;
 };
 
