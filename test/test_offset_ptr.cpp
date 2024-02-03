@@ -18,6 +18,8 @@
 
 #include "offset_ptr.hpp"
 
+#include "test_ipsm_common.hpp"
+
 using namespace ipsm;
 
 #if ( __cpp_concepts >= 201907L )
@@ -161,11 +163,6 @@ TEST( OffsetPtr, CanSwap2 )
 	EXPECT_EQ( op_a.get(), &b );
 	EXPECT_EQ( op_b.get(), &a );
 }
-
-struct ArrowOpTest {
-	int x_;
-	int y_;
-};
 
 TEST( OffsetPtr, CanArrowOperator )
 {

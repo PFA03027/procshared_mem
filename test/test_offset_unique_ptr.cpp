@@ -16,12 +16,9 @@
 
 #include "offset_unique_ptr.hpp"
 
-using namespace ipsm;
+#include "test_ipsm_common.hpp"
 
-struct ArrowOpTest {
-	int x_;
-	int y_;
-};
+using namespace ipsm;
 
 template <typename T>
 struct test_no_deleter {

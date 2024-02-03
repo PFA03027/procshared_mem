@@ -16,16 +16,9 @@
 
 #include "offset_shared_ptr.hpp"
 
+#include "test_ipsm_common.hpp"
+
 using namespace ipsm;
-
-struct ArrowOpTest {
-	int x_;
-	int y_;
-};
-
-struct DerivedArrowOpTest : public ArrowOpTest {
-	int z_;
-};
 
 TEST( TestOffsetSharedPtr, CanDoDefaultConstruct )
 {

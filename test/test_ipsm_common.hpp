@@ -14,6 +14,15 @@
 
 #include <functional>
 
+struct ArrowOpTest {
+	int x_;
+	int y_;
+};
+
+struct DerivedArrowOpTest : public ArrowOpTest {
+	int z_;
+};
+
 struct child_proc_return_t {
 	bool          is_exit_normaly_;
 	unsigned char exit_code_;
