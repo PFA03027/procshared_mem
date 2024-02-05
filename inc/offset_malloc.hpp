@@ -27,10 +27,10 @@ public:
 	{
 	}
 	~offset_malloc();
-	offset_malloc( const offset_malloc& src );              // bind to memory allocator that has already setup
-	offset_malloc( offset_malloc&& src );                   // bind to memory allocator that has already setup
-	offset_malloc& operator=( const offset_malloc& src );   // bind to memory allocator that has already setup
-	offset_malloc& operator=( offset_malloc&& src );        // bind to memory allocator that has already setup
+	offset_malloc( const offset_malloc& src );                  // bind to memory allocator that has already setup
+	offset_malloc( offset_malloc&& src ) noexcept;              // bind to memory allocator that has already setup
+	offset_malloc& operator=( const offset_malloc& src );       // bind to memory allocator that has already setup
+	offset_malloc& operator=( offset_malloc&& src ) noexcept;   // bind to memory allocator that has already setup
 
 	explicit offset_malloc( void* p_mem, size_t mem_bytes );   // bind and setup memory allocator implementation. caution: this instance does not become not p_mem area owner.
 	explicit offset_malloc( void* p_mem );                     // bind to memory allocator that has already setup. caution: this instance does not become not p_mem area owner.

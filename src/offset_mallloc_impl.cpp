@@ -12,10 +12,10 @@
 #include <cstddef>
 #include <mutex>
 
+#include "ipsm_logger.hpp"
 #include "offset_mallloc_impl.hpp"
 #include "offset_malloc.hpp"
 #include "offset_ptr.hpp"
-#include "ipsm_logger.hpp"
 
 namespace ipsm {
 
@@ -281,7 +281,7 @@ offset_malloc::offset_malloc_impl* offset_malloc::offset_malloc_impl::bind( offs
 	return p_mem;
 }
 
-bool offset_malloc::offset_malloc_impl::teardown( offset_malloc::offset_malloc_impl* p_mem )
+bool offset_malloc::offset_malloc_impl::teardown( offset_malloc::offset_malloc_impl* p_mem ) noexcept
 {
 	if ( p_mem == nullptr ) {
 		return false;

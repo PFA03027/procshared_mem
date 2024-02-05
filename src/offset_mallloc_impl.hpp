@@ -14,10 +14,10 @@
 
 #include <cstddef>
 
-#include "offset_malloc.hpp"
-#include "offset_ptr.hpp"
 #include "ipsm_logger.hpp"
 #include "ipsm_mutex.hpp"
+#include "offset_malloc.hpp"
+#include "offset_ptr.hpp"
 
 namespace ipsm {
 
@@ -34,7 +34,7 @@ class offset_malloc::offset_malloc_impl {
 public:
 	static offset_malloc_impl* placement_new( void* begin_pointer, void* end_pointer );
 	static offset_malloc_impl* bind( offset_malloc_impl* p_mem );
-	static bool                teardown( offset_malloc_impl* p_mem );
+	static bool                teardown( offset_malloc_impl* p_mem ) noexcept;
 
 #if __has_cpp_attribute( nodiscard )
 	[[nodiscard]]
@@ -145,7 +145,7 @@ private:
 	static constexpr size_t bytes2blocksize( size_t bytes );
 
 	const offset_ptr<unsigned char> op_end_;
-	mutable ipsm_mutex        mtx_;
+	mutable ipsm_mutex              mtx_;
 	int                             bind_cnt_;
 	offset_ptr<block>               op_freep_;
 	block                           base_blk_;   //!< bigger address of this member variable is allocation memory area

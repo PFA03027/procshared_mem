@@ -4,7 +4,7 @@ set(CMAKE_VERBOSE_MAKEFILE 1)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 
-set(CMAKE_UNITY_BUILD TRUE)
+# set(CMAKE_UNITY_BUILD TRUE)
 
 # Switch build target
 set(BUILD_TARGET common CACHE STRING "Build target?")

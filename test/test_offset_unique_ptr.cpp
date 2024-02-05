@@ -11,6 +11,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <memory>
 
 #include "gtest/gtest.h"
 
@@ -544,4 +545,33 @@ TEST( OffsetBasedUniquePtr, CanOperatorsWithNullPtr )
 
 	EXPECT_TRUE( ( oup_sut >= nullptr ) );
 	EXPECT_FALSE( ( nullptr >= oup_sut ) );
+}
+
+TEST( AllocateUniquePtrAllocatorDeleter, CanCallWithStdAllocatorStdDefaultDeleter )
+{
+	// Arrange
+	using sut_type = int;
+	auto alloc     = std::allocator<sut_type>();
+
+	// Act
+	offset_unique_ptr<sut_type, deleter_by_allocator<sut_type, std::allocator<sut_type>>> oup_sut = allocate_offset_unique_deleter<sut_type>( alloc, 10 );
+
+	// Assert
+	EXPECT_EQ( *oup_sut, 10 );
+}
+
+TEST( AllocateUniquePtrAllocatorDeleter, CanCallWithOffsetAllocatorOffsetDeleterOnOffsetMalloc )
+{
+	// Arrange
+	using sut_type = int;
+	unsigned char test_buff[1024];
+	void*         p_mem = reinterpret_cast<void*>( test_buff );
+	offset_malloc mem_alloc( p_mem, 1024 );
+	auto          alloc = offset_allocator<sut_type>( mem_alloc );
+
+	// Act
+	offset_unique_ptr<sut_type, deleter_by_allocator<sut_type, offset_allocator<sut_type>>> oup_sut = allocate_offset_unique_deleter<sut_type>( alloc, 10 );
+
+	// Assert
+	EXPECT_EQ( *oup_sut, 10 );
 }

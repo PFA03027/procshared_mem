@@ -15,6 +15,7 @@
 #include <memory>
 #include <type_traits>
 
+#include "offset_allocator.hpp"
 #include "offset_ptr.hpp"
 
 namespace ipsm {
@@ -51,8 +52,7 @@ public:
 	{
 	}
 	constexpr offset_unique_ptr( std::nullptr_t ) noexcept
-	  : op_target_( nullptr )
-	  , deleter_()
+	  : offset_unique_ptr()
 	{
 	}
 
@@ -178,6 +178,9 @@ public:
 private:
 	offset_ptr<T> op_target_;
 	D             deleter_;
+
+	template <typename U, typename E>
+	friend class offset_unique_ptr;
 };
 
 /**
@@ -470,6 +473,25 @@ template <class T, class... Args>
 constexpr offset_unique_ptr<T> make_offset_unique( Args&&... args )
 {
 	return offset_unique_ptr<T>( new T( std::forward<Args>( args )... ) );
+}
+
+template <class T, class Allocator, class... Args>
+auto allocate_offset_unique_deleter( Allocator& a, Args&&... args ) -> offset_unique_ptr<T, deleter_by_allocator<T, typename std::allocator_traits<Allocator>::template rebind_alloc<T>>>
+{
+	using Ts_allocator        = typename std::allocator_traits<Allocator>::template rebind_alloc<T>;
+	using Ts_allocator_traits = typename std::allocator_traits<Allocator>::template rebind_traits<T>;
+	using Ts_deleter          = deleter_by_allocator<T, Ts_allocator>;
+
+	Ts_allocator ts_alloc( a );
+
+	T* p = Ts_allocator_traits::allocate( ts_alloc, 1 );
+	try {
+		Ts_allocator_traits::construct( ts_alloc, p, std::forward<Args>( args )... );
+	} catch ( ... ) {
+		Ts_allocator_traits::deallocate( ts_alloc, p, 1 );
+		throw;
+	}
+	return offset_unique_ptr<T, Ts_deleter>( p, Ts_deleter( ts_alloc ) );
 }
 
 }   // namespace ipsm

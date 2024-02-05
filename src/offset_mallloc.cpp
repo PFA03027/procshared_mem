@@ -9,9 +9,9 @@
  *
  */
 
+#include "ipsm_logger.hpp"
 #include "offset_mallloc_impl.hpp"
 #include "offset_malloc.hpp"
-#include "ipsm_logger.hpp"
 
 namespace ipsm {
 
@@ -26,7 +26,7 @@ offset_malloc::offset_malloc( const offset_malloc& src )
 {
 }
 
-offset_malloc::offset_malloc( offset_malloc&& src )
+offset_malloc::offset_malloc( offset_malloc&& src ) noexcept
   : p_impl_( src.p_impl_ )   // NOLINT(cert-oop11-cpp)
 {
 	src.p_impl_ = nullptr;   // p_impl_は基本型なので、move機能を持たない。よって、移動済みリソースを指すポインタをnullptrに更新する。
@@ -42,7 +42,7 @@ offset_malloc& offset_malloc::operator=( const offset_malloc& src )
 	return *this;
 }
 
-offset_malloc& offset_malloc::operator=( offset_malloc&& src )
+offset_malloc& offset_malloc::operator=( offset_malloc&& src ) noexcept
 {
 	if ( this == &src ) return *this;
 

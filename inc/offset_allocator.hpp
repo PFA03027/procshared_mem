@@ -89,6 +89,38 @@ constexpr bool operator!=( const offset_allocator<T>& a, const offset_allocator<
 	return ( a.my_allocator_ != b.my_allocator_ );
 }
 
+template <typename T, typename Allocator>
+class deleter_by_allocator {
+public:
+	deleter_by_allocator( const Allocator& alloc_arg )
+	  : alloc_( alloc_arg )
+	{
+	}
+
+	template <typename U = T, typename AllocatorU = Allocator>
+	deleter_by_allocator( const deleter_by_allocator<U, AllocatorU>& other )
+	  : alloc_( other.alloc_ )
+	{
+	}
+
+	~deleter_by_allocator() = default;
+
+	void operator()( T* ptr )
+	{
+		Ts_allocator_traits::destroy( alloc_, ptr );
+		Ts_allocator_traits::deallocate( alloc_, ptr, 1 );
+	}
+
+private:
+	using Ts_allocator        = typename std::allocator_traits<Allocator>::template rebind_alloc<T>;
+	using Ts_allocator_traits = typename std::allocator_traits<Allocator>::template rebind_traits<T>;
+
+	Ts_allocator alloc_;
+
+	template <typename U, typename E>
+	friend class deleter_by_allocator;
+};
+
 //////////////////////////////////////////////////////////////////////////////
 // implementation
 
