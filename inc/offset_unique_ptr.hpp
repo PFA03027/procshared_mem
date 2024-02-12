@@ -476,7 +476,7 @@ constexpr offset_unique_ptr<T> make_offset_unique( Args&&... args )
 }
 
 template <class T, class Allocator, class... Args>
-auto allocate_offset_unique_deleter( Allocator& a, Args&&... args ) -> offset_unique_ptr<T, deleter_by_allocator<T, typename std::allocator_traits<Allocator>::template rebind_alloc<T>>>
+auto allocate_offset_unique_deleter( const Allocator& a, Args&&... args ) -> offset_unique_ptr<T, deleter_by_allocator<T, typename std::allocator_traits<Allocator>::template rebind_alloc<T>>>
 {
 	using Ts_allocator        = typename std::allocator_traits<Allocator>::template rebind_alloc<T>;
 	using Ts_allocator_traits = typename std::allocator_traits<Allocator>::template rebind_traits<T>;
