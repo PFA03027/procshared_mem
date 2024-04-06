@@ -9,6 +9,8 @@
  *
  */
 
+#include <cerrno>
+
 #include <chrono>
 #include <mutex>
 #include <random>
@@ -20,9 +22,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "ipsm_logger.hpp"
 #include "lockfile_mutex.hpp"
 #include "misc_utility.hpp"
-#include "ipsm_logger.hpp"
 
 namespace ipsm {
 

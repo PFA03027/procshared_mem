@@ -9,6 +9,8 @@
  *
  */
 
+#include <cerrno>
+
 #include <atomic>
 #include <chrono>
 #include <functional>
@@ -29,12 +31,12 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "lockfile_mutex.hpp"
-#include "misc_utility.hpp"
-#include "offset_ptr.hpp"
 #include "ipsm_logger.hpp"
 #include "ipsm_mem.hpp"
 #include "ipsm_mem_internal.hpp"
+#include "lockfile_mutex.hpp"
+#include "misc_utility.hpp"
+#include "offset_ptr.hpp"
 #include "semaphore_mutex.hpp"
 
 namespace ipsm {
@@ -181,7 +183,7 @@ private:
 	id_file_resource_handler                   id_res_;
 	shm_resource_handler                       shm_res_;
 	std::function<void( bool, void*, size_t )> teardown_functor_;
-	ipsm_mem_mem_header*                 p_mem_;
+	ipsm_mem_mem_header*                       p_mem_;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -274,7 +276,7 @@ ipsm_mem::impl::~impl()
 		lockfile_mutex                  lf_mtx( mutex_obj_name_.c_str() );   // inter-process mutex via filesystem
 		std::lock_guard<lockfile_mutex> lk( lf_mtx );
 
-		auto                       final_ref_c = p_mem_->reference_count_.fetch_sub( 1 ) - 1;
+		auto                 final_ref_c = p_mem_->reference_count_.fetch_sub( 1 ) - 1;
 		ipsm_mem_mem_header* p_cur_mem   = reinterpret_cast<ipsm_mem_mem_header*>( shm_res_.get_shm_pointer() );
 		if ( teardown_functor_ ) {
 			// teardown_functor_が呼び出し可能な場合に呼び出しを行う。
@@ -417,7 +419,7 @@ bool ipsm_mem::impl::try_setup_as_both(
 	}
 	// unlink済みであっても、ここを抜けてくる場合がある。
 
-	shm_resource_handler       cur_shm_res;
+	shm_resource_handler cur_shm_res;
 	ipsm_mem_mem_header* p_cur_mem;
 
 	bool is_primary = true;

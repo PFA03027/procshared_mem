@@ -9,6 +9,8 @@
  *
  */
 
+#include <cerrno>
+
 #include <chrono>
 #include <stdexcept>
 #include <system_error>

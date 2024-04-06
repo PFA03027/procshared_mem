@@ -20,6 +20,11 @@
 
 namespace ipsm {
 
+/**
+ * @brief Allocator from the memory that is managed by offset_malloc
+ *
+ * @tparam T
+ */
 template <typename T>
 class offset_allocator {
 public:
@@ -89,6 +94,12 @@ constexpr bool operator!=( const offset_allocator<T>& a, const offset_allocator<
 	return ( a.my_allocator_ != b.my_allocator_ );
 }
 
+/**
+ * @brief deleter that uses Allocator class
+ *
+ * @tparam T
+ * @tparam Allocator
+ */
 template <typename T, typename Allocator>
 class deleter_by_allocator {
 public:

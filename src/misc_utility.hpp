@@ -12,10 +12,10 @@
 #ifndef MISC_UTILITY_HPP_
 #define MISC_UTILITY_HPP_
 
+#include <cerrno>
+
 #include <stdexcept>
 #include <type_traits>
-
-#include <errno.h>
 
 #include <sys/types.h>
 #include <unistd.h>

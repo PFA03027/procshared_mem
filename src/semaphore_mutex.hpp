@@ -12,6 +12,8 @@
 #ifndef SEMAPHORE_MUTEX_HPP_
 #define SEMAPHORE_MUTEX_HPP_
 
+#include <cerrno>
+
 #include <atomic>
 #include <chrono>
 #include <functional>
@@ -31,9 +33,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "misc_utility.hpp"
 #include "ipsm_logger.hpp"
 #include "ipsm_mem.hpp"
+#include "misc_utility.hpp"
 
 namespace ipsm {
 

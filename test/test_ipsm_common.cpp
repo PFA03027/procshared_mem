@@ -9,8 +9,10 @@
  *
  */
 
+#include <cerrno>
 #include <cstdio>
 #include <cstdlib>
+
 #include <functional>
 #include <stdexcept>
 #include <system_error>

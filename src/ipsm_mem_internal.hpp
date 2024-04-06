@@ -12,6 +12,8 @@
 #ifndef IPSM_MEM_INTERNAL_HPP_
 #define IPSM_MEM_INTERNAL_HPP_
 
+#include <cerrno>
+
 #include <atomic>
 #include <chrono>
 #include <functional>
@@ -30,9 +32,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "misc_utility.hpp"
 #include "ipsm_logger.hpp"
 #include "ipsm_mem.hpp"
+#include "misc_utility.hpp"
 
 #define TMP_DIR_FOR_ID_FILE "/tmp"
 

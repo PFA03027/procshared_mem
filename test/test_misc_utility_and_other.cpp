@@ -9,6 +9,8 @@
  *
  */
 
+#include <cerrno>
+
 #include "gtest/gtest.h"
 
 #include "lockfile_mutex.hpp"
