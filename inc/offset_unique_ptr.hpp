@@ -314,7 +314,7 @@ public:
 		return get();
 	}
 
-	constexpr element_type& operator[]( size_t idx )
+	constexpr element_type& operator[]( std::ptrdiff_t idx )
 	{
 		return op_target_[idx];
 	}

@@ -449,7 +449,14 @@ private:
 			err_log += discard_shm_fd_caused_by_any_error( tmp_shm_fd, shm_name_.c_str() );
 			throw ipsm_mem_error( err_log.c_str() );
 		}
-		size_t tmp_shm_length = buf.st_size;
+		if ( buf.st_size < 0 ) {
+			char buff[1024];
+			snprintf( buff, 1024, "st_size in struct stat returned by fstat(%d) has minus value, %zd", tmp_shm_fd, buf.st_size );
+			std::string err_log = buff;
+			err_log += discard_shm_fd_caused_by_any_error( tmp_shm_fd, shm_name_.c_str() );
+			throw ipsm_mem_error( err_log.c_str() );
+		}
+		size_t tmp_shm_length = static_cast<size_t>( buf.st_size );
 
 		void* p_tmp_mem = mmap( NULL, tmp_shm_length, PROT_READ | PROT_WRITE, MAP_SHARED, tmp_shm_fd, 0 );
 		if ( p_tmp_mem == MAP_FAILED ) {

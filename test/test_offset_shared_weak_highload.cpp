@@ -29,15 +29,15 @@ struct DerivedArrowOpTest2 : public ArrowOpTest {
 TEST( OffsetSharedWeakHighLoad, CanDoMultConstruct )
 {
 	// Arrange
-	constexpr int max_loop_cnt = 100;
-	constexpr int max_threads  = 500;
+	constexpr unsigned int max_loop_cnt = 100;
+	constexpr unsigned int max_threads  = 500;
 
 	offset_shared_ptr<DerivedArrowOpTest2> sp_sut = make_offset_shared<DerivedArrowOpTest2>();
 
 	// Act
-	for ( int i = 0; i < max_loop_cnt; i++ ) {
+	for ( unsigned int i = 0; i < max_loop_cnt; i++ ) {
 		std::array<std::thread, max_threads> ta;
-		for ( int j = 0; j < max_threads; j++ ) {
+		for ( unsigned int j = 0; j < max_threads; j++ ) {
 			ta[j] = std::thread( [&sp_sut]( void ) {
 				offset_shared_ptr<DerivedArrowOpTest2> sp_tx( sp_sut );
 				sp_tx->at_z_++;
@@ -58,8 +58,8 @@ TEST( OffsetSharedWeakHighLoad, CanDoMultConstruct )
 TEST( OffsetSharedWeakHighLoad, CanDoMultConstruct2 )
 {
 	// Arrange
-	constexpr int max_loop_cnt = 100;
-	constexpr int max_threads  = 500;
+	constexpr unsigned int max_loop_cnt = 100;
+	constexpr unsigned int max_threads  = 500;
 
 	offset_shared_ptr<DerivedArrowOpTest2> sp_sut = make_offset_shared<DerivedArrowOpTest2>();
 	EXPECT_EQ( sp_sut.use_count(), 1 );
@@ -67,9 +67,9 @@ TEST( OffsetSharedWeakHighLoad, CanDoMultConstruct2 )
 	EXPECT_EQ( wp_sut.use_count(), 1 );
 
 	// Act
-	for ( int i = 0; i < max_loop_cnt; i++ ) {
+	for ( unsigned int i = 0; i < max_loop_cnt; i++ ) {
 		std::array<std::thread, max_threads> ta;
-		for ( int j = 0; j < max_threads; j++ ) {
+		for ( unsigned int j = 0; j < max_threads; j++ ) {
 			ta[j] = std::thread( [wp_sut]( void ) {
 				offset_shared_ptr<DerivedArrowOpTest2> sp_tx( wp_sut );
 				sp_tx->at_z_++;

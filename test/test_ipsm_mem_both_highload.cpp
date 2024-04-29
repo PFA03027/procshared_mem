@@ -56,7 +56,7 @@ void make_shm_and_close( void )
 			abort();
 		}
 		if ( WIFEXITED( wstatus_code ) ) {
-			unsigned char exit_code = WEXITSTATUS( wstatus_code );
+			unsigned char exit_code = static_cast<unsigned char>( WEXITSTATUS( wstatus_code ) );
 			if ( exit_code != 122 ) {
 				fprintf( stderr, "shared memory data is incorrect. rcv data is %d\n", static_cast<int>( exit_code ) );
 				abort();

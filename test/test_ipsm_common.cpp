@@ -52,7 +52,7 @@ child_proc_return_t call_pred_on_child_process( std::function<int()> pred_func_i
 			throw std::system_error( ec, "waitpid() fail" );
 		}
 		if ( WIFEXITED( wstatus_code ) ) {
-			unsigned char exit_code = WEXITSTATUS( wstatus_code );
+			unsigned char exit_code = static_cast<unsigned char>( WEXITSTATUS( wstatus_code ) );
 			ans.is_exit_normaly_    = true;
 			ans.exit_code_          = exit_code;
 		} else {
