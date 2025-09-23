@@ -59,7 +59,7 @@ configure-cmake:
 test: build-test
 	set -e; \
 	cd ${BUILD_DIR}; \
-	ctest -j ${JOBS} -v
+	setarch -R ctest -j ${JOBS} -v
 
 load-test: test
 	build/test/loadtest_ipsm_mem_primary_highload

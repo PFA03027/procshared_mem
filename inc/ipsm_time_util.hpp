@@ -14,6 +14,8 @@
 
 #include <chrono>
 #include <ctime>
+#include <stdexcept>
+#include <system_error>
 #include <type_traits>
 
 namespace ipsm {

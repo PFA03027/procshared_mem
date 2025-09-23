@@ -359,7 +359,7 @@ public:
 	{
 	}
 
-	constexpr offset_ptr( offset_ptr&& orig ) noexcept
+	offset_ptr( offset_ptr&& orig ) noexcept
 	  : offset_( calc_offset( this, orig.calc_address() ) )
 	{
 		orig = nullptr;
