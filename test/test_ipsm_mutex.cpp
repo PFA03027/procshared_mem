@@ -74,10 +74,10 @@ TEST( Test_ipsm_mutex, CanNativeHandle )
 TEST( Test_ipsm_mutex, CanRecoverByRobustnessViaLock )
 {
 	// Arrange
-	ipsm_mutex sut;
-	std::thread      lock_owner_terminating( [&sut]( void ) {
-        sut.lock();
-    } );
+	ipsm_mutex  sut;
+	std::thread lock_owner_terminating( [&sut]( void ) {
+		sut.lock();
+	} );
 	lock_owner_terminating.join();
 
 	// Act
@@ -92,10 +92,10 @@ TEST( Test_ipsm_mutex, CanRecoverByRobustnessViaLock )
 TEST( Test_ipsm_mutex, CanRecoverByRobustnessViaTryLock )
 {
 	// Arrange
-	ipsm_mutex sut;
-	std::thread      lock_owner_terminating( [&sut]( void ) {
-        sut.lock();
-    } );
+	ipsm_mutex  sut;
+	std::thread lock_owner_terminating( [&sut]( void ) {
+		sut.lock();
+	} );
 	lock_owner_terminating.join();
 	bool ret = false;
 
@@ -225,7 +225,7 @@ TEST( Test_ipsm_recursive_mutex, CanRecoverByRobustnessViaLock )
 {
 	// Arrange
 	ipsm_recursive_mutex sut;
-	std::thread                lock_owner_terminating( [&sut]( void ) {
+	std::thread          lock_owner_terminating( [&sut]( void ) {
         sut.lock();
     } );
 	lock_owner_terminating.join();
@@ -243,7 +243,7 @@ TEST( Test_ipsm_recursive_mutex, CanRecoverByRobustnessViaTryLock )
 {
 	// Arrange
 	ipsm_recursive_mutex sut;
-	std::thread                lock_owner_terminating( [&sut]( void ) {
+	std::thread          lock_owner_terminating( [&sut]( void ) {
         sut.lock();
     } );
 	lock_owner_terminating.join();
@@ -262,14 +262,14 @@ TEST( Test_ipsm_recursive_mutex, CanRecoverByRobustnessViaTryLock )
 #if defined( TEST_ENABLE_ADDRESSSANITIZER ) || defined( TEST_ENABLE_LEAKSANITIZER )
 #else
 //===========================================
-const char* p_shm_obj_name = "/my_test_shm_test_ipsm_mutex";
+#define SHM_OBJ_NAME_STRING "/my_test_shm_test_ipsm_mutex"
 
 TEST( Test_ipsm_mutex_bw_proc, CanLock_CanTryLock_CanUnlock )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
+	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
 	ipsm_mem shm_obj(
-		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+		SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 		[]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
 				return nullptr;
@@ -291,7 +291,7 @@ TEST( Test_ipsm_mutex_bw_proc, CanLock_CanTryLock_CanUnlock )
 	std::thread t1( std::move( task1 ), []() -> int {
 		ipsm_mem shm_obj_secondary;
 		shm_obj_secondary.allocate_shm_as_secondary(
-			p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+			SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 			[]( void*, size_t ) { /* 何もしない */ } );
 		if ( not shm_obj_secondary.debug_test_integrity() ) {
 			return 1;
@@ -318,9 +318,9 @@ TEST( Test_ipsm_mutex_bw_proc, CanLock_CanTryLock_CanUnlock )
 TEST( Test_ipsm_recursive_mutex_bw_proc, CanLock_CanTryLock_CanUnlock )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
+	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
 	ipsm_mem shm_obj(
-		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+		SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 		[]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
 				return nullptr;
@@ -342,7 +342,7 @@ TEST( Test_ipsm_recursive_mutex_bw_proc, CanLock_CanTryLock_CanUnlock )
 	std::thread t1( std::move( task1 ), []() -> int {
 		ipsm_mem shm_obj_secondary;
 		shm_obj_secondary.allocate_shm_as_secondary(
-			p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+			SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 			[]( void*, size_t ) { /* 何もしない */ } );
 		if ( not shm_obj_secondary.debug_test_integrity() ) {
 			return 1;

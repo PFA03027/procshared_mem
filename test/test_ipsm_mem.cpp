@@ -28,18 +28,18 @@
 
 using namespace ipsm;
 
-const char* p_shm_obj_name = "/my_test_shm_test_ipsm_mem";
+#define SHM_OBJ_NAME_STRING "/my_test_shm_test_ipsm_mem"
 
 TEST( Test_ipsm_mem, CanConstruct_CanDestruct )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
+	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
 	bool test_flag = false;
 
 	// Act
 	ASSERT_NO_THROW(
 		ipsm_mem shm_obj(
-			p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+			SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 			[&test_flag]( void* p_mem, off_t len ) -> void* {
 				if ( p_mem == nullptr ) {
 					return nullptr;
@@ -59,13 +59,13 @@ TEST( Test_ipsm_mem, CanConstruct_CanDestruct )
 TEST( Test_ipsm_mem, CanConstructDefer_CanDestruct )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
-	bool           test_flag = false;
+	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
+	bool     test_flag = false;
 	ipsm_mem shm_obj;
 
 	// Act
 	shm_obj.allocate_shm_as_both(
-		p_shm_obj_name, "/tmp", 4096 - 16, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+		SHM_OBJ_NAME_STRING, "/tmp", 4096 - 16, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 		[&test_flag]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
 				return nullptr;
@@ -87,13 +87,13 @@ TEST( Test_ipsm_mem, CanConstructDefer_CanDestruct )
 TEST( Test_ipsm_mem, CanConstructDefer_Primary )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
-	bool           test_flag = false;
+	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
+	bool     test_flag = false;
 	ipsm_mem shm_obj;
 
 	// Act
 	shm_obj.allocate_shm_as_primary(
-		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+		SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 		[&test_flag]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
 				return nullptr;
@@ -114,10 +114,10 @@ TEST( Test_ipsm_mem, CanConstructDefer_Primary )
 TEST( Test_ipsm_mem, CanConstruct_Secondary )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
-	bool           test_flag = false;
+	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
+	bool     test_flag = false;
 	ipsm_mem shm_obj(
-		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+		SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 		[&test_flag]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
 				return nullptr;
@@ -139,7 +139,7 @@ TEST( Test_ipsm_mem, CanConstruct_Secondary )
 	std::thread t1( std::move( task1 ), []() -> int {
 		ipsm_mem shm_obj_secondary;
 		shm_obj_secondary.allocate_shm_as_secondary(
-			p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+			SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 			[]( void*, size_t ) { /* 何もしない */ } );
 		if ( not shm_obj_secondary.debug_test_integrity() ) {
 			return 1;
@@ -162,10 +162,10 @@ TEST( Test_ipsm_mem, CanConstruct_Secondary )
 TEST( Test_ipsm_mem, CanConstructDefer_Secondary )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
-	bool           test_flag = false;
+	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
+	bool     test_flag = false;
 	ipsm_mem shm_obj(
-		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+		SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 		[&test_flag]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
 				return nullptr;
@@ -187,7 +187,7 @@ TEST( Test_ipsm_mem, CanConstructDefer_Secondary )
 	std::thread t1( std::move( task1 ), []() -> int {
 		ipsm_mem shm_obj_secondary;
 		shm_obj_secondary.allocate_shm_as_secondary(
-			p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+			SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 			[]( void*, size_t ) { /* 何もしない */ } );
 		if ( not shm_obj_secondary.debug_test_integrity() ) {
 			return 1;
@@ -210,10 +210,10 @@ TEST( Test_ipsm_mem, CanConstructDefer_Secondary )
 TEST( Test_ipsm_mem, CanConstruct_Secondary_by_both )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
-	bool           test_flag = false;
+	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
+	bool     test_flag = false;
 	ipsm_mem shm_obj(
-		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+		SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 		[&test_flag]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
 				return nullptr;
@@ -234,7 +234,7 @@ TEST( Test_ipsm_mem, CanConstruct_Secondary_by_both )
 	// Act
 	std::thread t1( std::move( task1 ), []() -> int {
 		ipsm_mem shm_obj_secondary_by_both(
-			p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+			SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 			[]( void* p_mem, off_t len ) -> void* {
 				*( reinterpret_cast<int*>( p_mem ) ) = 22;   // nullptrチェックも行わない
 				return nullptr;
@@ -261,10 +261,10 @@ TEST( Test_ipsm_mem, CanConstruct_Secondary_by_both )
 TEST( Test_ipsm_mem, CanConstructDefer_Secondary_by_both )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
-	bool           test_flag = false;
+	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
+	bool     test_flag = false;
 	ipsm_mem shm_obj(
-		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+		SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 		[&test_flag]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
 				return nullptr;
@@ -286,7 +286,7 @@ TEST( Test_ipsm_mem, CanConstructDefer_Secondary_by_both )
 	std::thread t1( std::move( task1 ), []() -> int {
 		ipsm_mem shm_obj_secondary;
 		shm_obj_secondary.allocate_shm_as_both(
-			p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+			SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 			[]( void* p_mem, size_t len ) -> void* {
 				*( reinterpret_cast<int*>( p_mem ) ) = 22;   // nullptrチェックも行わない
 				return nullptr;

@@ -33,7 +33,7 @@ TEST( Test_ipsm_condition_variable, CanConstruct_CanDestruct )
 TEST( Test_ipsm_condition_variable, CanWait_CanNotifyAll )
 {
 	// Arrange
-	bool                                    shared_state_flag = false;
+	bool                              shared_state_flag = false;
 	ipsm_mutex                        mtx;
 	ipsm_condition_variable_monotonic sut1;
 	ipsm_condition_variable_monotonic sut2;
@@ -119,7 +119,7 @@ TEST( Test_ipsm_condition_variable, CanWaitFor_NoTimeout )
 	pthread_barrier_t br_obj;
 	ASSERT_EQ( pthread_barrier_init( &br_obj, nullptr, 2 ), 0 );
 
-	bool                                    shared_state_flag = false;
+	bool                              shared_state_flag = false;
 	ipsm_mutex                        mtx;
 	ipsm_condition_variable_monotonic sut1;
 
@@ -157,7 +157,7 @@ TEST( Test_ipsm_condition_variable, CanWaitFor_NoTimeout )
 TEST( Test_ipsm_condition_variable, CanWaitForPred_Timeout )
 {
 	// Arrange
-	bool                                    shared_state_flag = false;
+	bool                              shared_state_flag = false;
 	ipsm_mutex                        mtx;
 	ipsm_condition_variable_monotonic sut1;
 
@@ -188,7 +188,7 @@ TEST( Test_ipsm_condition_variable, CanWaitForPred_Timeout )
 TEST( Test_ipsm_condition_variable, CanWaitForPred_NoTimeout )
 {
 	// Arrange
-	bool                                    shared_state_flag = false;
+	bool                              shared_state_flag = false;
 	ipsm_mutex                        mtx;
 	ipsm_condition_variable_monotonic sut1;
 
@@ -224,11 +224,11 @@ TEST( Test_ipsm_condition_variable, CanWaitForPred_NoTimeout )
 #if defined( TEST_ENABLE_ADDRESSSANITIZER ) || defined( TEST_ENABLE_LEAKSANITIZER )
 #else
 //===========================================
-const char* p_shm_obj_name = "/my_test_shm_test_ipsm_condition_variable";
+#define SHM_OBJ_NAME_STRING "/my_test_shm_test_ipsm_condition_variable"
 
 struct test_shared_data {
-	bool shared_state_flag_;
-	ipsm_mutex mtx_;
+	bool                              shared_state_flag_;
+	ipsm_mutex                        mtx_;
 	ipsm_condition_variable_monotonic cond_;
 
 	test_shared_data( void )
@@ -242,9 +242,9 @@ struct test_shared_data {
 TEST( Test_ipsm_condition_variable_bw_proc, CanWaitForPred_Timeout )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
+	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
 	ipsm_mem shm_obj(
-		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+		SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 		[]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
 				return nullptr;
@@ -259,13 +259,13 @@ TEST( Test_ipsm_condition_variable_bw_proc, CanWaitForPred_Timeout )
 	[[maybe_unused]] test_shared_data* p_sut = reinterpret_cast<test_shared_data*>( shm_obj.get() );
 
 	std::packaged_task<child_proc_return_t( std::function<int()> )> task1( call_pred_on_child_process );   // 非同期実行する関数を登録する
-	std::future<child_proc_return_t> f1 = task1.get_future();
+	std::future<child_proc_return_t>                                f1 = task1.get_future();
 
 	// Act
 	std::thread t1( std::move( task1 ), []() -> int {
 		ipsm_mem shm_obj_secondary;
 		shm_obj_secondary.allocate_shm_as_secondary(
-			p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+			SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 			[]( void*, size_t ) { /* 何もしない */ } );
 		if ( not shm_obj_secondary.debug_test_integrity() ) {
 			return 1;
@@ -273,10 +273,10 @@ TEST( Test_ipsm_condition_variable_bw_proc, CanWaitForPred_Timeout )
 		test_shared_data* p_sut = reinterpret_cast<test_shared_data*>( shm_obj_secondary.get() );
 
 		std::unique_lock<ipsm_mutex> lk( p_sut->mtx_ );
-		bool ret = p_sut->cond_.wait_for(
-			lk,
-			std::chrono::milliseconds( 10 ),
-			[p_sut]() { return p_sut->shared_state_flag_; } );
+		bool                         ret = p_sut->cond_.wait_for(
+            lk,
+            std::chrono::milliseconds( 10 ),
+            [p_sut]() { return p_sut->shared_state_flag_; } );
 		return ( ret ) ? 2 : 3;
 	} );
 	std::this_thread::sleep_for( std::chrono::milliseconds( 20 ) );
@@ -296,9 +296,9 @@ TEST( Test_ipsm_condition_variable_bw_proc, CanWaitForPred_Timeout )
 TEST( Test_ipsm_condition_variable_bw_proc, CanWaitForPred_NoTimeout )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
+	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
 	ipsm_mem shm_obj(
-		p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+		SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 		[]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
 				return nullptr;
@@ -313,12 +313,12 @@ TEST( Test_ipsm_condition_variable_bw_proc, CanWaitForPred_NoTimeout )
 	test_shared_data* p_sut = reinterpret_cast<test_shared_data*>( shm_obj.get() );
 
 	std::packaged_task<child_proc_return_t( std::function<int()> )> task1( call_pred_on_child_process );   // 非同期実行する関数を登録する
-	std::future<child_proc_return_t> f1 = task1.get_future();
+	std::future<child_proc_return_t>                                f1 = task1.get_future();
 
 	std::thread t1( std::move( task1 ), []() -> int {
 		ipsm_mem shm_obj_secondary;
 		shm_obj_secondary.allocate_shm_as_secondary(
-			p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+			SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 			[]( void*, size_t ) { /* 何もしない */ } );
 		if ( not shm_obj_secondary.debug_test_integrity() ) {
 			return 1;
@@ -326,10 +326,10 @@ TEST( Test_ipsm_condition_variable_bw_proc, CanWaitForPred_NoTimeout )
 		test_shared_data* p_sut = reinterpret_cast<test_shared_data*>( shm_obj_secondary.get() );
 
 		std::unique_lock<ipsm_mutex> lk( p_sut->mtx_ );
-		bool ret = p_sut->cond_.wait_for(
-			lk,
-			std::chrono::milliseconds( 20 ),
-			[p_sut]() { return p_sut->shared_state_flag_; } );
+		bool                         ret = p_sut->cond_.wait_for(
+            lk,
+            std::chrono::milliseconds( 20 ),
+            [p_sut]() { return p_sut->shared_state_flag_; } );
 		return ( ret ) ? 2 : 3;
 	} );
 	std::this_thread::sleep_for( std::chrono::milliseconds( 10 ) );

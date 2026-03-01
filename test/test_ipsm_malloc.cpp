@@ -28,12 +28,12 @@
 
 using namespace ipsm;
 
-const char* p_shm_obj_name = "/my_test_shm_test_ipsm_malloc";
+#define SHM_OBJ_NAME_STRING "/my_test_shm_test_ipsm_malloc"
 
 TEST( Test_ipsm_malloc, CanDefaultConstruct_CanDestruct )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
+	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
 
 	// Act
 	ASSERT_NO_THROW(
@@ -47,7 +47,7 @@ TEST( Test_ipsm_malloc, CanDefaultConstruct_CanDestruct )
 TEST( Test_ipsm_malloc, CanDefaultConstruct_ThenAllocate )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
+	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
 	ipsm_malloc sut;
 
 	// Act
@@ -60,12 +60,12 @@ TEST( Test_ipsm_malloc, CanDefaultConstruct_ThenAllocate )
 TEST( Test_ipsm_malloc, CanConstruct_CanDestruct )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
+	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
 
 	// Act
 	ASSERT_NO_THROW(
 		{
-			ipsm_malloc shm_obj( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+			ipsm_malloc shm_obj( SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 		} );
 
 	// Assert
@@ -74,8 +74,8 @@ TEST( Test_ipsm_malloc, CanConstruct_CanDestruct )
 TEST( Test_ipsm_malloc, CanConstruct_ThenAllocate )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
-	ipsm_malloc sut( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
+	ipsm_malloc sut( SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 
 	// Act
 	auto p = sut.allocate( 10 );
@@ -87,9 +87,9 @@ TEST( Test_ipsm_malloc, CanConstruct_ThenAllocate )
 TEST( Test_ipsm_malloc, CanConstruct_ThenAllocateDeallocate )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
-	ipsm_malloc sut( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
-	auto              p = sut.allocate( 10 );
+	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
+	ipsm_malloc sut( SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	auto        p = sut.allocate( 10 );
 	EXPECT_NE( p, nullptr );
 
 	// Act
@@ -101,13 +101,13 @@ TEST( Test_ipsm_malloc, CanConstruct_ThenAllocateDeallocate )
 TEST( Test_ipsm_malloc, CanMoveConstruct )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
+	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
 	ipsm_malloc sut;
 
 	// Act
 	ASSERT_NO_THROW(
 		{
-			sut = ipsm_malloc( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+			sut = ipsm_malloc( SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 		} );
 
 	// Assert
@@ -116,9 +116,9 @@ TEST( Test_ipsm_malloc, CanMoveConstruct )
 TEST( Test_ipsm_malloc, CanMoveConstruct_ThenAllocate )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
+	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
 	ipsm_malloc sut;
-	sut = ipsm_malloc( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	sut = ipsm_malloc( SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 
 	// Act
 	auto p = sut.allocate( 10 );
@@ -130,9 +130,9 @@ TEST( Test_ipsm_malloc, CanMoveConstruct_ThenAllocate )
 TEST( Test_ipsm_malloc, CanMoveConstruct_ThenAllocateDeallocate )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
+	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
 	ipsm_malloc sut;
-	sut    = ipsm_malloc( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	sut    = ipsm_malloc( SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 	auto p = sut.allocate( 10 );
 	EXPECT_NE( p, nullptr );
 
@@ -146,10 +146,10 @@ TEST( Test_ipsm_malloc, CanMoveAssignment )
 {
 	// Arrange
 	const char* p_shm_obj_name2 = "/my_test_shm_test_ipsm_malloc2";
-	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );    // to remove ghost data
-	ipsm_mem::debug_force_cleanup( p_shm_obj_name2, "/tmp" );   // to remove ghost data
-	ipsm_malloc sut( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
-	auto              p1 = sut.allocate( 10 );
+	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
+	ipsm_mem::debug_force_cleanup( p_shm_obj_name2, "/tmp" );       // to remove ghost data
+	ipsm_malloc sut( SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	auto        p1 = sut.allocate( 10 );
 	EXPECT_NE( p1, nullptr );
 
 	// Act
@@ -165,10 +165,10 @@ TEST( Test_ipsm_malloc, CanMoveAssignment_ThenDeallocate )
 {
 	// Arrange
 	const char* p_shm_obj_name2 = "/my_test_shm_test_ipsm_malloc2";
-	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );    // to remove ghost data
-	ipsm_mem::debug_force_cleanup( p_shm_obj_name2, "/tmp" );   // to remove ghost data
-	ipsm_malloc sut( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
-	auto              p1 = sut.allocate( 10 );
+	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
+	ipsm_mem::debug_force_cleanup( p_shm_obj_name2, "/tmp" );       // to remove ghost data
+	ipsm_malloc sut( SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	auto        p1 = sut.allocate( 10 );
 	EXPECT_NE( p1, nullptr );
 	sut     = ipsm_malloc( p_shm_obj_name2, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 	auto p2 = sut.allocate( 10 );
@@ -184,8 +184,8 @@ TEST( Test_ipsm_malloc, CanMoveAssignment_ThenDeallocate )
 TEST( Test_ipsm_malloc, TryOversizeAllocation )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
-	ipsm_malloc sut( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
+	ipsm_malloc sut( SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 
 	// Act
 	auto p = sut.allocate( 4096 );
@@ -199,15 +199,15 @@ TEST( Test_ipsm_malloc, TryOversizeAllocation )
 TEST( Test_ipsm_malloc, CanAllocateBwProcess )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
-	ipsm_malloc shm_malloc_obj( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
+	ipsm_malloc shm_malloc_obj( SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 
 	std::packaged_task<child_proc_return_t( std::function<int()> )> task1( call_pred_on_child_process );   // 非同期実行する関数を登録する
-	std::future<child_proc_return_t> f1 = task1.get_future();
+	std::future<child_proc_return_t>                                f1 = task1.get_future();
 
 	// Act
 	std::thread t1( std::move( task1 ), []() -> int {
-		ipsm_malloc sut_secondary( p_shm_obj_name, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+		ipsm_malloc sut_secondary( SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 		if ( sut_secondary.get_bind_count() != 2 ) {
 			fprintf( stderr, "Error: bind count is %d\n", sut_secondary.get_bind_count() );
 			return 3;
@@ -233,7 +233,7 @@ TEST( Test_ipsm_malloc, CanAllocateBwProcess )
 
 struct proc_task_data {
 	std::future<child_proc_return_t> f;
-	std::thread t;
+	std::thread                      t;
 };
 
 template <typename T>
@@ -268,8 +268,8 @@ public:
 	}
 
 private:
-	ipsm_mutex mtx_;
-	ipsm_condition_variable_monotonic cond_;
+	ipsm_mutex                          mtx_;
+	ipsm_condition_variable_monotonic   cond_;
 	offset_list<T, offset_allocator<T>> que_;
 };
 
@@ -277,9 +277,9 @@ TEST( Test_ipsm_malloc, CanMsgChannel )
 {
 	// Arrange
 	constexpr int num_of_threads = 100;
-	constexpr int num_of_loop = 10000;
-	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
-	ipsm_malloc shm_malloc_obj( p_shm_obj_name, "/tmp", 4096UL * 100UL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	constexpr int num_of_loop    = 10000;
+	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
+	ipsm_malloc    shm_malloc_obj( SHM_OBJ_NAME_STRING, "/tmp", 4096UL * 100UL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 	fifo_que<int>* p_sut_list = make_obj_construct_using_allocator<fifo_que<int>>( shm_malloc_obj.get_allocator<fifo_que<int>>(), shm_malloc_obj.get_allocator<int>() );
 	proc_task_data pt_pack[num_of_threads];
 	// Act
@@ -288,15 +288,15 @@ TEST( Test_ipsm_malloc, CanMsgChannel )
 		std::packaged_task<child_proc_return_t( std::function<int()> )> task( call_pred_on_child_process );
 		e.f = task.get_future();
 		e.t = std::thread( std::move( task ), []() -> int {
-			ipsm_malloc sut_secondary( p_shm_obj_name, "/tmp", 4096UL * 100UL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
-			void* p_tmp = sut_secondary.receive( 0 );
+			ipsm_malloc    sut_secondary( SHM_OBJ_NAME_STRING, "/tmp", 4096UL * 100UL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+			void*          p_tmp      = sut_secondary.receive( 0 );
 			fifo_que<int>* p_sut_list = reinterpret_cast<fifo_que<int>*>( p_tmp );
 
 			int v = 0;
 			for ( int i = 0; i < num_of_loop; i++ ) {
 				p_sut_list->push( v );
 				int vv = p_sut_list->pop();
-				v = vv + 1;
+				v      = vv + 1;
 			}
 
 			int* p_ret = make_obj_construct_using_allocator<int>( sut_secondary.get_allocator<int>(), v );
@@ -317,7 +317,7 @@ TEST( Test_ipsm_malloc, CanMsgChannel )
 		}
 
 		void* p_tmp = shm_malloc_obj.receive( 1 );
-		int* p_ret = reinterpret_cast<int*>( p_tmp );
+		int*  p_ret = reinterpret_cast<int*>( p_tmp );
 		ASSERT_NE( p_ret, nullptr );
 		sum_value += *p_ret;
 		destruct_obj_usee_allocator( shm_malloc_obj.get_allocator<int>(), p_ret );
