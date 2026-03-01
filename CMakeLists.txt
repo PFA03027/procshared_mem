@@ -1,5 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
-project(libipsm_mem CXX)
+cmake_minimum_required(VERSION 3.16)
 project(
     libipsm_mem
     #
