@@ -9,12 +9,10 @@ project(
 
 set(CMAKE_VERBOSE_MAKEFILE 1)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-
-# set(CMAKE_UNITY_BUILD TRUE)
+include(common.cmake)
 
 # Switch build target
-set(BUILD_CONFIG common CACHE STRING "Build config?")
+set(BUILD_CONFIG normal CACHE STRING "Build config?")
 message("[BUILD] ${BUILD_CONFIG}")
 include(${BUILD_CONFIG}.cmake)
 

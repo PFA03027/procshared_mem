@@ -10,7 +10,7 @@
 #    common.cmake is default configurations
 #    codecoverage.cmake is the configuration for code coverage of gcov
 # 
-BUILD_CONFIG?=common
+BUILD_CONFIG?=normal
 
 # Debug or Release or ...
 # BUILD_TYPE=Debug
@@ -53,9 +53,8 @@ SANITIZER_P_ALL_TARGETS=$(addprefix sanitizer.p.,$(SANITIZER_ALL_IDS))
 TEST_EXECS = $(shell find . -type f -executable -name "test_*")
 
 CMAKE_CONFIGURE_OPTS  = -DCMAKE_EXPORT_COMPILE_COMMANDS=ON  # for clang-tidy
-CMAKE_CONFIGURE_OPTS += -DCMAKE_BUILD_TYPE=${BUILDTYPE}
+CMAKE_CONFIGURE_OPTS += -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
 CMAKE_CONFIGURE_OPTS += -DBUILD_CONFIG=${BUILD_CONFIG}
-CMAKE_CONFIGURE_OPTS += -DSANITIZER_TYPE=${SANITIZER_TYPE}
 CMAKE_CONFIGURE_OPTS += -DIPSM_BUILD_SHARED_LIBS=${IPSM_BUILD_SHARED_LIBS}
 
 CPUS=$(shell grep cpu.cores /proc/cpuinfo | sort -u | sed 's/[^0-9]//g')
