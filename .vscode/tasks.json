@@ -12,5 +12,16 @@
 				"kind": "build",
 			}
 		},
+		{
+			"label": "make test",
+			"type": "shell",
+			"command": "make test",
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+			}
+		},
 	]
 }

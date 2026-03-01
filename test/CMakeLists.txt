@@ -41,20 +41,11 @@ add_dependencies(build-test test_ipsm_functions)
 add_test(NAME test_ipsm_functions COMMAND $<TARGET_FILE:test_ipsm_functions>)
 
 ########################
-add_executable(test_misc_utility_and_other11 EXCLUDE_FROM_ALL test_misc_utility_and_other.cpp)
-target_include_directories(test_misc_utility_and_other11  PUBLIC ../libipsm_mem/src )
-target_link_libraries(test_misc_utility_and_other11 ipsm_mem gtest gtest_main )
-add_dependencies(build-test test_misc_utility_and_other11)
-add_test(NAME test_misc_utility_and_other11 COMMAND $<TARGET_FILE:test_misc_utility_and_other11>)
-target_compile_features(test_misc_utility_and_other11 PUBLIC cxx_std_11)
-
-add_executable(test_misc_utility_and_other20 EXCLUDE_FROM_ALL test_misc_utility_and_other.cpp)
-target_include_directories(test_misc_utility_and_other20  PUBLIC ../libipsm_mem/src )
-target_link_libraries(test_misc_utility_and_other20 ipsm_mem gtest gtest_main )
-add_dependencies(build-test test_misc_utility_and_other20)
-add_test(NAME test_misc_utility_and_other20 COMMAND $<TARGET_FILE:test_misc_utility_and_other20>)
-target_compile_features(test_misc_utility_and_other20 PUBLIC cxx_std_20)
-# target_compile_options(test_offset_unique_ptr20 PUBLIC -fconcepts-diagnostics-depth=2)
+add_executable(test_misc_utility_and_other EXCLUDE_FROM_ALL test_misc_utility_and_other.cpp)
+target_include_directories(test_misc_utility_and_other  PUBLIC ../libipsm_mem/src )
+target_link_libraries(test_misc_utility_and_other ipsm_mem gtest gtest_main )
+add_dependencies(build-test test_misc_utility_and_other)
+add_test(NAME test_misc_utility_and_other COMMAND $<TARGET_FILE:test_misc_utility_and_other>)
 
 ########################
 set(TEST_OFFSET_FUNCTIONS_SOURCES
@@ -63,20 +54,11 @@ set(TEST_OFFSET_FUNCTIONS_SOURCES
   test_offset_list.cpp
   )
 
-add_executable(test_offset_functions_cpp11 EXCLUDE_FROM_ALL ${TEST_OFFSET_FUNCTIONS_SOURCES})
-# target_include_directories(test_offset_functions_cpp11  PUBLIC ../inc  )
-target_link_libraries(test_offset_functions_cpp11 ipsm_mem gtest gtest_main )
-add_dependencies(build-test test_offset_functions_cpp11)
-add_test(NAME test_offset_functions_cpp11 COMMAND $<TARGET_FILE:test_offset_functions_cpp11>)
-target_compile_features(test_offset_functions_cpp11 PUBLIC cxx_std_11)
-
-add_executable(test_offset_functions_cpp20 EXCLUDE_FROM_ALL ${TEST_OFFSET_FUNCTIONS_SOURCES})
-# target_include_directories(test_offset_functions_cpp20  PUBLIC ../inc  )
-target_link_libraries(test_offset_functions_cpp20 ipsm_mem gtest gtest_main )
-add_dependencies(build-test test_offset_functions_cpp20)
-add_test(NAME test_offset_functions_cpp20 COMMAND $<TARGET_FILE:test_offset_functions_cpp20>)
-target_compile_features(test_offset_functions_cpp20 PUBLIC cxx_std_20)
-# target_compile_options(test_offset_functions_cpp20 PUBLIC -fconcepts-diagnostics-depth=2)
+add_executable(test_offset_functions_cpp EXCLUDE_FROM_ALL ${TEST_OFFSET_FUNCTIONS_SOURCES})
+# target_include_directories(test_offset_functions_cpp  PUBLIC ../inc  )
+target_link_libraries(test_offset_functions_cpp ipsm_mem gtest gtest_main )
+add_dependencies(build-test test_offset_functions_cpp)
+add_test(NAME test_offset_functions_cpp COMMAND $<TARGET_FILE:test_offset_functions_cpp>)
 
 ##############################
 set(TEST_OFFSET_MALLOC_SOURCES
@@ -98,21 +80,11 @@ set(TEST_OFFSET_SHARED_PTR_SOURCES
   test_offset_shared_weak_highload.cpp
   )
 
-add_executable(test_offset_shared_ptr11 EXCLUDE_FROM_ALL ${TEST_OFFSET_SHARED_PTR_SOURCES})
-# target_include_directories(test_offset_shared_ptr11  PUBLIC ../inc  )
-target_link_libraries(test_offset_shared_ptr11 ipsm_mem gtest gtest_main )
-add_dependencies(build-test test_offset_shared_ptr11)
-add_test(NAME test_offset_shared_ptr11 COMMAND $<TARGET_FILE:test_offset_shared_ptr11>)
-target_compile_features(test_offset_shared_ptr11 PUBLIC cxx_std_11)
-
-add_executable(test_offset_shared_ptr20 EXCLUDE_FROM_ALL ${TEST_OFFSET_SHARED_PTR_SOURCES})
-# target_include_directories(test_offset_shared_ptr20  PUBLIC ../inc  )
-target_link_libraries(test_offset_shared_ptr20 ipsm_mem gtest gtest_main )
-add_dependencies(build-test test_offset_shared_ptr20)
-add_test(NAME test_offset_shared_ptr20 COMMAND $<TARGET_FILE:test_offset_shared_ptr20>)
-target_compile_features(test_offset_shared_ptr20 PUBLIC cxx_std_20)
-# target_compile_options(test_offset_shared_ptr20 PUBLIC -fconcepts-diagnostics-depth=2)
-
+add_executable(test_offset_shared_ptr EXCLUDE_FROM_ALL ${TEST_OFFSET_SHARED_PTR_SOURCES})
+# target_include_directories(test_offset_shared_ptr  PUBLIC ../inc  )
+target_link_libraries(test_offset_shared_ptr ipsm_mem gtest gtest_main )
+add_dependencies(build-test test_offset_shared_ptr)
+add_test(NAME test_offset_shared_ptr COMMAND $<TARGET_FILE:test_offset_shared_ptr>)
 
 ##############################
 add_executable(loadtest_ipsm_malloc_highload EXCLUDE_FROM_ALL test_ipsm_malloc_highload.cpp)
