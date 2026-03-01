@@ -29,37 +29,48 @@ struct DerivedArrowOpTest2 : public ArrowOpTest {
 TEST( OffsetSharedWeakHighLoad, CanDoMultConstruct )
 {
 	// Arrange
-	constexpr unsigned int max_loop_cnt = 100;
-	constexpr unsigned int max_threads  = 500;
+	constexpr unsigned int max_threads = 20;
+	std::atomic<bool>      loop_flag( true );
 
 	offset_shared_ptr<DerivedArrowOpTest2> sp_sut = make_offset_shared<DerivedArrowOpTest2>();
 
 	// Act
-	for ( unsigned int i = 0; i < max_loop_cnt; i++ ) {
-		std::array<std::thread, max_threads> ta;
-		for ( unsigned int j = 0; j < max_threads; j++ ) {
-			ta[j] = std::thread( [&sp_sut]( void ) {
-				offset_shared_ptr<DerivedArrowOpTest2> sp_tx( sp_sut );
-				sp_tx->at_z_++;
-			} );
-		}
-		for ( auto& e : ta ) {
-			if ( e.joinable() ) {
-				e.join();
-			}
-		}
+	std::array<std::thread, max_threads>    ta;
+	std::array<std::uintptr_t, max_threads> loop_count_results;
+	for ( unsigned int j = 0; j < max_threads; j++ ) {
+		ta[j] = std::thread(
+			[&sp_sut, &loop_flag]( std::uintptr_t* p_loop_count ) {
+				*p_loop_count = 0;
+				while ( loop_flag.load() ) {
+					offset_shared_ptr<DerivedArrowOpTest2> sp_tx( sp_sut );
+					sp_tx->at_z_++;
+					( *p_loop_count )++;
+				}
+			},
+			&loop_count_results[j] );
 	}
+	std::this_thread::sleep_for( std::chrono::milliseconds( 500 ) );
+	loop_flag.store( false );
 
 	// Assert
+	for ( auto& e : ta ) {
+		if ( e.joinable() ) {
+			e.join();
+		}
+	}
+	std::uintptr_t total_loop_count = 0;
+	for ( auto& e : loop_count_results ) {
+		total_loop_count += e;
+	}
 	EXPECT_EQ( sp_sut.use_count(), 1 );
-	EXPECT_EQ( sp_sut->at_z_.load(), max_loop_cnt * max_threads );
+	EXPECT_EQ( sp_sut->at_z_.load(), total_loop_count );
 }
 
 TEST( OffsetSharedWeakHighLoad, CanDoMultConstruct2 )
 {
 	// Arrange
-	constexpr unsigned int max_loop_cnt = 100;
-	constexpr unsigned int max_threads  = 500;
+	constexpr unsigned int max_threads = 20;
+	std::atomic<bool>      loop_flag( true );
 
 	offset_shared_ptr<DerivedArrowOpTest2> sp_sut = make_offset_shared<DerivedArrowOpTest2>();
 	EXPECT_EQ( sp_sut.use_count(), 1 );
@@ -67,24 +78,35 @@ TEST( OffsetSharedWeakHighLoad, CanDoMultConstruct2 )
 	EXPECT_EQ( wp_sut.use_count(), 1 );
 
 	// Act
-	for ( unsigned int i = 0; i < max_loop_cnt; i++ ) {
-		std::array<std::thread, max_threads> ta;
-		for ( unsigned int j = 0; j < max_threads; j++ ) {
-			ta[j] = std::thread( [wp_sut]( void ) {
-				offset_shared_ptr<DerivedArrowOpTest2> sp_tx( wp_sut );
-				sp_tx->at_z_++;
-			} );
-		}
-		for ( auto& e : ta ) {
-			if ( e.joinable() ) {
-				e.join();
-			}
-		}
+	std::array<std::thread, max_threads>    ta;
+	std::array<std::uintptr_t, max_threads> loop_count_results;
+	for ( unsigned int j = 0; j < max_threads; j++ ) {
+		ta[j] = std::thread(
+			[wp_sut, &loop_flag]( std::uintptr_t* p_loop_count ) {
+				*p_loop_count = 0;
+				while ( loop_flag.load() ) {
+					offset_shared_ptr<DerivedArrowOpTest2> sp_tx( wp_sut );
+					sp_tx->at_z_++;
+					( *p_loop_count )++;
+				}
+			},
+			&loop_count_results[j] );
 	}
+	std::this_thread::sleep_for( std::chrono::milliseconds( 500 ) );
+	loop_flag.store( false );
 
 	// Assert
+	for ( auto& e : ta ) {
+		if ( e.joinable() ) {
+			e.join();
+		}
+	}
+	std::uintptr_t total_loop_count = 0;
+	for ( auto& e : loop_count_results ) {
+		total_loop_count += e;
+	}
 	EXPECT_EQ( wp_sut.use_count(), 1 );
-	EXPECT_EQ( sp_sut->at_z_.load(), max_loop_cnt * max_threads );
+	EXPECT_EQ( sp_sut->at_z_.load(), total_loop_count );
 	sp_sut.reset();
 	EXPECT_EQ( wp_sut.use_count(), 0 );
 }

@@ -277,10 +277,10 @@ TEST_F( Offset_Malloc, CanDeallocate2 )
 TEST( Offset_Malloc_Highload, CanMulti_Thread_Calling )
 {
 	// Arrange
-	const int        loopcount       = 100000;
-	const size_t     alloc_size      = 11;
-	constexpr int    test_thread_num = 100;
-	constexpr size_t buff_size       = alloc_size * 100 * test_thread_num;
+	const size_t      alloc_size      = 11;
+	constexpr int     test_thread_num = 100;
+	constexpr size_t  buff_size       = alloc_size * 100 * test_thread_num;
+	std::atomic<bool> loop_flag( true );
 
 	std::unique_ptr<unsigned char[]> up_buff( new unsigned char[buff_size] );   // 4MBytes
 	void*                            p_mem = reinterpret_cast<void*>( up_buff.get() );
@@ -292,9 +292,9 @@ TEST( Offset_Malloc_Highload, CanMulti_Thread_Calling )
 
 	// Act
 	for ( int i = 0; i < test_thread_num; i++ ) {
-		fail_count_tasks[i]        = std::packaged_task<int( offset_malloc )>( []( offset_malloc ttsut ) -> int {
+		fail_count_tasks[i]        = std::packaged_task<int( offset_malloc )>( [&loop_flag]( offset_malloc ttsut ) -> int {
             int fail_count_ret = 0;
-            for ( int i = 0; i < loopcount; i++ ) {
+            while ( loop_flag.load() ) {
                 auto p_ret = ttsut.allocate( 11 );
                 if ( p_ret == nullptr ) {
                     fail_count_ret++;
@@ -307,18 +307,18 @@ TEST( Offset_Malloc_Highload, CanMulti_Thread_Calling )
 		fail_count_task_results[i] = fail_count_tasks[i].get_future();
 		thread_array[i]            = std::thread( std::move( fail_count_tasks[i] ), sut );
 	}
+	std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
+	loop_flag.store( false );
 
 	// Assert
-	int final_fail_count_result = 0;
-	for ( auto& e : fail_count_task_results ) {
-		final_fail_count_result += e.get();
-	}
-	EXPECT_EQ( final_fail_count_result, 0 );
-
-	// Clean-up
 	for ( auto& e : thread_array ) {
 		if ( e.joinable() ) {
 			e.join();
 		}
 	}
+	int final_fail_count_result = 0;
+	for ( auto& e : fail_count_task_results ) {
+		final_fail_count_result += e.get();
+	}
+	EXPECT_EQ( final_fail_count_result, 0 );
 }
