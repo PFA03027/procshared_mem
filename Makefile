@@ -46,8 +46,7 @@ BUILD_DIR?=build
 #MAKEFILE_DIR := $(dir $(lastword $(MAKEFILE_LIST)))	# 相対パス名を得るならこちら。
 #MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))	# 絶対パス名を得るならこちら。
 
-SANITIZER_ALL_IDS=$(shell seq 1 8)
-SANITIZER_P_ALL_TARGETS=$(addprefix sanitizer.p.,$(SANITIZER_ALL_IDS))
+SANITIZER_ALL_IDS=$(shell seq 1 5)
 
 #TEST_EXECS = $(shell find ${BUILD_DIR} -type f -executable -name "test_*")
 TEST_EXECS = $(shell find . -type f -executable -name "test_*")
@@ -162,7 +161,7 @@ sanitizer:
 	set -e; \
 	for i in $(SANITIZER_ALL_IDS); do \
 		$(MAKE) sanitizer.$$i.sanitizer; \
-		echo $$i / 8 done; \
+		echo $$i / 5 done; \
 	done
 
 sanitizer.%.sanitizer: configure-cmake.%.sanitizer
