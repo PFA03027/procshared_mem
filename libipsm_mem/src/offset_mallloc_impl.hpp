@@ -39,9 +39,8 @@ public:
 #if __has_cpp_attribute( nodiscard )
 	[[nodiscard]]
 #endif
-	void*
-		 allocate( size_t req_bytes, size_t alignment = alignof( std::max_align_t ) );
-	void deallocate( void* p, size_t alignment = alignof( std::max_align_t ) );
+	void* allocate( size_t req_bytes, size_t alignment = alignof( std::max_align_t ) );
+	void  deallocate( void* p, size_t alignment = alignof( std::max_align_t ) );
 
 	int get_bind_count( void ) const;
 

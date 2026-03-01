@@ -14,12 +14,12 @@
 
 #include <cstddef>
 
-#include "offset_allocator.hpp"
-#include "offset_list.hpp"
-#include "offset_malloc.hpp"
 #include "ipsm_condition_variable.hpp"
 #include "ipsm_mem.hpp"
 #include "ipsm_mutex.hpp"
+#include "offset_allocator.hpp"
+#include "offset_list.hpp"
+#include "offset_malloc.hpp"
 
 namespace ipsm {
 
@@ -27,8 +27,8 @@ struct msg_channel;
 
 class ipsm_malloc {
 public:
-	ipsm_malloc( void );
 	~ipsm_malloc();
+	ipsm_malloc( void );
 	ipsm_malloc( ipsm_malloc&& src ) = default;
 	ipsm_malloc& operator=( ipsm_malloc&& src );
 
@@ -53,10 +53,8 @@ public:
 #if __has_cpp_attribute( nodiscard )
 	[[nodiscard]]
 #endif
-	void*
-	allocate( size_t n, size_t alignment = alignof( std::max_align_t ) );
-
-	void deallocate( void* p, size_t alignment = alignof( std::max_align_t ) );
+	void* allocate( size_t n, size_t alignment = alignof( std::max_align_t ) );
+	void  deallocate( void* p, size_t alignment = alignof( std::max_align_t ) );
 
 	int get_bind_count( void ) const;
 
@@ -73,9 +71,9 @@ private:
 
 	void swap( ipsm_malloc& src );
 
-	ipsm_mem shm_obj_;    //!< shared memory object. this member variable declaration order required like ipsm_mem, then offset_malloc
-	offset_malloc  shm_heap_;   //!< offset base memory allocator on shared memory. this member variable declaration order required like ipsm_mem, then offset_malloc
-	msg_channel*   p_msgch_;
+	ipsm_mem      shm_obj_;    //!< shared memory object. this member variable declaration order required like ipsm_mem, then offset_malloc
+	offset_malloc shm_heap_;   //!< offset base memory allocator on shared memory. this member variable declaration order required like ipsm_mem, then offset_malloc
+	msg_channel*  p_msgch_;
 };
 
 ////////////////////////////////////////////////////////////////////

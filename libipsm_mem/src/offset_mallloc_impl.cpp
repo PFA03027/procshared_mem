@@ -70,6 +70,9 @@ offset_malloc::offset_malloc_impl::offset_malloc_impl( void* end_pointer )
 	bind_cnt_ = 1;
 }
 
+/*
+ * K&R mallocアルゴリズムをベースに実装している。
+ */
 void* offset_malloc::offset_malloc_impl::allocate( size_t req_bytes, size_t alignment )
 {
 	const size_t real_alignment  = ( alignment == 0 ) ? 1 : alignment;

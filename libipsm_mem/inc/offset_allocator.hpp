@@ -50,8 +50,7 @@ public:
 #if __has_cpp_attribute( nodiscard )
 	[[nodiscard]]
 #endif
-	value_type*
-	allocate( size_type n )
+	value_type* allocate( size_type n )
 	{
 		return reinterpret_cast<value_type*>( my_allocator_.allocate( sizeof( value_type[n] ) ) );
 	}

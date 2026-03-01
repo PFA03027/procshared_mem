@@ -4,7 +4,7 @@ project(
     #
     DESCRIPTION "class of shared memory b/w processes"
     LANGUAGES CXX
-    VERSION 1.0.0
+    VERSION 0.7.0
     )
 
 set(CMAKE_VERBOSE_MAKEFILE 1)

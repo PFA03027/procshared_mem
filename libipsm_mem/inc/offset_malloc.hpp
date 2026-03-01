@@ -32,17 +32,16 @@ public:
 	offset_malloc& operator=( const offset_malloc& src );       // bind to memory allocator that has already setup
 	offset_malloc& operator=( offset_malloc&& src ) noexcept;   // bind to memory allocator that has already setup
 
+	void swap( offset_malloc& src );
+
 	explicit offset_malloc( void* p_mem, size_t mem_bytes );   // bind and setup memory allocator implementation. caution: this instance does not become not p_mem area owner.
 	explicit offset_malloc( void* p_mem );                     // bind to memory allocator that has already setup. caution: this instance does not become not p_mem area owner.
 
 #if __has_cpp_attribute( nodiscard )
 	[[nodiscard]]
 #endif
-	void*
-		 allocate( size_t req_bytes, size_t alignment = alignof( std::max_align_t ) );
-	void deallocate( void* p, size_t alignment = alignof( std::max_align_t ) );
-
-	void swap( offset_malloc& src );
+	void* allocate( size_t req_bytes, size_t alignment = alignof( std::max_align_t ) );
+	void  deallocate( void* p, size_t alignment = alignof( std::max_align_t ) );
 
 	int  get_bind_count( void ) const;
 	bool is_belong_to( void* p_mem ) const;

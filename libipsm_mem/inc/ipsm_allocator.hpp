@@ -67,8 +67,7 @@ public:
 #if __has_cpp_attribute( nodiscard )
 	[[nodiscard]]
 #endif
-	constexpr value_type*
-	allocate( size_type n )
+	constexpr value_type* allocate( size_type n )
 	{
 		if ( p_malloc_ == nullptr ) {
 			throw std::bad_cast();

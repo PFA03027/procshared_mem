@@ -26,8 +26,8 @@ unsigned int ipsm_malloc::channel_size( void )
 
 struct msg_channel {
 	using data_type = offset_ptr<void>;
-	ipsm_mutex                                    mtx_;
-	ipsm_condition_variable_monotonic             cond_;
+	ipsm_mutex                                          mtx_;
+	ipsm_condition_variable_monotonic                   cond_;
 	offset_list<data_type, offset_allocator<data_type>> msgch_[default_channel_size];
 
 	msg_channel( const offset_allocator<data_type> a )
@@ -96,8 +96,7 @@ ipsm_malloc::ipsm_malloc( const char* p_shm_name, const char* p_id_dirname, size
 #if __has_cpp_attribute( nodiscard )
 [[nodiscard]]
 #endif
-void*
-ipsm_malloc::allocate( size_t n, size_t alignment )
+void* ipsm_malloc::allocate( size_t n, size_t alignment )
 {
 	return shm_heap_.allocate( n, alignment );
 }
