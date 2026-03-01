@@ -152,7 +152,7 @@ make-profile-out: $(addprefix profile.,$(notdir $(TEST_EXECS)))
 coverage: exec-coverage
 	cd ${BUILD_DIR}; \
 	find . -type f -name "*.gcda" | xargs -P${JOBS} -I@ gcov -l -b @; \
-	lcov --rc branch_coverage=1 --rc geninfo_unexecuted_blocks=1 --ignore-errors negative --ignore-errors mismatch -c -d . --include '*/inc/*' --include '*/src/*' -o output.info; \
+	lcov --rc branch_coverage=1 --rc geninfo_unexecuted_blocks=1 --ignore-errors negative --ignore-errors mismatch -c -d . --include '*/libipsm_mem/*' -o output.info; \
 	genhtml --branch-coverage -o OUTPUT -p . -f output.info
 
 exec-coverage: clean
