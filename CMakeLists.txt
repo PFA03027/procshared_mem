@@ -7,9 +7,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 # set(CMAKE_UNITY_BUILD TRUE)
 
 # Switch build target
-set(BUILD_TARGET common CACHE STRING "Build target?")
-message("[BUILD] ${BUILD_TARGET}")
-include(${BUILD_TARGET}.cmake)
+set(BUILD_CONFIG common CACHE STRING "Build config?")
+message("[BUILD] ${BUILD_CONFIG}")
+include(${BUILD_CONFIG}.cmake)
 
 if("${CMAKE_BUILD_TYPE}" EQUAL "Debug")
  include(debug_option.cmake)
@@ -19,8 +19,8 @@ enable_testing()
 
 file(GLOB SOURCES src/*.cpp )
 
-# GREETINGS_BUILD_SHARED_LIBSというオプションを作成。デフォルトをOFFに設定。
-option(IPSM_BUILD_SHARED_LIBS "build ipsm_mem as a shared library" OFF)
+# GREETINGS_BUILD_SHARED_LIBSというオプションを作成。デフォルトをONに設定。
+option(IPSM_BUILD_SHARED_LIBS "build ipsm_mem as a shared library" ON)
 
 if (IPSM_BUILD_SHARED_LIBS)
   add_library(ipsm_mem SHARED ${SOURCES} )
