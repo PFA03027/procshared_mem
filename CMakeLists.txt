@@ -16,9 +16,6 @@ set(BUILD_CONFIG normal CACHE STRING "Build config?")
 message("[BUILD] ${BUILD_CONFIG}")
 include(${BUILD_CONFIG}.cmake)
 
-if("${CMAKE_BUILD_TYPE}" EQUAL "Debug")
- include(debug_option.cmake)
-endif()
 
 enable_testing()
 

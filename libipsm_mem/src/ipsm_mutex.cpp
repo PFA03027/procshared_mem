@@ -27,10 +27,9 @@ namespace ipsm {
 #ifdef ENABLE_BACKTRACE_LOGOUTPUT
 void backtrace_print( void )
 {
-	size_t i;
 	void*  trace[128];
 	char** ss_trace;
-	size_t size = backtrace( trace, sizeof( trace ) / sizeof( trace[0] ) );
+	int    size = backtrace( trace, sizeof( trace ) / sizeof( trace[0] ) );
 	ss_trace    = backtrace_symbols( trace, size );
 	if ( ss_trace == NULL ) {
 		/*Failure*/
@@ -38,7 +37,7 @@ void backtrace_print( void )
 	}
 
 	/*例えば表示*/
-	for ( i = 0; i < size; i++ ) {
+	for ( int i = 0; i < size; i++ ) {
 		printf( "%s\n", ss_trace[i] );
 	}
 	free( ss_trace );
