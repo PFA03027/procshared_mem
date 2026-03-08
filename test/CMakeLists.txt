@@ -34,6 +34,7 @@ target_sources(test_ipsm_functions PRIVATE
   test_ipsm_mem_internal_idfile.cpp
   test_ipsm_mem_internal_sem.cpp
   test_ipsm_mem_internal_shm.cpp
+  test_ipsm_mem_v2.cpp
   )
 target_include_directories( test_ipsm_functions  PRIVATE ../libipsm_mem/src )
 target_link_libraries(test_ipsm_functions ipsm_mem test_ipsm_common gtest gtest_main )

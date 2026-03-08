@@ -12,6 +12,7 @@
 #ifndef IPSM_MEM_HPP_
 #define IPSM_MEM_HPP_
 
+#include <cstdint>
 #include <functional>
 #include <stdexcept>
 #include <string>
@@ -178,7 +179,7 @@ public:
 	 *
 	 * @exception ipsm_mem_error
 	 */
-	void allocate_shm_as_both(
+	void setup(
 		const char*                           p_shm_name,                   //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
 		const char*                           p_lifetime_ctrl_fname,        //!< [in] lifetime control file name.
 		size_t                                length,                       //!< [in] shared memory size

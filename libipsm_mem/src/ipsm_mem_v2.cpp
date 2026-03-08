@@ -267,7 +267,22 @@ void shm_guard::create( const std::string& shm_name, size_t length, mode_t mode 
 // ==============================================================================
 ipsm_mem::impl::~impl()
 {
+	try {
+		shared_lock_guard_.release_lock();
+
+		lock_file_guard exclusive_lock_guard( lifetime_ctrl_fname_, mode_ );
+		if ( exclusive_lock_guard.try_exclusive_lock() ) {
+			// 排他ロックが確保できた場合、このプロセスが最後のプロセスであることを示す。
+			// よって、共有メモリオブジェクトを削除する。
+			shm_unlink( shm_name_.c_str() );
+		}
+	} catch ( const std::exception& e ) {
+		psm_logoutput( ipsm::psm_log_lv::kErr, "exception in ipsm_mem::impl destructor: %s", e.what() );
+	} catch ( ... ) {
+		psm_logoutput( ipsm::psm_log_lv::kErr, "unknown exception in ipsm_mem::impl destructor" );
+	}
 }
+
 ipsm_mem::impl::impl(
 	const char* p_shm_name,
 	const char* p_lifetime_ctrl_fname,
@@ -292,7 +307,7 @@ ipsm_mem::impl::impl(
 
 		// 排他ロックの取得を試みる。排他ロックを取得出来た場合、このプロセスが共有メモリの初期化を行うプロセスとなる。
 		{
-			lock_file_guard exclusive_lock_guard( lifetime_ctrl_fname_, mode );
+			lock_file_guard exclusive_lock_guard( lifetime_ctrl_fname_, mode_ );
 			if ( exclusive_lock_guard.try_exclusive_lock() ) {
 				// 共有メモリの初期化を行うプロセスの場合、共有メモリを作成してマッピングする
 				shm_create_guard.create( shm_name_, nessesary_size, mode_ );
@@ -404,7 +419,7 @@ void ipsm_mem::swap( ipsm_mem& src )
  *
  * @exception ipsm_mem_error
  */
-void ipsm_mem::allocate_shm_as_both(
+void ipsm_mem::setup(
 	const char*                           p_shm_name,              //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
 	const char*                           p_lifetime_ctrl_fname,   //!< [in] lifetime control file name.
 	size_t                                length,                  //!< [in] shared memory size

@@ -98,11 +98,6 @@ public:
 
 	ipsm_mem::status get_status( void ) const;
 
-protected:
-	bool try_exclusive_lock( void );
-	bool try_shared_lock( void );
-	void release_lock( void );
-
 private:
 	std::string shm_name_;              //!< shared memory name. this string should start '/' and shorter than NAME_MAX-4
 	std::string lifetime_ctrl_fname_;   //!< lifetime control file name.

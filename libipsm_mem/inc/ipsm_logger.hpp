@@ -57,7 +57,7 @@ constexpr inline bool psm_filter( psm_log_lv ll )
 }
 
 template <typename... Args>
-inline void psm_logoutput( psm_log_lv ll, const char* p_fmt, Args... args )
+inline void psm_logoutput( psm_log_lv ll, const char* p_fmt, Args... args ) noexcept
 {
 	if ( psm_filter( ll ) ) {
 		fprintf( stderr, p_fmt, args... );
@@ -66,7 +66,7 @@ inline void psm_logoutput( psm_log_lv ll, const char* p_fmt, Args... args )
 }
 
 template <>
-inline void psm_logoutput( psm_log_lv ll, const char* p_fmt )
+inline void psm_logoutput( psm_log_lv ll, const char* p_fmt ) noexcept
 {
 	if ( psm_filter( ll ) ) {
 		fprintf( stderr, "%s\n", p_fmt );
