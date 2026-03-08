@@ -44,7 +44,7 @@ std::string make_strerror( type_of_errno e_v )
 	char        str_buff[128];
 	const char* p_ret = strerror_r( e_v, str_buff, 128 );
 	if ( p_ret != NULL ) {
-		return std::string( p_ret ) + std::string( "(errno=" ) + std::to_string( e_v ) + std::string( ")" );
+		return std::string( "(errno=" ) + std::to_string( e_v ) + std::string( ")" ) + std::string( p_ret );
 	} else {
 		return std::string( "errno=" ) + std::to_string( e_v ) + std::string( " (strerror_r() is fail)" );
 	}

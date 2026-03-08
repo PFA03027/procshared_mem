@@ -1,5 +1,5 @@
-Autonomous distributed shared memory construction
-自律分散型共有メモリ構築
+Autonomous distributed construction process for shared memory
+共有メモリに対する自律分散型の構築処理
 
 Q: Linux 共有メモリ死活制御アルゴリズム
 
