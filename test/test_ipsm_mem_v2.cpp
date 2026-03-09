@@ -9,6 +9,8 @@
  *
  */
 
+#include <cstdlib>
+#include <iostream>
 #include <string>
 
 #include <sys/mman.h>
@@ -286,4 +288,59 @@ TEST_F( TestIPSMem, Exist_CanSetup )
 	EXPECT_GE( sut2.available_size(), length_ );
 	EXPECT_EQ( sut2.get_status(), ipsm_v2::ipsm_mem::status::ready );
 	EXPECT_EQ( *static_cast<int*>( sut2.get() ), 12345 );
+}
+
+void TestIPSMem_SetupThen_ProcessAbort(
+	const char* p_shm_name,              //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
+	const char* p_lifetime_ctrl_fname,   //!< [in] lifetime control file name.
+	size_t      length,                  //!< [in] shared memory size
+	mode_t      mode                     //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
+)
+{
+	ipsm_v2::ipsm_mem sut1;
+
+	sut1.setup( p_shm_name, p_lifetime_ctrl_fname, length, mode, []( void* p, size_t s ) { return nullptr; } );
+	int* p = static_cast<int*>( sut1.get() );
+	*p     = 12345;
+
+	std::cerr << "Sending myself unblockable signal" << std::endl;
+	std::abort();   // no call destructor, simulate last process abort
+}
+
+using TestIPSMemDeathTest = TestIPSMem;
+
+TEST_F( TestIPSMemDeathTest, LastProcessAbortThen_CanSetup_ThenRecreated )
+{
+	// Arrange
+	ASSERT_EXIT( TestIPSMem_SetupThen_ProcessAbort( shm_name_.c_str(), lifetime_ctrl_fname_.c_str(), length_, mode_ ),
+	             testing::KilledBySignal( SIGABRT ),
+	             "Sending myself unblockable signal" );
+
+	ipsm_v2::ipsm_mem sut2;
+
+	// Act
+	EXPECT_NO_THROW( sut2.setup( shm_name_.c_str(), lifetime_ctrl_fname_.c_str(), length_, mode_, []( void* p, size_t s ) { return nullptr; } ) );
+
+	// Assert
+	EXPECT_NE( sut2.get(), nullptr );
+	EXPECT_GE( sut2.available_size(), length_ );
+	EXPECT_EQ( sut2.get_status(), ipsm_v2::ipsm_mem::status::ready );
+	EXPECT_NE( *static_cast<int*>( sut2.get() ), 12345 );
+}
+
+TEST_F( TestIPSMemDeathTest, AnotherProcessAbortThen_CanDestructSharedMemory )
+{
+	// Arrange
+	{
+		ipsm_v2::ipsm_mem sut2;
+		EXPECT_NO_THROW( sut2.setup( shm_name_.c_str(), lifetime_ctrl_fname_.c_str(), length_, mode_, []( void* p, size_t s ) { return nullptr; } ) );
+
+		ASSERT_EXIT( TestIPSMem_SetupThen_ProcessAbort( shm_name_.c_str(), lifetime_ctrl_fname_.c_str(), length_, mode_ ),
+		             testing::KilledBySignal( SIGABRT ),
+		             "Sending myself unblockable signal" );
+
+		// Act
+	}
+
+	// Assert
 }

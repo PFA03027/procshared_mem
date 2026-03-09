@@ -274,6 +274,7 @@ ipsm_mem::impl::~impl()
 		if ( exclusive_lock_guard.try_exclusive_lock() ) {
 			// 排他ロックが確保できた場合、このプロセスが最後のプロセスであることを示す。
 			// よって、共有メモリオブジェクトを削除する。
+			psm_logoutput( ipsm::psm_log_lv::kInfo, "This process is last process for shared memory: %s, unlinking that shared memory.", shm_name_.c_str() );
 			shm_unlink( shm_name_.c_str() );
 		}
 	} catch ( const std::exception& e ) {
