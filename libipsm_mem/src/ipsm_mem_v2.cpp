@@ -81,7 +81,7 @@ bool lock_file_guard::try_exclusive_lock( void )
 		return true;
 	} else {
 		auto cur_errno = errno;
-		psm_logoutput( ipsm::psm_log_lv::kErr, "failed to acquire exclusive lock, error: %s", ipsm::make_strerror( cur_errno ).c_str() );
+		psm_logoutput( ipsm::psm_log_lv::kDebug, "failed to acquire exclusive lock, error: %s", ipsm::make_strerror( cur_errno ).c_str() );
 		if ( cur_errno != EWOULDBLOCK ) {
 			throw ipsm::ipsm_mem_error( cur_errno, "failed to acquire exclusive lock" );
 		}
@@ -101,7 +101,7 @@ bool lock_file_guard::try_shared_lock( void )
 		return true;
 	} else {
 		auto cur_errno = errno;
-		psm_logoutput( ipsm::psm_log_lv::kErr, "failed to acquire shared lock, error: %s", ipsm::make_strerror( cur_errno ).c_str() );
+		psm_logoutput( ipsm::psm_log_lv::kDebug, "failed to acquire shared lock, error: %s", ipsm::make_strerror( cur_errno ).c_str() );
 		if ( cur_errno != EWOULDBLOCK ) {
 			throw ipsm::ipsm_mem_error( cur_errno, "failed to acquire shared lock" );
 		}
@@ -191,7 +191,7 @@ bool shm_guard::open( const std::string& shm_name, size_t length, mode_t mode )
 	int fd_ret = shm_open( shm_name.c_str(), O_RDWR, mode );
 	if ( fd_ret < 0 ) {
 		auto cur_errno = errno;
-		psm_logoutput( ipsm::psm_log_lv::kErr, "failed to open shared memory object: %s, error: %s", shm_name.c_str(), ipsm::make_strerror( cur_errno ).c_str() );
+		psm_logoutput( ipsm::psm_log_lv::kWarn, "failed to open shared memory object: %s, error: %s", shm_name.c_str(), ipsm::make_strerror( cur_errno ).c_str() );
 		return false;
 	}
 
@@ -274,7 +274,7 @@ ipsm_mem::impl::~impl()
 		if ( exclusive_lock_guard.try_exclusive_lock() ) {
 			// 排他ロックが確保できた場合、このプロセスが最後のプロセスであることを示す。
 			// よって、共有メモリオブジェクトを削除する。
-			psm_logoutput( ipsm::psm_log_lv::kInfo, "This process is last process for shared memory: %s, unlinking that shared memory.", shm_name_.c_str() );
+			// psm_logoutput( ipsm::psm_log_lv::kInfo, "This process is last process for shared memory: %s, unlinking that shared memory.", shm_name_.c_str() );
 			shm_unlink( shm_name_.c_str() );
 		}
 	} catch ( const std::exception& e ) {
@@ -335,6 +335,7 @@ ipsm_mem::impl::impl(
 			bool ret = shm_guard_.open( shm_name_, nessesary_size, mode_ );
 			if ( !ret ) {
 				shared_lock_guard_.release_lock();
+				psm_logoutput( ipsm::psm_log_lv::kInfo, "Because fail to open shared memory, retry setup of %s", shm_name_.c_str() );
 				continue;   // 共有メモリのオープンに失敗した場合、共有ロックを解放してから、再度、排他ロック確保からやり直す。
 			}
 
@@ -344,6 +345,7 @@ ipsm_mem::impl::impl(
 			if ( *p_status != ipsm_mem::status::ready ) {
 				shm_guard_ = shm_guard();   // 共有メモリのマッピングを解除する
 				shared_lock_guard_.release_lock();
+				psm_logoutput( ipsm::psm_log_lv::kInfo, "Because of unexpected shared memory status(0x%llx), retry setup of %s", static_cast<std::uintptr_t>( *p_status ), shm_name_.c_str() );
 				continue;   // 共有メモリの状態がreadyでない場合、共有ロックを解放してから、再度最初からやり直す。
 			}
 
