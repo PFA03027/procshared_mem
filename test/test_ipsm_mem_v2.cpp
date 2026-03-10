@@ -261,7 +261,7 @@ TEST_F( TestIPSMem, NotExist_CanSetup )
 	ipsm_v2::ipsm_mem sut;
 
 	// Act
-	EXPECT_NO_THROW( sut.setup( shm_name_.c_str(), lifetime_ctrl_fname_.c_str(), length_, mode_, []( void* p, size_t s ) { return nullptr; } ) );
+	EXPECT_NO_THROW( sut.setup( shm_name_.c_str(), lifetime_ctrl_fname_.c_str(), length_, mode_, []( void* p, size_t s ) -> size_t { return 0; } ) );
 
 	// Assert
 	EXPECT_NE( sut.get(), nullptr );
@@ -275,13 +275,13 @@ TEST_F( TestIPSMem, Exist_CanSetup )
 	ipsm_v2::ipsm_mem sut1;
 	ipsm_v2::ipsm_mem sut2;
 
-	sut1.setup( shm_name_.c_str(), lifetime_ctrl_fname_.c_str(), length_, mode_, []( void* p, size_t s ) { return nullptr; } );
+	sut1.setup( shm_name_.c_str(), lifetime_ctrl_fname_.c_str(), length_, mode_, []( void* p, size_t s ) -> size_t { return 0; } );
 	int* p = static_cast<int*>( sut1.get() );
 	EXPECT_NE( *p, 12345 );
 	*p = 12345;
 
 	// Act
-	EXPECT_NO_THROW( sut2.setup( shm_name_.c_str(), lifetime_ctrl_fname_.c_str(), length_, mode_, []( void* p, size_t s ) { return nullptr; } ) );
+	EXPECT_NO_THROW( sut2.setup( shm_name_.c_str(), lifetime_ctrl_fname_.c_str(), length_, mode_, []( void* p, size_t s ) -> size_t { return 0; } ) );
 
 	// Assert
 	EXPECT_NE( sut2.get(), nullptr );
@@ -299,7 +299,7 @@ void TestIPSMem_SetupThen_ProcessAbort(
 {
 	ipsm_v2::ipsm_mem sut1;
 
-	sut1.setup( p_shm_name, p_lifetime_ctrl_fname, length, mode, []( void* p, size_t s ) { return nullptr; } );
+	sut1.setup( p_shm_name, p_lifetime_ctrl_fname, length, mode, []( void* p, size_t s ) -> size_t { return 0; } );
 	int* p = static_cast<int*>( sut1.get() );
 	*p     = 12345;
 
@@ -319,7 +319,7 @@ TEST_F( TestIPSMemDeathTest, LastProcessAbortThen_CanSetup_ThenRecreated )
 	ipsm_v2::ipsm_mem sut2;
 
 	// Act
-	EXPECT_NO_THROW( sut2.setup( shm_name_.c_str(), lifetime_ctrl_fname_.c_str(), length_, mode_, []( void* p, size_t s ) { return nullptr; } ) );
+	EXPECT_NO_THROW( sut2.setup( shm_name_.c_str(), lifetime_ctrl_fname_.c_str(), length_, mode_, []( void* p, size_t s ) -> size_t { return 0; } ) );
 
 	// Assert
 	EXPECT_NE( sut2.get(), nullptr );
@@ -333,7 +333,7 @@ TEST_F( TestIPSMemDeathTest, AnotherProcessAbortThen_CanDestructSharedMemory )
 	// Arrange
 	{
 		ipsm_v2::ipsm_mem sut2;
-		EXPECT_NO_THROW( sut2.setup( shm_name_.c_str(), lifetime_ctrl_fname_.c_str(), length_, mode_, []( void* p, size_t s ) { return nullptr; } ) );
+		EXPECT_NO_THROW( sut2.setup( shm_name_.c_str(), lifetime_ctrl_fname_.c_str(), length_, mode_, []( void* p, size_t s ) -> size_t { return 0; } ) );
 
 		ASSERT_EXIT( TestIPSMem_SetupThen_ProcessAbort( shm_name_.c_str(), lifetime_ctrl_fname_.c_str(), length_, mode_ ),
 		             testing::KilledBySignal( SIGABRT ),

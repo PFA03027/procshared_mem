@@ -180,13 +180,13 @@ public:
 	 * @exception ipsm_mem_error
 	 */
 	void setup(
-		const char*                           p_shm_name,                   //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
-		const char*                           p_lifetime_ctrl_fname,        //!< [in] lifetime control file name.
-		size_t                                length,                       //!< [in] shared memory size
-		mode_t                                mode,                         //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
-		std::function<void*( void*, size_t )> init_functor_arg,             //!< [in] a functor to initialize a shared memory area. first argument is the pointer to the top of memory. second argument is the assigned memory length. return value is set to opt_info.
-		int                                   timeout_msec        = 1000,   //!< [in] timeout in milliseconds for waiting for shared memory initialization.
-		int                                   retry_interval_msec = 100     //!< [in] retry interval in milliseconds for waiting for shared memory initialization.
+		const char*                            p_shm_name,                   //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
+		const char*                            p_lifetime_ctrl_fname,        //!< [in] lifetime control file name.
+		size_t                                 length,                       //!< [in] shared memory size
+		mode_t                                 mode,                         //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
+		std::function<size_t( void*, size_t )> init_functor_arg,             //!< [in] a functor to initialize a shared memory area. first argument is the pointer to the top of memory. second argument is the assigned memory length. return value is consumed memory size.
+		int                                    timeout_msec        = 1000,   //!< [in] timeout in milliseconds for waiting for shared memory initialization.
+		int                                    retry_interval_msec = 100     //!< [in] retry interval in milliseconds for waiting for shared memory initialization.
 	);
 
 	void*  get( void ) const;              //!< get top address of memory area

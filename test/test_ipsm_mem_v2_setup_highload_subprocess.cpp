@@ -37,7 +37,7 @@ int main( void )
 			p_lifetime_ctrl_fname,
 			1024,
 			S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
-			[]( void* p, size_t s ) { return nullptr; },
+			[]( void* p, size_t s ) -> size_t { return 0; },
 			1000,
 			1 );
 

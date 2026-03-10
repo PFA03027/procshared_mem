@@ -9,6 +9,7 @@
  *
  */
 
+#include <atomic>
 #include <chrono>
 #include <limits>
 #include <stdexcept>
@@ -265,6 +266,29 @@ void shm_guard::create( const std::string& shm_name, size_t length, mode_t mode 
 }
 
 // ==============================================================================
+struct ipsm_mem_header {
+	std::atomic<ipsm_mem::status> status_;
+	std::atomic<std::uintptr_t>   header_offset_;
+
+	ipsm_mem_header()
+	  : status_( ipsm_mem::status::initializing )
+	  , header_offset_( sizeof( ipsm_mem_header ) )
+	{
+	}
+
+	void set_ready_with_header_offset( std::uintptr_t offset )
+	{
+		header_offset_.store( offset, std::memory_order_release );
+		status_.store( ipsm_mem::status::ready, std::memory_order_release );
+	}
+
+	ipsm_mem::status get_status( void ) const
+	{
+		return status_.load( std::memory_order_acquire );
+	}
+};
+
+// ==============================================================================
 ipsm_mem::impl::~impl()
 {
 	try {
@@ -285,12 +309,13 @@ ipsm_mem::impl::~impl()
 }
 
 ipsm_mem::impl::impl(
-	const char* p_shm_name,
-	const char* p_lifetime_ctrl_fname,
-	size_t      length,
-	mode_t      mode,
-	int         timeout_msec,
-	int         retry_interval_msec )
+	const char*                            p_shm_name,
+	const char*                            p_lifetime_ctrl_fname,
+	size_t                                 length,
+	mode_t                                 mode,
+	std::function<size_t( void*, size_t )> init_functor_arg,
+	int                                    timeout_msec,
+	int                                    retry_interval_msec )
   : shm_name_( p_shm_name )
   , lifetime_ctrl_fname_( p_lifetime_ctrl_fname )
   , req_length_( length )
@@ -300,7 +325,7 @@ ipsm_mem::impl::impl(
   , shm_length_( 0 )
   , available_length_( 0 )
 {
-	const size_t nessesary_size     = req_length_ + sizeof( ipsm_mem::status );
+	const size_t nessesary_size     = req_length_ + sizeof( ipsm_mem_header );
 	const auto   timeout_time_point = std::chrono::steady_clock::now() + std::chrono::milliseconds( timeout_msec );
 
 	while ( true ) {
@@ -313,12 +338,16 @@ ipsm_mem::impl::impl(
 				// 共有メモリの初期化を行うプロセスの場合、共有メモリを作成してマッピングする
 				shm_create_guard.create( shm_name_, nessesary_size, mode_ );
 
-				ipsm_mem::status* p_status = reinterpret_cast<ipsm_mem::status*>( shm_create_guard.get() );
-				*p_status                  = ipsm_mem::status::initializing;
+				// 共有メモリのヘッダ領域の初期化
+				ipsm_mem_header* p_header = new ( shm_create_guard.get() ) ipsm_mem_header();
 
-				// TODO: 共有メモリの初期化処理を実装する。初期化処理は、init_functor_argで指定された関数オブジェクトを呼び出す形で実装する。
-				// 共有メモリの初期化処理が完了したら、共有メモリの状態をreadyに変更する。
-				*p_status = ipsm_mem::status::ready;
+				// ヘッダ領域の後ろに配置される領域の初期化を、init_functor_argで指定された関数オブジェクトを呼び出す形で実装する。
+				std::uintptr_t addr               = reinterpret_cast<std::uintptr_t>( p_header ) + sizeof( ipsm_mem_header );
+				size_t         cur_available_size = shm_create_guard.mmap_length() - sizeof( ipsm_mem_header );
+				size_t         consumed_size      = init_functor_arg( reinterpret_cast<void*>( addr ), cur_available_size );
+
+				// 共有メモリの初期化処理が完了したら、ヘッダ領域とその後ろの領域で消費されたサイズを指定して、readyに変更する。
+				p_header->set_ready_with_header_offset( sizeof( ipsm_mem_header ) + consumed_size );
 			}
 		}
 		{
@@ -341,11 +370,11 @@ ipsm_mem::impl::impl(
 
 			// 共有メモリの状態を確認する。状態がreadyでない場合、共有メモリの初期化を行うプロセスが初期化処理中にプロセスが終了したことを示す。
 			// 共有メモリと、共有ロックを解放して、再度、排他ロック確保からやり直す。
-			ipsm_mem::status* p_status = reinterpret_cast<ipsm_mem::status*>( shm_guard_.get() );
-			if ( *p_status != ipsm_mem::status::ready ) {
+			ipsm_mem_header* p_header = reinterpret_cast<ipsm_mem_header*>( shm_guard_.get() );
+			if ( p_header->get_status() != ipsm_mem::status::ready ) {
 				shm_guard_ = shm_guard();   // 共有メモリのマッピングを解除する
 				shared_lock_guard_.release_lock();
-				psm_logoutput( ipsm::psm_log_lv::kInfo, "Because of unexpected shared memory status(0x%llx), retry setup of %s", static_cast<std::uintptr_t>( *p_status ), shm_name_.c_str() );
+				psm_logoutput( ipsm::psm_log_lv::kInfo, "Because of unexpected shared memory status(0x%llx), retry setup of %s", static_cast<std::uintptr_t>( p_header->get_status() ), shm_name_.c_str() );
 				continue;   // 共有メモリの状態がreadyでない場合、共有ロックを解放してから、再度最初からやり直す。
 			}
 
@@ -355,16 +384,17 @@ ipsm_mem::impl::impl(
 	}
 
 	shm_length_       = shm_guard_.mmap_length();
-	available_length_ = shm_length_ - sizeof( ipsm_mem::status );
+	available_length_ = shm_length_ - sizeof( ipsm_mem_header );
 }
 
 void* ipsm_mem::impl::get( void ) const
 {
-	std::uintptr_t addr = reinterpret_cast<std::uintptr_t>( shm_guard_.get() );
-	if ( addr == 0 ) {
+	ipsm_mem_header* p_header = reinterpret_cast<ipsm_mem_header*>( shm_guard_.get() );
+	if ( p_header == nullptr ) {
 		return nullptr;
 	}
-	addr += sizeof( ipsm_mem::status );
+	std::uintptr_t addr = reinterpret_cast<std::uintptr_t>( p_header );
+	addr += p_header->header_offset_.load( std::memory_order_acquire );
 	return reinterpret_cast<void*>( addr );
 }
 
@@ -375,13 +405,13 @@ size_t ipsm_mem::impl::available_size( void ) const
 
 ipsm_mem::status ipsm_mem::impl::get_status( void ) const
 {
-	if ( shm_guard_.get() == nullptr ) {
+	ipsm_mem_header* p_header = reinterpret_cast<ipsm_mem_header*>( shm_guard_.get() );
+	if ( p_header == nullptr ) {
 		psm_logoutput( ipsm::psm_log_lv::kWarn, "shared memory is not allocated" );
 		return ipsm_mem::status::initializing;
 	}
 
-	ipsm_mem::status* p_status = reinterpret_cast<ipsm_mem::status*>( shm_guard_.get() );
-	return *p_status;
+	return p_header->status_.load( std::memory_order_acquire );
 }
 
 // ==============================================================================
@@ -423,13 +453,13 @@ void ipsm_mem::swap( ipsm_mem& src )
  * @exception ipsm_mem_error
  */
 void ipsm_mem::setup(
-	const char*                           p_shm_name,              //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
-	const char*                           p_lifetime_ctrl_fname,   //!< [in] lifetime control file name.
-	size_t                                length,                  //!< [in] shared memory size
-	mode_t                                mode,                    //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
-	std::function<void*( void*, size_t )> init_functor_arg,        //!< [in] a functor to initialize a shared memory area. first argument is the pointer to the top of memory. second argument is the assigned memory length. return value is set to opt_info.
-	int                                   timeout_msec,            //!< [in] timeout in milliseconds for waiting for shared memory initialization.
-	int                                   retry_interval_msec      //!< [in] retry interval in milliseconds for waiting for shared memory initialization.
+	const char*                            p_shm_name,              //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
+	const char*                            p_lifetime_ctrl_fname,   //!< [in] lifetime control file name.
+	size_t                                 length,                  //!< [in] shared memory size
+	mode_t                                 mode,                    //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
+	std::function<size_t( void*, size_t )> init_functor_arg,        //!< [in] a functor to initialize a shared memory area. first argument is the pointer to the top of memory. second argument is the assigned memory length. return value is consumed memory size.
+	int                                    timeout_msec,            //!< [in] timeout in milliseconds for waiting for shared memory initialization.
+	int                                    retry_interval_msec      //!< [in] retry interval in milliseconds for waiting for shared memory initialization.
 )
 {
 	if ( p_impl_ != nullptr ) {
@@ -437,7 +467,7 @@ void ipsm_mem::setup(
 		return;
 	}
 
-	p_impl_ = new impl( p_shm_name, p_lifetime_ctrl_fname, length, mode, timeout_msec, retry_interval_msec );
+	p_impl_ = new impl( p_shm_name, p_lifetime_ctrl_fname, length, mode, init_functor_arg, timeout_msec, retry_interval_msec );
 }
 
 void* ipsm_mem::get( void ) const
