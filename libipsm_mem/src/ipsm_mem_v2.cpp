@@ -268,17 +268,17 @@ void shm_guard::create( const std::string& shm_name, size_t length, mode_t mode 
 // ==============================================================================
 struct ipsm_mem_header {
 	std::atomic<ipsm_mem::status> status_;
-	std::atomic<std::uintptr_t>   header_offset_;
+	std::atomic<std::uintptr_t>   sharing_value_;   // 共有メモリの初期化後、共有ロックでオープンしたプロセスと共有する値。共有ロックでオープンしたプロセスは、この値を参照して、共有メモリの使用開始処理に反映する。
 
 	ipsm_mem_header()
 	  : status_( ipsm_mem::status::initializing )
-	  , header_offset_( sizeof( ipsm_mem_header ) )
+	  , sharing_value_( 0 )
 	{
 	}
 
-	void set_ready_with_header_offset( std::uintptr_t offset )
+	void set_ready_with_sharing_value( std::uintptr_t value )
 	{
-		header_offset_.store( offset, std::memory_order_release );
+		sharing_value_.store( value, std::memory_order_release );
 		status_.store( ipsm_mem::status::ready, std::memory_order_release );
 	}
 
@@ -309,13 +309,13 @@ ipsm_mem::impl::~impl()
 }
 
 ipsm_mem::impl::impl(
-	const char*                            p_shm_name,
-	const char*                            p_lifetime_ctrl_fname,
-	size_t                                 length,
-	mode_t                                 mode,
-	std::function<size_t( void*, size_t )> init_functor_arg,
-	int                                    timeout_msec,
-	int                                    retry_interval_msec )
+	const char*                                    p_shm_name,
+	const char*                                    p_lifetime_ctrl_fname,
+	size_t                                         length,
+	mode_t                                         mode,
+	std::function<std::uintptr_t( void*, size_t )> creater_init_functor_arg,
+	int                                            timeout_msec,
+	int                                            retry_interval_msec )
   : shm_name_( p_shm_name )
   , lifetime_ctrl_fname_( p_lifetime_ctrl_fname )
   , req_length_( length )
@@ -344,10 +344,10 @@ ipsm_mem::impl::impl(
 				// ヘッダ領域の後ろに配置される領域の初期化を、init_functor_argで指定された関数オブジェクトを呼び出す形で実装する。
 				std::uintptr_t addr               = reinterpret_cast<std::uintptr_t>( p_header ) + sizeof( ipsm_mem_header );
 				size_t         cur_available_size = shm_create_guard.mmap_length() - sizeof( ipsm_mem_header );
-				size_t         consumed_size      = init_functor_arg( reinterpret_cast<void*>( addr ), cur_available_size );
+				std::uintptr_t hint_value         = creater_init_functor_arg( reinterpret_cast<void*>( addr ), cur_available_size );
 
 				// 共有メモリの初期化処理が完了したら、ヘッダ領域とその後ろの領域で消費されたサイズを指定して、readyに変更する。
-				p_header->set_ready_with_header_offset( sizeof( ipsm_mem_header ) + consumed_size );
+				p_header->set_ready_with_sharing_value( hint_value );
 			}
 		}
 		{
@@ -394,7 +394,7 @@ void* ipsm_mem::impl::get( void ) const
 		return nullptr;
 	}
 	std::uintptr_t addr = reinterpret_cast<std::uintptr_t>( p_header );
-	addr += p_header->header_offset_.load( std::memory_order_acquire );
+	addr += sizeof( ipsm_mem_header );
 	return reinterpret_cast<void*>( addr );
 }
 
@@ -412,6 +412,16 @@ ipsm_mem::status ipsm_mem::impl::get_status( void ) const
 	}
 
 	return p_header->status_.load( std::memory_order_acquire );
+}
+
+std::uintptr_t ipsm_mem::impl::get_hint_value( void ) const
+{
+	ipsm_mem_header* p_header = reinterpret_cast<ipsm_mem_header*>( shm_guard_.get() );
+	if ( p_header == nullptr ) {
+		psm_logoutput( ipsm::psm_log_lv::kWarn, "shared memory is not allocated" );
+		return 0;
+	}
+	return p_header->sharing_value_.load( std::memory_order_acquire );
 }
 
 // ==============================================================================

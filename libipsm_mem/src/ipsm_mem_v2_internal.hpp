@@ -85,19 +85,20 @@ class ipsm_mem::impl {
 public:
 	~impl();
 	impl(
-		const char*                            p_shm_name,              //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
-		const char*                            p_lifetime_ctrl_fname,   //!< [in] lifetime control file name.
-		size_t                                 length,                  //!< [in] shared memory size
-		mode_t                                 mode,                    //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
-		std::function<size_t( void*, size_t )> init_functor_arg,        //!< [in] a functor to initialize a shared memory area. first argument is the pointer to the top of memory. second argument is the assigned memory length. return value is consumed memory size.
-		int                                    timeout_msec,            //!< [in] timeout in milliseconds for waiting for shared memory initialization.
-		int                                    retry_interval_msec      //!< [in] retry interval in milliseconds for waiting for shared memory initialization.
+		const char*                                    p_shm_name,                 //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
+		const char*                                    p_lifetime_ctrl_fname,      //!< [in] lifetime control file name.
+		size_t                                         length,                     //!< [in] shared memory size
+		mode_t                                         mode,                       //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
+		std::function<std::uintptr_t( void*, size_t )> creater_init_functor_arg,   //!< [in] a functor to initialize a shared memory area. first argument is the pointer to the top of memory. second argument is the assigned memory length. return value is hint value for secondary process.
+		int                                            timeout_msec,               //!< [in] timeout in milliseconds for waiting for shared memory initialization.
+		int                                            retry_interval_msec         //!< [in] retry interval in milliseconds for waiting for shared memory initialization.
 	);
 
 	void*  get( void ) const;              //!< get top address of memory area
 	size_t available_size( void ) const;   //!< larger than or equal to the size specified in constructor or allocate_shm_as_both.
 
 	ipsm_mem::status get_status( void ) const;
+	std::uintptr_t   get_hint_value( void ) const;
 
 private:
 	std::string shm_name_;              //!< shared memory name. this string should start '/' and shorter than NAME_MAX-4
