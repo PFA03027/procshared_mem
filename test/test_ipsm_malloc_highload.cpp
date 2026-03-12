@@ -18,9 +18,6 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include "ipsm_mem.hpp"
-
-using namespace ipsm;
 
 const char*   p_shm_obj_name = "/my_test_shm_malloc_highload";
 constexpr int num_of_threads = 100;
@@ -92,8 +89,6 @@ int main( int argc, char* args[] )
 {
 	printf( "%s\n", args[0] );
 	pid_t my_pid = getpid();
-
-	ipsm_mem::debug_force_cleanup( p_shm_obj_name, "/tmp" );   // to remove ghost data
 
 	for ( int i = 0; i < 10000; i++ ) {
 		if ( ( i == 0 ) || ( ( i % 1000 ) == 999 ) || ( i < 999 ) ) {

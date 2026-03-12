@@ -28,7 +28,7 @@
 #include "ipsm_mem.hpp"
 #include "ipsm_mem_v2_internal.hpp"
 
-namespace ipsm_v2 {
+namespace ipsm {
 
 static size_t roundup_to_page_size( size_t length )
 {

@@ -14,7 +14,7 @@
 
 #include "ipsm_mem.hpp"
 
-namespace ipsm_v2 {
+namespace ipsm {
 
 class lock_file_guard {
 public:
@@ -112,6 +112,6 @@ private:
 	size_t          available_length_;    //!< available size in shared memory. this size excludes the header area of the shared memory. req_length_ =< available_length_ < shm_length_
 };
 
-}   // namespace ipsm_v2
+}   // namespace ipsm
 
 #endif   // IPSM_MEM_V2_INTERNAL_HPP_

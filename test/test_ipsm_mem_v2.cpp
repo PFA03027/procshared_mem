@@ -43,7 +43,7 @@ TEST_F( TestLockFileGuard, CanConstruct )
 	// Arrange
 
 	// Act & Assert
-	EXPECT_NO_THROW( ipsm_v2::lock_file_guard sut( fname_, mode_ ) );
+	EXPECT_NO_THROW( ipsm::lock_file_guard sut( fname_, mode_ ) );
 
 	//
 }
@@ -51,7 +51,7 @@ TEST_F( TestLockFileGuard, CanConstruct )
 TEST_F( TestLockFileGuard, Solo_CanTryExclusiveLock_ThenReturnTrue )
 {
 	// Arrange
-	ipsm_v2::lock_file_guard sut( fname_, mode_ );
+	ipsm::lock_file_guard sut( fname_, mode_ );
 
 	// Act
 	bool ret = sut.try_exclusive_lock();
@@ -63,7 +63,7 @@ TEST_F( TestLockFileGuard, Solo_CanTryExclusiveLock_ThenReturnTrue )
 TEST_F( TestLockFileGuard, Solo_CanTrySharedLock_ThenReturnTrue )
 {
 	// Arrange
-	ipsm_v2::lock_file_guard sut( fname_, mode_ );
+	ipsm::lock_file_guard sut( fname_, mode_ );
 
 	// Act
 	bool ret = sut.try_shared_lock();
@@ -75,8 +75,8 @@ TEST_F( TestLockFileGuard, Solo_CanTrySharedLock_ThenReturnTrue )
 TEST_F( TestLockFileGuard, AlreadyExclusiveLocked_CanTryExclusiveLock_ThenReturnFalse )
 {
 	// Arrange
-	ipsm_v2::lock_file_guard sut1( fname_, mode_ );
-	ipsm_v2::lock_file_guard sut2( fname_, mode_ );
+	ipsm::lock_file_guard sut1( fname_, mode_ );
+	ipsm::lock_file_guard sut2( fname_, mode_ );
 
 	sut1.try_exclusive_lock();
 
@@ -90,8 +90,8 @@ TEST_F( TestLockFileGuard, AlreadyExclusiveLocked_CanTryExclusiveLock_ThenReturn
 TEST_F( TestLockFileGuard, AlreadyExclusiveLocked_CanTrySharedLock_ThenReturnFalse )
 {
 	// Arrange
-	ipsm_v2::lock_file_guard sut1( fname_, mode_ );
-	ipsm_v2::lock_file_guard sut2( fname_, mode_ );
+	ipsm::lock_file_guard sut1( fname_, mode_ );
+	ipsm::lock_file_guard sut2( fname_, mode_ );
 
 	sut1.try_exclusive_lock();
 
@@ -105,8 +105,8 @@ TEST_F( TestLockFileGuard, AlreadyExclusiveLocked_CanTrySharedLock_ThenReturnFal
 TEST_F( TestLockFileGuard, AlreadySharedLocked_CanTryExclusiveLock_ThenReturnFalse )
 {
 	// Arrange
-	ipsm_v2::lock_file_guard sut1( fname_, mode_ );
-	ipsm_v2::lock_file_guard sut2( fname_, mode_ );
+	ipsm::lock_file_guard sut1( fname_, mode_ );
+	ipsm::lock_file_guard sut2( fname_, mode_ );
 
 	sut1.try_shared_lock();
 
@@ -120,8 +120,8 @@ TEST_F( TestLockFileGuard, AlreadySharedLocked_CanTryExclusiveLock_ThenReturnFal
 TEST_F( TestLockFileGuard, AlreadySharedLocked_CanTrySharedLock_ThenReturnTrue )
 {
 	// Arrange
-	ipsm_v2::lock_file_guard sut1( fname_, mode_ );
-	ipsm_v2::lock_file_guard sut2( fname_, mode_ );
+	ipsm::lock_file_guard sut1( fname_, mode_ );
+	ipsm::lock_file_guard sut2( fname_, mode_ );
 
 	sut1.try_shared_lock();
 
@@ -157,7 +157,7 @@ TEST_F( TestSHMeGuard, CanConstruct )
 	// Arrange
 
 	// Act & Assert
-	EXPECT_NO_THROW( ipsm_v2::shm_guard sut );
+	EXPECT_NO_THROW( ipsm::shm_guard sut );
 
 	//
 }
@@ -165,7 +165,7 @@ TEST_F( TestSHMeGuard, CanConstruct )
 TEST_F( TestSHMeGuard, NotExist_CanCreateSharedMemory )
 {
 	// Arrange
-	ipsm_v2::shm_guard sut;
+	ipsm::shm_guard sut;
 
 	// Act & Assert
 	EXPECT_NO_THROW( sut.create( fname_, length_, mode_ ) );
@@ -178,8 +178,8 @@ TEST_F( TestSHMeGuard, NotExist_CanCreateSharedMemory )
 TEST_F( TestSHMeGuard, Exist_CanCreateSharedMemory )
 {
 	// Arrange
-	ipsm_v2::shm_guard sut1;
-	ipsm_v2::shm_guard sut2;
+	ipsm::shm_guard sut1;
+	ipsm::shm_guard sut2;
 
 	sut1.create( fname_, length_, mode_ );
 
@@ -194,7 +194,7 @@ TEST_F( TestSHMeGuard, Exist_CanCreateSharedMemory )
 TEST_F( TestSHMeGuard, NotExist_CanOpenSharedMemory_ThenReturnFalse )
 {
 	// Arrange
-	ipsm_v2::shm_guard sut;
+	ipsm::shm_guard sut;
 
 	// Act
 	bool ret = sut.open( fname_, length_, mode_ );
@@ -208,8 +208,8 @@ TEST_F( TestSHMeGuard, NotExist_CanOpenSharedMemory_ThenReturnFalse )
 TEST_F( TestSHMeGuard, Exist_CanOpenSharedMemory_ThenReturnTrue )
 {
 	// Arrange
-	ipsm_v2::shm_guard sut1;
-	ipsm_v2::shm_guard sut2;
+	ipsm::shm_guard sut1;
+	ipsm::shm_guard sut2;
 
 	sut1.create( fname_, length_, mode_ );
 
@@ -250,7 +250,7 @@ TEST_F( TestIPSMem, CanConstruct )
 	// Arrange
 
 	// Act & Assert
-	EXPECT_NO_THROW( ipsm_v2::ipsm_mem sut );
+	EXPECT_NO_THROW( ipsm::ipsm_mem sut );
 
 	// Assert
 }
@@ -258,7 +258,7 @@ TEST_F( TestIPSMem, CanConstruct )
 TEST_F( TestIPSMem, NotExist_CanSetup )
 {
 	// Arrange
-	ipsm_v2::ipsm_mem sut;
+	ipsm::ipsm_mem sut;
 
 	// Act
 	EXPECT_NO_THROW( sut.setup( shm_name_.c_str(), lifetime_ctrl_fname_.c_str(), length_, mode_, []( void* p, size_t s ) -> size_t { return 0; } ) );
@@ -266,14 +266,14 @@ TEST_F( TestIPSMem, NotExist_CanSetup )
 	// Assert
 	EXPECT_NE( sut.get(), nullptr );
 	EXPECT_GE( sut.available_size(), length_ );
-	EXPECT_EQ( sut.get_status(), ipsm_v2::ipsm_mem::status::ready );
+	EXPECT_EQ( sut.get_status(), ipsm::ipsm_mem::status::ready );
 }
 
 TEST_F( TestIPSMem, Exist_CanSetup )
 {
 	// Arrange
-	ipsm_v2::ipsm_mem sut1;
-	ipsm_v2::ipsm_mem sut2;
+	ipsm::ipsm_mem sut1;
+	ipsm::ipsm_mem sut2;
 
 	sut1.setup( shm_name_.c_str(), lifetime_ctrl_fname_.c_str(), length_, mode_, []( void* p, size_t s ) -> size_t { return 0; } );
 	int* p = static_cast<int*>( sut1.get() );
@@ -286,7 +286,7 @@ TEST_F( TestIPSMem, Exist_CanSetup )
 	// Assert
 	EXPECT_NE( sut2.get(), nullptr );
 	EXPECT_GE( sut2.available_size(), length_ );
-	EXPECT_EQ( sut2.get_status(), ipsm_v2::ipsm_mem::status::ready );
+	EXPECT_EQ( sut2.get_status(), ipsm::ipsm_mem::status::ready );
 	EXPECT_EQ( *static_cast<int*>( sut2.get() ), 12345 );
 }
 
@@ -297,7 +297,7 @@ void TestIPSMem_SetupThen_ProcessAbort(
 	mode_t      mode                     //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
 )
 {
-	ipsm_v2::ipsm_mem sut1;
+	ipsm::ipsm_mem sut1;
 
 	sut1.setup( p_shm_name, p_lifetime_ctrl_fname, length, mode, []( void* p, size_t s ) -> size_t { return 0; } );
 	int* p = static_cast<int*>( sut1.get() );
@@ -316,7 +316,7 @@ TEST_F( TestIPSMemDeathTest, LastProcessAbortThen_CanSetup_ThenRecreated )
 	             testing::KilledBySignal( SIGABRT ),
 	             "Sending myself unblockable signal" );
 
-	ipsm_v2::ipsm_mem sut2;
+	ipsm::ipsm_mem sut2;
 
 	// Act
 	EXPECT_NO_THROW( sut2.setup( shm_name_.c_str(), lifetime_ctrl_fname_.c_str(), length_, mode_, []( void* p, size_t s ) -> size_t { return 0; } ) );
@@ -324,7 +324,7 @@ TEST_F( TestIPSMemDeathTest, LastProcessAbortThen_CanSetup_ThenRecreated )
 	// Assert
 	EXPECT_NE( sut2.get(), nullptr );
 	EXPECT_GE( sut2.available_size(), length_ );
-	EXPECT_EQ( sut2.get_status(), ipsm_v2::ipsm_mem::status::ready );
+	EXPECT_EQ( sut2.get_status(), ipsm::ipsm_mem::status::ready );
 	EXPECT_NE( *static_cast<int*>( sut2.get() ), 12345 );
 }
 
@@ -332,7 +332,7 @@ TEST_F( TestIPSMemDeathTest, AnotherProcessAbortThen_CanDestructSharedMemory )
 {
 	// Arrange
 	{
-		ipsm_v2::ipsm_mem sut2;
+		ipsm::ipsm_mem sut2;
 		EXPECT_NO_THROW( sut2.setup( shm_name_.c_str(), lifetime_ctrl_fname_.c_str(), length_, mode_, []( void* p, size_t s ) -> size_t { return 0; } ) );
 
 		ASSERT_EXIT( TestIPSMem_SetupThen_ProcessAbort( shm_name_.c_str(), lifetime_ctrl_fname_.c_str(), length_, mode_ ),

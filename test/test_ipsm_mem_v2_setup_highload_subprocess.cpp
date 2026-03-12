@@ -27,7 +27,7 @@ const char* p_lifetime_ctrl_fname = "/tmp/my_test_shm_obj_lifetime_ctrl";
 
 int main( void )
 {
-	ipsm_v2::ipsm_mem shm_obj;
+	ipsm::ipsm_mem shm_obj;
 	unsigned char     exit_code = 1;
 
 	// child process side
@@ -41,7 +41,7 @@ int main( void )
 			1000,
 			1 );
 
-		if ( shm_obj.get_status() != ipsm_v2::ipsm_mem::status::ready ) {
+		if ( shm_obj.get_status() != ipsm::ipsm_mem::status::ready ) {
 			fprintf( stderr, "shared memory is not ready\n" );
 			abort();
 		}

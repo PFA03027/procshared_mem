@@ -33,7 +33,6 @@ using namespace ipsm;
 TEST( Test_ipsm_malloc, CanDefaultConstruct_CanDestruct )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
 
 	// Act
 	ASSERT_NO_THROW(
@@ -47,7 +46,6 @@ TEST( Test_ipsm_malloc, CanDefaultConstruct_CanDestruct )
 TEST( Test_ipsm_malloc, CanDefaultConstruct_ThenAllocate )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
 	ipsm_malloc sut;
 
 	// Act

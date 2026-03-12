@@ -72,9 +72,9 @@ private:
 
 	void swap( ipsm_malloc& src );
 
-	ipsm_v2::ipsm_mem shm_obj_;    //!< shared memory object. this member variable declaration order required like ipsm_mem, then offset_malloc
-	offset_malloc     shm_heap_;   //!< offset base memory allocator on shared memory. this member variable declaration order required like ipsm_mem, then offset_malloc
-	msg_channel*      p_msgch_;
+	ipsm_mem      shm_obj_;    //!< shared memory object. this member variable declaration order required like ipsm_mem, then offset_malloc
+	offset_malloc shm_heap_;   //!< offset base memory allocator on shared memory. this member variable declaration order required like ipsm_mem, then offset_malloc
+	msg_channel*  p_msgch_;
 };
 
 ////////////////////////////////////////////////////////////////////
