@@ -455,14 +455,27 @@ void ipsm_mem::swap( ipsm_mem& src )
 	std::swap( p_impl_, src.p_impl_ );
 }
 
-/**
- * @brief allocate a new cooperative startup shared memory object
- *
- * @pre this instance is default constructed instance
- *
- * @return true if setup succeeded, false if setup failed because of timeout while waiting for shared memory initialization.
- * @exception std::invalid_argument
- */
+ipsm_mem::ipsm_mem(
+	const char*                            p_shm_name,
+	const char*                            p_lifetime_ctrl_fname,
+	size_t                                 length,
+	mode_t                                 mode,
+	std::function<size_t( void*, size_t )> init_functor_arg,
+	int                                    timeout_msec,
+	int                                    retry_interval_msec )
+  : p_impl_( nullptr )
+{
+	bool ret = setup( p_shm_name, p_lifetime_ctrl_fname, length, mode, init_functor_arg, timeout_msec, retry_interval_msec );
+	if ( !ret ) {
+		// 共有メモリの初期化に失敗した場合、共有メモリの初期化を行うプロセスが初期化処理中にプロセスが終了したことを示す。
+		psm_logoutput( ipsm::psm_log_lv::kWarn, "failed to setup shared memory: %s", p_shm_name );
+		delete p_impl_;
+		p_impl_ = nullptr;
+		ipsm::ipsm_mem_error e( ETIMEDOUT, "timeout while waiting for shared memory initialization: " + std::string( p_shm_name ) );
+		throw e;
+	}
+}
+
 bool ipsm_mem::setup(
 	const char*                            p_shm_name,              //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
 	const char*                            p_lifetime_ctrl_fname,   //!< [in] lifetime control file name.
