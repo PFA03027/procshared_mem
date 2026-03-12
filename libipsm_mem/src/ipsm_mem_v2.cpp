@@ -460,9 +460,10 @@ void ipsm_mem::swap( ipsm_mem& src )
  *
  * @pre this instance is default constructed instance
  *
- * @exception ipsm_mem_error
+ * @return true if setup succeeded, false if setup failed because of timeout while waiting for shared memory initialization.
+ * @exception std::invalid_argument
  */
-void ipsm_mem::setup(
+bool ipsm_mem::setup(
 	const char*                            p_shm_name,              //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
 	const char*                            p_lifetime_ctrl_fname,   //!< [in] lifetime control file name.
 	size_t                                 length,                  //!< [in] shared memory size
@@ -474,10 +475,34 @@ void ipsm_mem::setup(
 {
 	if ( p_impl_ != nullptr ) {
 		psm_logoutput( ipsm::psm_log_lv::kWarn, "shared memory is already allocated" );
-		return;
+		return true;
+	}
+	if ( p_shm_name == nullptr || p_shm_name[0] == '\0' ) {
+		throw std::invalid_argument( "shared memory name is null or empty" );
+	}
+	if ( p_shm_name[0] != '/' ) {
+		throw std::invalid_argument( "shared memory name should start with '/'" );
+	}
+	if ( p_lifetime_ctrl_fname == nullptr || p_lifetime_ctrl_fname[0] == '\0' ) {
+		throw std::invalid_argument( "lifetime control file name is null or empty" );
+	}
+	if ( length == 0 ) {
+		throw std::invalid_argument( "shared memory length is zero" );
 	}
 
-	p_impl_ = new impl( p_shm_name, p_lifetime_ctrl_fname, length, mode, init_functor_arg, timeout_msec, retry_interval_msec );
+	try {
+		p_impl_ = new impl( p_shm_name, p_lifetime_ctrl_fname, length, mode, init_functor_arg, timeout_msec, retry_interval_msec );
+	} catch ( const ipsm::ipsm_mem_error& e ) {
+		if ( e.code() == ETIMEDOUT ) {
+			psm_logoutput( ipsm::psm_log_lv::kWarn, "timeout while waiting for shared memory initialization: %s", p_shm_name );
+			return false;
+		} else {
+			psm_logoutput( ipsm::psm_log_lv::kWarn, "ipsm_mem_error is thrown with errno=%d: %s", e.code(), p_shm_name );
+			throw;   // それ以外の例外は呼び出し元に伝える
+		}
+	}   // 上記以外の例外も呼び出し元に伝える
+
+	return true;
 }
 
 void* ipsm_mem::get( void ) const
@@ -505,6 +530,15 @@ ipsm_mem::status ipsm_mem::get_status( void ) const
 	}
 
 	return p_impl_->get_status();
+}
+
+std::uintptr_t ipsm_mem::get_hint_value( void ) const
+{
+	if ( p_impl_ == nullptr ) {
+		return 0;
+	}
+
+	return p_impl_->get_hint_value();
 }
 
 }   // namespace ipsm_v2

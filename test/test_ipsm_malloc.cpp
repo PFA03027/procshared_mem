@@ -60,12 +60,13 @@ TEST( Test_ipsm_malloc, CanDefaultConstruct_ThenAllocate )
 TEST( Test_ipsm_malloc, CanConstruct_CanDestruct )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
+	std::string shm_name            = "/test_ipsm_malloc_" + std::to_string( getpid() );
+	std::string lifetime_ctrl_fname = "/tmp/test_ipsm_malloc_lifetime_ctrl_" + std::to_string( getpid() );
 
 	// Act
 	ASSERT_NO_THROW(
 		{
-			ipsm_malloc shm_obj( SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+			ipsm_malloc shm_obj( shm_name.c_str(), lifetime_ctrl_fname.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 		} );
 
 	// Assert
@@ -74,8 +75,9 @@ TEST( Test_ipsm_malloc, CanConstruct_CanDestruct )
 TEST( Test_ipsm_malloc, CanConstruct_ThenAllocate )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
-	ipsm_malloc sut( SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	std::string shm_name            = "/test_ipsm_malloc_" + std::to_string( getpid() );
+	std::string lifetime_ctrl_fname = "/tmp/test_ipsm_malloc_lifetime_ctrl_" + std::to_string( getpid() );
+	ipsm_malloc sut( shm_name.c_str(), lifetime_ctrl_fname.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 
 	// Act
 	auto p = sut.allocate( 10 );
@@ -87,8 +89,9 @@ TEST( Test_ipsm_malloc, CanConstruct_ThenAllocate )
 TEST( Test_ipsm_malloc, CanConstruct_ThenAllocateDeallocate )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
-	ipsm_malloc sut( SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	std::string shm_name            = "/test_ipsm_malloc_" + std::to_string( getpid() );
+	std::string lifetime_ctrl_fname = "/tmp/test_ipsm_malloc_lifetime_ctrl_" + std::to_string( getpid() );
+	ipsm_malloc sut( shm_name.c_str(), lifetime_ctrl_fname.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 	auto        p = sut.allocate( 10 );
 	EXPECT_NE( p, nullptr );
 
@@ -101,13 +104,14 @@ TEST( Test_ipsm_malloc, CanConstruct_ThenAllocateDeallocate )
 TEST( Test_ipsm_malloc, CanMoveConstruct )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
+	std::string shm_name            = "/test_ipsm_malloc_" + std::to_string( getpid() );
+	std::string lifetime_ctrl_fname = "/tmp/test_ipsm_malloc_lifetime_ctrl_" + std::to_string( getpid() );
 	ipsm_malloc sut;
 
 	// Act
 	ASSERT_NO_THROW(
 		{
-			sut = ipsm_malloc( SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+			sut = ipsm_malloc( shm_name.c_str(), lifetime_ctrl_fname.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 		} );
 
 	// Assert
@@ -116,9 +120,10 @@ TEST( Test_ipsm_malloc, CanMoveConstruct )
 TEST( Test_ipsm_malloc, CanMoveConstruct_ThenAllocate )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
+	std::string shm_name            = "/test_ipsm_malloc_" + std::to_string( getpid() );
+	std::string lifetime_ctrl_fname = "/tmp/test_ipsm_malloc_lifetime_ctrl_" + std::to_string( getpid() );
 	ipsm_malloc sut;
-	sut = ipsm_malloc( SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	sut = ipsm_malloc( shm_name.c_str(), lifetime_ctrl_fname.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 
 	// Act
 	auto p = sut.allocate( 10 );
@@ -130,9 +135,10 @@ TEST( Test_ipsm_malloc, CanMoveConstruct_ThenAllocate )
 TEST( Test_ipsm_malloc, CanMoveConstruct_ThenAllocateDeallocate )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
+	std::string shm_name            = "/test_ipsm_malloc_" + std::to_string( getpid() );
+	std::string lifetime_ctrl_fname = "/tmp/test_ipsm_malloc_lifetime_ctrl_" + std::to_string( getpid() );
 	ipsm_malloc sut;
-	sut    = ipsm_malloc( SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	sut    = ipsm_malloc( shm_name.c_str(), lifetime_ctrl_fname.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 	auto p = sut.allocate( 10 );
 	EXPECT_NE( p, nullptr );
 
@@ -145,15 +151,17 @@ TEST( Test_ipsm_malloc, CanMoveConstruct_ThenAllocateDeallocate )
 TEST( Test_ipsm_malloc, CanMoveAssignment )
 {
 	// Arrange
-	const char* p_shm_obj_name2 = "/my_test_shm_test_ipsm_malloc2";
-	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
-	ipsm_mem::debug_force_cleanup( p_shm_obj_name2, "/tmp" );       // to remove ghost data
-	ipsm_malloc sut( SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	std::string shm_name1            = "/test_ipsm_malloc1_" + std::to_string( getpid() );
+	std::string lifetime_ctrl_fname1 = "/tmp/test_ipsm_malloc_lifetime_ctrl1_" + std::to_string( getpid() );
+	ipsm_malloc sut( shm_name1.c_str(), lifetime_ctrl_fname1.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 	auto        p1 = sut.allocate( 10 );
 	EXPECT_NE( p1, nullptr );
 
+	std::string shm_name2            = "/test_ipsm_malloc2_" + std::to_string( getpid() );
+	std::string lifetime_ctrl_fname2 = "/tmp/test_ipsm_malloc_lifetime_ctrl2_" + std::to_string( getpid() );
+
 	// Act
-	sut     = ipsm_malloc( p_shm_obj_name2, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	sut     = ipsm_malloc( shm_name2.c_str(), lifetime_ctrl_fname2.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 	auto p2 = sut.allocate( 10 );
 
 	// Assert
@@ -164,13 +172,15 @@ TEST( Test_ipsm_malloc, CanMoveAssignment )
 TEST( Test_ipsm_malloc, CanMoveAssignment_ThenDeallocate )
 {
 	// Arrange
-	const char* p_shm_obj_name2 = "/my_test_shm_test_ipsm_malloc2";
-	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
-	ipsm_mem::debug_force_cleanup( p_shm_obj_name2, "/tmp" );       // to remove ghost data
-	ipsm_malloc sut( SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	std::string shm_name1            = "/test_ipsm_malloc1_" + std::to_string( getpid() );
+	std::string lifetime_ctrl_fname1 = "/tmp/test_ipsm_malloc_lifetime_ctrl1_" + std::to_string( getpid() );
+	ipsm_malloc sut( shm_name1.c_str(), lifetime_ctrl_fname1.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 	auto        p1 = sut.allocate( 10 );
 	EXPECT_NE( p1, nullptr );
-	sut     = ipsm_malloc( p_shm_obj_name2, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+
+	std::string shm_name2            = "/test_ipsm_malloc2_" + std::to_string( getpid() );
+	std::string lifetime_ctrl_fname2 = "/tmp/test_ipsm_malloc_lifetime_ctrl2_" + std::to_string( getpid() );
+	sut     = ipsm_malloc( shm_name2.c_str(), lifetime_ctrl_fname2.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 	auto p2 = sut.allocate( 10 );
 	EXPECT_NE( p2, nullptr );
 	EXPECT_NE( p1, p2 );
@@ -184,8 +194,9 @@ TEST( Test_ipsm_malloc, CanMoveAssignment_ThenDeallocate )
 TEST( Test_ipsm_malloc, TryOversizeAllocation )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
-	ipsm_malloc sut( SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	std::string shm_name            = "/test_ipsm_malloc_" + std::to_string( getpid() );
+	std::string lifetime_ctrl_fname = "/tmp/test_ipsm_malloc_lifetime_ctrl_" + std::to_string( getpid() );
+	ipsm_malloc sut( shm_name.c_str(), lifetime_ctrl_fname.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 
 	// Act
 	auto p = sut.allocate( 4096 );
@@ -199,15 +210,16 @@ TEST( Test_ipsm_malloc, TryOversizeAllocation )
 TEST( Test_ipsm_malloc, CanAllocateBwProcess )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
-	ipsm_malloc shm_malloc_obj( SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	std::string shm_name            = "/test_ipsm_malloc_" + std::to_string( getpid() );
+	std::string lifetime_ctrl_fname = "/tmp/test_ipsm_malloc_lifetime_ctrl_" + std::to_string( getpid() );
+	ipsm_malloc shm_malloc_obj( shm_name.c_str(), lifetime_ctrl_fname.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 
 	std::packaged_task<child_proc_return_t( std::function<int()> )> task1( call_pred_on_child_process );   // 非同期実行する関数を登録する
 	std::future<child_proc_return_t>                                f1 = task1.get_future();
 
 	// Act
-	std::thread t1( std::move( task1 ), []() -> int {
-		ipsm_malloc sut_secondary( SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	std::thread t1( std::move( task1 ), [shm_name, lifetime_ctrl_fname]() -> int {
+		ipsm_malloc sut_secondary( shm_name.c_str(), lifetime_ctrl_fname.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 		if ( sut_secondary.get_bind_count() != 2 ) {
 			fprintf( stderr, "Error: bind count is %d\n", sut_secondary.get_bind_count() );
 			return 3;

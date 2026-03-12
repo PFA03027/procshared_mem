@@ -160,31 +160,18 @@ public:
 	void swap( ipsm_mem& src );
 
 	/**
-	 * @brief Construct a shared memory management class that performs autonomous and distributed construction processing
-	 *
-	 * @exception if failed creation by any reason, throw std::bad_alloc(in case of new operator throws) or std::run_time_error
-	 */
-	ipsm_mem(
-		const char*                           p_shm_name,              //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
-		const char*                           p_lifetime_ctrl_fname,   //!< [in] lifetime control file name.
-		size_t                                length,                  //!< [in] shared memory size
-		mode_t                                mode,                    //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
-		std::function<void*( void*, size_t )> init_functor_arg         //!< [in] a functor to initialize a shared memory area. first argument is the pointer to the top of memory. second argument is the assigned memory length. return value is set to opt_info.
-	);
-
-	/**
 	 * @brief allocate a new cooperative startup shared memory object
 	 *
 	 * @pre this instance is default constructed instance
 	 *
 	 * @exception ipsm_mem_error
 	 */
-	void setup(
+	bool setup(
 		const char*                            p_shm_name,                   //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
 		const char*                            p_lifetime_ctrl_fname,        //!< [in] lifetime control file name.
 		size_t                                 length,                       //!< [in] shared memory size
 		mode_t                                 mode,                         //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
-		std::function<size_t( void*, size_t )> init_functor_arg,             //!< [in] a functor to initialize a shared memory area. first argument is the pointer to the top of memory. second argument is the assigned memory length. return value is consumed memory size.
+		std::function<size_t( void*, size_t )> init_functor_arg,             //!< [in] a functor to initialize a shared memory area. first argument is the pointer to the top of memory. second argument is the assigned memory length. return value is consumed memory size. this functor is called multiple by internal retry caused by shared mamory creation collision or shared memory initialization failure of other process.
 		int                                    timeout_msec        = 1000,   //!< [in] timeout in milliseconds for waiting for shared memory initialization.
 		int                                    retry_interval_msec = 100     //!< [in] retry interval in milliseconds for waiting for shared memory initialization.
 	);
@@ -192,7 +179,8 @@ public:
 	void*  get( void ) const;              //!< get top address of memory area
 	size_t available_size( void ) const;   //!< larger than or equal to the size specified in constructor or allocate_shm_as_both.
 
-	status get_status( void ) const;
+	status         get_status( void ) const;
+	std::uintptr_t get_hint_value( void ) const;
 
 private:
 	ipsm_mem( const ipsm_mem& )            = delete;

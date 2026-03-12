@@ -4,7 +4,7 @@
 		{
 			"label": "make build-test",
 			"type": "shell",
-			"command": "make BUILDTYPE=Debug build-test",
+			"command": "make BUILD_TYPE=Debug build-test",
 			"problemMatcher": [
 				"$gcc"
 			],
@@ -16,6 +16,17 @@
 			"label": "make test",
 			"type": "shell",
 			"command": "make test",
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+			}
+		},
+		{
+			"label": "make BUILD_TYPE=Debug test",
+			"type": "shell",
+			"command": "make BUILD_TYPE=Debug test",
 			"problemMatcher": [
 				"$gcc"
 			],

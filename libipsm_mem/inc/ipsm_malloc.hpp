@@ -38,17 +38,18 @@ public:
 	 * This constructor allocates a shared memory during constructor.
 	 * If an instance got as a primary role, it calls a functor initfunctor_arg() after finish setup of a shared memory
 	 *
-	 * @param p_shm_name shared memory name. this string should start '/' and shorter than NAME_MAX-4
-	 * @param p_id_dirname directory name of id file. e.g. "/tmp"
-	 * @param length shared memory size
-	 * @param mode access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
-	 * @param initfunctor_arg a functor to initialize a shared memory area that length is same to an argument 'length'
-	 *
 	 * @exception if failed creation by any reason, throw std::bad_alloc(in case of new operator throws) or std::run_time_error
 	 *
 	 * @note p_shm_name string AAA must follow POSIX semaphore name specifications. please refer sem_open or sem_overview
 	 */
-	ipsm_malloc( const char* p_shm_name, const char* p_id_dirname, size_t length, mode_t mode );
+	ipsm_malloc(
+		const char* p_shm_name,                   //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
+		const char* p_lifetime_ctrl_fname,        //!< [in] lifetime control file name.
+		size_t      length,                       //!< [in] shared memory size
+		mode_t      mode,                         //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
+		int         timeout_msec        = 1000,   //!< [in] timeout in milliseconds for waiting for shared memory initialization.
+		int         retry_interval_msec = 100     //!< [in] retry interval in milliseconds for waiting for shared memory initialization.
+	);
 
 #if __has_cpp_attribute( nodiscard )
 	[[nodiscard]]
@@ -71,9 +72,9 @@ private:
 
 	void swap( ipsm_malloc& src );
 
-	ipsm_mem      shm_obj_;    //!< shared memory object. this member variable declaration order required like ipsm_mem, then offset_malloc
-	offset_malloc shm_heap_;   //!< offset base memory allocator on shared memory. this member variable declaration order required like ipsm_mem, then offset_malloc
-	msg_channel*  p_msgch_;
+	ipsm_v2::ipsm_mem shm_obj_;    //!< shared memory object. this member variable declaration order required like ipsm_mem, then offset_malloc
+	offset_malloc     shm_heap_;   //!< offset base memory allocator on shared memory. this member variable declaration order required like ipsm_mem, then offset_malloc
+	msg_channel*      p_msgch_;
 };
 
 ////////////////////////////////////////////////////////////////////
