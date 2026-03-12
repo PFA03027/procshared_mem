@@ -1,5 +1,5 @@
 /**
- * @file ipsm_mem_v2.cpp
+ * @file ipsm_mem.cpp
  * @author Teruaki Ata (PFA03027@nifty.com)
  * @brief
  * @version 0.1
@@ -26,7 +26,7 @@
 #include "misc_utility.hpp"
 
 #include "ipsm_mem.hpp"
-#include "ipsm_mem_v2_internal.hpp"
+#include "ipsm_mem_internal.hpp"
 
 namespace ipsm {
 
@@ -541,4 +541,4 @@ std::uintptr_t ipsm_mem::get_hint_value( void ) const
 	return p_impl_->get_hint_value();
 }
 
-}   // namespace ipsm_v2
+}   // namespace ipsm

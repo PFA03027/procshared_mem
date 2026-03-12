@@ -1,5 +1,5 @@
 /**
- * @file test_ipsm_mem_v2.cpp
+ * @file test_ipsm_mem.cpp
  * @author Teruaki Ata (PFA03027@nifty.com)
  * @brief
  * @version 0.1
@@ -16,7 +16,7 @@
 #include <sys/mman.h>
 #include <sys/stat.h> /* For mode constants */
 
-#include "ipsm_mem_v2_internal.hpp"
+#include "ipsm_mem_internal.hpp"
 
 #include "gtest/gtest.h"
 

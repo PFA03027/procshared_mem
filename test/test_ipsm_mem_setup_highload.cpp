@@ -36,8 +36,8 @@ void make_shm_and_close( void )
 	pid_t child_pid = fork();
 	if ( child_pid == 0 ) {
 		// closeall_except_stdinouterr();
-		execl( "build/test/loadtest_ipsm_mem_v2_setup_highload_subprocess", "loadtest_ipsm_mem_v2_setup_highload_subprocess", reinterpret_cast<char*>( NULL ) );
-		perror( "fail execl to launch loadtest_ipsm_mem_v2_setup_highload_subprocess\n" );
+		execl( "build/test/loadtest_ipsm_mem_setup_highload_subprocess", "loadtest_ipsm_mem_setup_highload_subprocess", reinterpret_cast<char*>( NULL ) );
+		perror( "fail execl to launch loadtest_ipsm_mem_setup_highload_subprocess\n" );
 		abort();
 	} else {
 		// parent process side

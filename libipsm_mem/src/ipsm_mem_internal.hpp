@@ -1,5 +1,5 @@
 /**
- * @file ipsm_mem_v2_internal.hpp
+ * @file ipsm_mem_internal.hpp
  * @author Teruaki Ata (PFA03027@nifty.com)
  * @brief
  * @version 0.1
@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef IPSM_MEM_V2_INTERNAL_HPP_
-#define IPSM_MEM_V2_INTERNAL_HPP_
+#ifndef IPSM_MEM_INTERNAL_HPP_
+#define IPSM_MEM_INTERNAL_HPP_
 
 #include "ipsm_mem.hpp"
 
@@ -114,4 +114,4 @@ private:
 
 }   // namespace ipsm
 
-#endif   // IPSM_MEM_V2_INTERNAL_HPP_
+#endif   // IPSM_MEM_INTERNAL_HPP_

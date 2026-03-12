@@ -30,7 +30,7 @@ target_sources(test_ipsm_functions PRIVATE
   test_ipsm_mutex.cpp
   test_ipsm_condition_variable.cpp
   test_ipsm_malloc.cpp
-  test_ipsm_mem_v2.cpp
+  test_ipsm_mem.cpp
   )
 target_include_directories( test_ipsm_functions  PRIVATE ../libipsm_mem/src )
 target_link_libraries(test_ipsm_functions ipsm_mem test_ipsm_common gtest gtest_main )
@@ -92,10 +92,10 @@ add_executable(loadtest_ipsm_malloc_highload_sub EXCLUDE_FROM_ALL test_ipsm_mall
 target_link_libraries(loadtest_ipsm_malloc_highload_sub ipsm_mem )
 add_dependencies(build-test loadtest_ipsm_malloc_highload_sub)
 
-add_executable(loadtest_ipsm_mem_v2_setup_highload EXCLUDE_FROM_ALL test_ipsm_mem_v2_setup_highload.cpp)
-target_link_libraries(loadtest_ipsm_mem_v2_setup_highload ipsm_mem )
-add_dependencies(build-test loadtest_ipsm_mem_v2_setup_highload)
+add_executable(loadtest_ipsm_mem_setup_highload EXCLUDE_FROM_ALL test_ipsm_mem_setup_highload.cpp)
+target_link_libraries(loadtest_ipsm_mem_setup_highload ipsm_mem )
+add_dependencies(build-test loadtest_ipsm_mem_setup_highload)
 
-add_executable(loadtest_ipsm_mem_v2_setup_highload_subprocess EXCLUDE_FROM_ALL test_ipsm_mem_v2_setup_highload_subprocess.cpp)
-target_link_libraries(loadtest_ipsm_mem_v2_setup_highload_subprocess ipsm_mem )
-add_dependencies(build-test loadtest_ipsm_mem_v2_setup_highload_subprocess)
+add_executable(loadtest_ipsm_mem_setup_highload_subprocess EXCLUDE_FROM_ALL test_ipsm_mem_setup_highload_subprocess.cpp)
+target_link_libraries(loadtest_ipsm_mem_setup_highload_subprocess ipsm_mem )
+add_dependencies(build-test loadtest_ipsm_mem_setup_highload_subprocess)
