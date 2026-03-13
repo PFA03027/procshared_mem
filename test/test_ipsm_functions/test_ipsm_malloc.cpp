@@ -28,7 +28,8 @@
 
 using namespace ipsm;
 
-#define SHM_OBJ_NAME_STRING "/my_test_shm_test_ipsm_malloc"
+#define SHM_OBJ_NAME_STRING               "/my_test_shm_test_ipsm_malloc"
+#define SHM_OBJ_NAME_LIFETIME_CTRL_STRING "/my_test_shm_test_ipsm_malloc.lifetime_ctrl"
 
 TEST( Test_ipsm_malloc, CanDefaultConstruct_CanDestruct )
 {
@@ -178,8 +179,8 @@ TEST( Test_ipsm_malloc, CanMoveAssignment_ThenDeallocate )
 
 	std::string shm_name2            = "/test_ipsm_malloc2_" + std::to_string( getpid() );
 	std::string lifetime_ctrl_fname2 = "/tmp/test_ipsm_malloc_lifetime_ctrl2_" + std::to_string( getpid() );
-	sut     = ipsm_malloc( shm_name2.c_str(), lifetime_ctrl_fname2.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
-	auto p2 = sut.allocate( 10 );
+	sut                              = ipsm_malloc( shm_name2.c_str(), lifetime_ctrl_fname2.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	auto p2                          = sut.allocate( 10 );
 	EXPECT_NE( p2, nullptr );
 	EXPECT_NE( p1, p2 );
 
@@ -286,10 +287,9 @@ private:
 TEST( Test_ipsm_malloc, CanMsgChannel )
 {
 	// Arrange
-	constexpr int num_of_threads = 100;
-	constexpr int num_of_loop    = 10000;
-	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
-	ipsm_malloc    shm_malloc_obj( SHM_OBJ_NAME_STRING, "/tmp", 4096UL * 100UL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	constexpr int  num_of_threads = 100;
+	constexpr int  num_of_loop    = 10000;
+	ipsm_malloc    shm_malloc_obj( SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096UL * 100UL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 	fifo_que<int>* p_sut_list = make_obj_construct_using_allocator<fifo_que<int>>( shm_malloc_obj.get_allocator<fifo_que<int>>(), shm_malloc_obj.get_allocator<int>() );
 	proc_task_data pt_pack[num_of_threads];
 	// Act
@@ -298,7 +298,7 @@ TEST( Test_ipsm_malloc, CanMsgChannel )
 		std::packaged_task<child_proc_return_t( std::function<int()> )> task( call_pred_on_child_process );
 		e.f = task.get_future();
 		e.t = std::thread( std::move( task ), []() -> int {
-			ipsm_malloc    sut_secondary( SHM_OBJ_NAME_STRING, "/tmp", 4096UL * 100UL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+			ipsm_malloc    sut_secondary( SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096UL * 100UL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 			void*          p_tmp      = sut_secondary.receive( 0 );
 			fifo_que<int>* p_sut_list = reinterpret_cast<fifo_que<int>*>( p_tmp );
 

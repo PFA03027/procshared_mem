@@ -262,14 +262,14 @@ TEST( Test_ipsm_recursive_mutex, CanRecoverByRobustnessViaTryLock )
 #if defined( TEST_ENABLE_ADDRESSSANITIZER ) || defined( TEST_ENABLE_LEAKSANITIZER )
 #else
 //===========================================
-#define SHM_OBJ_NAME_STRING "/my_test_shm_test_ipsm_mutex"
+#define SHM_OBJ_NAME_STRING               "/my_test_shm_test_ipsm_mutex"
+#define SHM_OBJ_NAME_LIFETIME_CTRL_STRING "/my_test_shm_test_ipsm_mutex.lifetime_ctrl"
 
 TEST( Test_ipsm_mutex_bw_proc, CanLock_CanTryLock_CanUnlock )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
 	ipsm_mem shm_obj(
-		SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+		SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 		[]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
 				return nullptr;
@@ -291,7 +291,7 @@ TEST( Test_ipsm_mutex_bw_proc, CanLock_CanTryLock_CanUnlock )
 	std::thread t1( std::move( task1 ), []() -> int {
 		ipsm_mem shm_obj_secondary;
 		shm_obj_secondary.allocate_shm_as_secondary(
-			SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+			SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 			[]( void*, size_t ) { /* 何もしない */ } );
 		if ( not shm_obj_secondary.debug_test_integrity() ) {
 			return 1;
@@ -318,9 +318,8 @@ TEST( Test_ipsm_mutex_bw_proc, CanLock_CanTryLock_CanUnlock )
 TEST( Test_ipsm_recursive_mutex_bw_proc, CanLock_CanTryLock_CanUnlock )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
 	ipsm_mem shm_obj(
-		SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+		SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 		[]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
 				return nullptr;
@@ -342,7 +341,7 @@ TEST( Test_ipsm_recursive_mutex_bw_proc, CanLock_CanTryLock_CanUnlock )
 	std::thread t1( std::move( task1 ), []() -> int {
 		ipsm_mem shm_obj_secondary;
 		shm_obj_secondary.allocate_shm_as_secondary(
-			SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+			SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 			[]( void*, size_t ) { /* 何もしない */ } );
 		if ( not shm_obj_secondary.debug_test_integrity() ) {
 			return 1;

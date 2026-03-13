@@ -224,7 +224,8 @@ TEST( Test_ipsm_condition_variable, CanWaitForPred_NoTimeout )
 #if defined( TEST_ENABLE_ADDRESSSANITIZER ) || defined( TEST_ENABLE_LEAKSANITIZER )
 #else
 //===========================================
-#define SHM_OBJ_NAME_STRING "/my_test_shm_test_ipsm_condition_variable"
+#define SHM_OBJ_NAME_STRING               "/my_test_shm_test_ipsm_condition_variable"
+#define SHM_OBJ_NAME_LIFETIME_CTRL_STRING "/my_test_shm_test_ipsm_condition_variable.lifetime_ctrl"
 
 struct test_shared_data {
 	bool                              shared_state_flag_;
@@ -242,9 +243,8 @@ struct test_shared_data {
 TEST( Test_ipsm_condition_variable_bw_proc, CanWaitForPred_Timeout )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
 	ipsm_mem shm_obj(
-		SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+		SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 		[]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
 				return nullptr;
@@ -265,7 +265,7 @@ TEST( Test_ipsm_condition_variable_bw_proc, CanWaitForPred_Timeout )
 	std::thread t1( std::move( task1 ), []() -> int {
 		ipsm_mem shm_obj_secondary;
 		shm_obj_secondary.allocate_shm_as_secondary(
-			SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+			SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 			[]( void*, size_t ) { /* 何もしない */ } );
 		if ( not shm_obj_secondary.debug_test_integrity() ) {
 			return 1;
@@ -296,9 +296,8 @@ TEST( Test_ipsm_condition_variable_bw_proc, CanWaitForPred_Timeout )
 TEST( Test_ipsm_condition_variable_bw_proc, CanWaitForPred_NoTimeout )
 {
 	// Arrange
-	ipsm_mem::debug_force_cleanup( SHM_OBJ_NAME_STRING, "/tmp" );   // to remove ghost data
 	ipsm_mem shm_obj(
-		SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+		SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 		[]( void* p_mem, off_t len ) -> void* {
 			if ( p_mem == nullptr ) {
 				return nullptr;
@@ -318,7 +317,7 @@ TEST( Test_ipsm_condition_variable_bw_proc, CanWaitForPred_NoTimeout )
 	std::thread t1( std::move( task1 ), []() -> int {
 		ipsm_mem shm_obj_secondary;
 		shm_obj_secondary.allocate_shm_as_secondary(
-			SHM_OBJ_NAME_STRING, "/tmp", 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+			SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
 			[]( void*, size_t ) { /* 何もしない */ } );
 		if ( not shm_obj_secondary.debug_test_integrity() ) {
 			return 1;
