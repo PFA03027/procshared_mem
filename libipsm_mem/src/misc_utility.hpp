@@ -30,6 +30,14 @@ public:
 	ipsm_mem_error( type_of_errno e_v, const std::string& additional_error_str );
 	ipsm_mem_error( const char* p_error_str );
 	ipsm_mem_error( const std::string& error_str );
+
+	type_of_errno code( void ) const noexcept
+	{
+		return e_;
+	}
+
+private:
+	type_of_errno e_;
 };
 
 static_assert( std::is_integral<ino_t>::value, "ino_t is not integral..." );

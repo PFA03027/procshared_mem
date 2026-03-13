@@ -216,7 +216,7 @@ int offset_malloc::offset_malloc_impl::bind( void )
 {
 	std::lock_guard<ipsm_mutex> lk( mtx_ );
 
-	if ( bind_cnt_ <= 0 ) {
+	if ( bind_cnt_ < 0 ) {
 		// 0の場合、すでに解放済みの領域を指している。rece conditionと考えられるため、あえて例外を投げる。
 		throw std::bad_alloc();
 	}
@@ -284,21 +284,16 @@ offset_malloc::offset_malloc_impl* offset_malloc::offset_malloc_impl::bind( offs
 	return p_mem;
 }
 
-bool offset_malloc::offset_malloc_impl::teardown( offset_malloc::offset_malloc_impl* p_mem ) noexcept
+void offset_malloc::offset_malloc_impl::unbind( offset_malloc::offset_malloc_impl* p_mem ) noexcept
 {
 	if ( p_mem == nullptr ) {
-		return false;
+		return;
 	}
 	int cnt = p_mem->unbind();
-	if ( cnt == 0 ) {
-		p_mem->~offset_malloc_impl();
-		return true;
-	} else if ( cnt < 0 ) {
-		psm_logoutput( psm_log_lv::kErr, "Error: teardown already, p_mem=%p", p_mem );
-	} else {
-		// nothing to do
+	if ( cnt < 0 ) {
+		psm_logoutput( psm_log_lv::kErr, "Error: over unbind, p_mem=%p", p_mem );
 	}
-	return false;
+	return;
 }
 
 }   // namespace ipsm

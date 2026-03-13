@@ -14,18 +14,10 @@
 #include "offset_allocator.hpp"
 #include "offset_memory_util.hpp"
 
+#include "test_ipsm_common.hpp"
+
 using namespace ipsm;
 
-struct EmplacementTestData {
-	int    x_;
-	double y_;
-};
-
-bool operator==( const EmplacementTestData& a, const EmplacementTestData& b )
-{
-	return ( a.x_ == b.x_ ) &&
-	       ( a.y_ == b.y_ );
-}
 
 TEST( Offset_Allocator_Cntr, CanDefaultConstruct )
 {

@@ -17,7 +17,7 @@ namespace ipsm {
 
 offset_malloc::~offset_malloc()
 {
-	offset_malloc_impl::teardown( p_impl_ );
+	offset_malloc_impl::unbind( p_impl_ );
 	p_impl_ = nullptr;
 }
 
@@ -29,14 +29,15 @@ offset_malloc::offset_malloc( const offset_malloc& src )
 offset_malloc::offset_malloc( offset_malloc&& src ) noexcept
   : p_impl_( src.p_impl_ )   // NOLINT(cert-oop11-cpp)
 {
-	src.p_impl_ = nullptr;   // p_impl_は基本型なので、move機能を持たない。よって、移動済みリソースを指すポインタをnullptrに更新する。
+	src.p_impl_ = nullptr;
 }
 
 offset_malloc& offset_malloc::operator=( const offset_malloc& src )
 {
 	if ( this == &src ) return *this;
+	if ( p_impl_ == src.p_impl_ ) return *this;   // 同一のメモリ領域を指している場合は、何もしない
 
-	offset_malloc_impl::teardown( p_impl_ );
+	offset_malloc_impl::unbind( p_impl_ );
 	p_impl_ = offset_malloc_impl::bind( src.p_impl_ );
 
 	return *this;
@@ -45,12 +46,27 @@ offset_malloc& offset_malloc::operator=( const offset_malloc& src )
 offset_malloc& offset_malloc::operator=( offset_malloc&& src ) noexcept
 {
 	if ( this == &src ) return *this;
+	if ( p_impl_ == src.p_impl_ ) {
+		// 同一のメモリ領域を指している場合は、src側を開放するだけ。
+		offset_malloc_impl::unbind( src.p_impl_ );
+		src.p_impl_ = nullptr;
+		return *this;
+	}
 
-	offset_malloc_impl::teardown( p_impl_ );
+	offset_malloc_impl::unbind( p_impl_ );
 	p_impl_     = src.p_impl_;
 	src.p_impl_ = nullptr;
 
 	return *this;
+}
+
+void offset_malloc::swap( offset_malloc& src )
+{
+	if ( this == &src ) return;
+
+	offset_malloc_impl* p_tmp = p_impl_;
+	p_impl_                   = src.p_impl_;
+	src.p_impl_               = p_tmp;
 }
 
 offset_malloc::offset_malloc( void* p_mem, size_t mem_bytes )
@@ -79,15 +95,6 @@ void offset_malloc::deallocate( void* p, size_t alignment )
 	}
 
 	p_impl_->deallocate( p, alignment );
-}
-
-void offset_malloc::swap( offset_malloc& src )
-{
-	if ( this == &src ) return;
-
-	offset_malloc_impl* p_tmp = p_impl_;
-	p_impl_                   = src.p_impl_;
-	src.p_impl_               = p_tmp;
 }
 
 int offset_malloc::get_bind_count( void ) const

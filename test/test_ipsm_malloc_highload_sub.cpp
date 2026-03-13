@@ -20,9 +20,8 @@
 
 #include "ipsm_malloc.hpp"
 
-using namespace ipsm;
-
-const char* p_shm_obj_name = "/my_test_shm_malloc_highload";
+const char* p_shm_obj_name               = "/my_test_shm_malloc_highload";
+const char* p_shm_obj_lifetime_ctrl_name = "/tmp/my_test_shm_malloc_highload.lifetime_ctrl";
 
 int main( void )
 {
@@ -30,7 +29,7 @@ int main( void )
 	{
 		// child process side
 		try {
-			ipsm_malloc shm_heap( p_shm_obj_name, "/tmp", 1024UL * 100UL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+			ipsm::ipsm_malloc shm_heap( p_shm_obj_name, p_shm_obj_lifetime_ctrl_name, 1024UL * 100UL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 			exit_code = 2;
 			for ( int i = 0; i < 100; i++ ) {
 				exit_code = 3;

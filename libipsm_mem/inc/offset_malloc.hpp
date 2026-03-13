@@ -22,11 +22,11 @@ class offset_malloc {
 public:
 	class offset_malloc_impl;
 
+	~offset_malloc();
 	constexpr offset_malloc( void ) noexcept
 	  : p_impl_( nullptr )
 	{
 	}
-	~offset_malloc();
 	offset_malloc( const offset_malloc& src );                  // bind to memory allocator that has already setup
 	offset_malloc( offset_malloc&& src ) noexcept;              // bind to memory allocator that has already setup
 	offset_malloc& operator=( const offset_malloc& src );       // bind to memory allocator that has already setup

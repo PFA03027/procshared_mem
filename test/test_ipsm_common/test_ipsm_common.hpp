@@ -31,4 +31,15 @@ struct child_proc_return_t {
 
 child_proc_return_t call_pred_on_child_process( std::function<int()> pred_func_in_child_process );
 
+struct EmplacementTestData {
+	int    x_;
+	double y_;
+};
+
+inline bool operator==( const EmplacementTestData& a, const EmplacementTestData& b )
+{
+	return ( a.x_ == b.x_ ) &&
+	       ( a.y_ == b.y_ );
+}
+
 #endif   // TEST_IPSM_COMMON_HPP_

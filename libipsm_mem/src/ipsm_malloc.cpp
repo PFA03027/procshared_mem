@@ -47,12 +47,6 @@ ipsm_malloc::ipsm_malloc( void )
 
 ipsm_malloc::~ipsm_malloc()
 {
-	shm_obj_.set_teardown(
-		[this]( bool final_teardown, void* p_mem, size_t len ) {
-			shm_heap_ = offset_malloc();
-		} );
-	shm_obj_ = ipsm_mem();
-	p_msgch_ = nullptr;   // p_msgch_の実体は、shm_obj_内に存在しているため、とくに解放処理は行わない。
 }
 
 ipsm_malloc& ipsm_malloc::operator=( ipsm_malloc&& src )
@@ -65,32 +59,42 @@ ipsm_malloc& ipsm_malloc::operator=( ipsm_malloc&& src )
 	return *this;
 }
 
-ipsm_malloc::ipsm_malloc( const char* p_shm_name, const char* p_id_dirname, size_t length, mode_t mode )
+ipsm_malloc::ipsm_malloc(
+	const char* p_shm_name,
+	const char* p_lifetime_ctrl_fname,
+	size_t      length,
+	mode_t      mode,
+	int         timeout_msec,
+	int         retry_interval_msec )
   : shm_obj_()
   , shm_heap_()
   , p_msgch_( nullptr )
 {
-	shm_obj_ = ipsm_mem(
-		p_shm_name, p_id_dirname, length, mode,
-		[this]( void* p_mem, size_t len ) -> void* {
-			shm_heap_ = offset_malloc( p_mem, len );
-			offset_allocator<msg_channel>      msg_channel_allocator_obj( shm_heap_ );
-			offset_allocator<offset_ptr<void>> int_allocator_obj( shm_heap_ );
+	bool setup_ret = shm_obj_.setup(
+		p_shm_name, p_lifetime_ctrl_fname, length, mode,
+		[]( void* p_mem, size_t len ) -> std::uintptr_t {
+			offset_malloc                      shm_heap_setup = offset_malloc( p_mem, len );
+			offset_allocator<msg_channel>      msg_channel_allocator_obj( shm_heap_setup );
+			offset_allocator<offset_ptr<void>> int_allocator_obj( shm_heap_setup );
 
 			using target_allocator_traits_type = std::allocator_traits<offset_allocator<msg_channel>>;
 
-			p_msgch_ = target_allocator_traits_type::allocate( msg_channel_allocator_obj, 1 );
-			target_allocator_traits_type::construct( msg_channel_allocator_obj, p_msgch_, int_allocator_obj );
+			msg_channel* p_msgch_setup = target_allocator_traits_type::allocate( msg_channel_allocator_obj, 1 );
+			target_allocator_traits_type::construct( msg_channel_allocator_obj, p_msgch_setup, int_allocator_obj );
 
-			return reinterpret_cast<void*>( p_msgch_ );
+			std::uintptr_t p_msgch_offset = reinterpret_cast<std::uintptr_t>( p_msgch_setup ) - reinterpret_cast<std::uintptr_t>( p_mem );
+
+			return p_msgch_offset;   // セカンダリ側に通知する情報は、message channelへのオフセット。
 		},
-		[this]( void* p_mem, size_t len ) {
-			shm_heap_ = offset_malloc( p_mem );
-		} );
+		timeout_msec, retry_interval_msec );
 
-	if ( p_msgch_ == nullptr ) {
-		p_msgch_ = reinterpret_cast<msg_channel*>( shm_obj_.get_opt_info() );
+	if ( !setup_ret ) {
+		psm_logoutput( ipsm::psm_log_lv::kWarn, "fail to construct offset_malloc on shared memory: %s", p_shm_name );
+		throw std::runtime_error( "fail to construct offset_malloc on shared memory: " + std::string( p_shm_name ) );
 	}
+
+	shm_heap_ = offset_malloc( shm_obj_.get() );   // setup()では、必ずしもコールバック関数が呼び出されるとは限らないため、get()で取得したアドレスを利用して、改めてoffset_mallocを初期化する。
+	p_msgch_  = reinterpret_cast<msg_channel*>( reinterpret_cast<std::uintptr_t>( shm_obj_.get() ) + reinterpret_cast<std::uintptr_t>( shm_obj_.get_hint_value() ) );
 }
 
 #if __has_cpp_attribute( nodiscard )
@@ -115,7 +119,7 @@ void ipsm_malloc::swap( ipsm_malloc& src )
 
 int ipsm_malloc::get_bind_count( void ) const
 {
-	return shm_obj_.get_bind_count();
+	return shm_heap_.get_bind_count();
 }
 
 void ipsm_malloc::send( unsigned int ch, offset_ptr<void> sending_value )

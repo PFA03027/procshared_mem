@@ -44,7 +44,7 @@ std::string make_strerror( type_of_errno e_v )
 	char        str_buff[128];
 	const char* p_ret = strerror_r( e_v, str_buff, 128 );
 	if ( p_ret != NULL ) {
-		return std::string( p_ret ) + std::string( "(errno=" ) + std::to_string( e_v ) + std::string( ")" );
+		return std::string( "(errno=" ) + std::to_string( e_v ) + std::string( ")" ) + std::string( p_ret );
 	} else {
 		return std::string( "errno=" ) + std::to_string( e_v ) + std::string( " (strerror_r() is fail)" );
 	}
@@ -69,18 +69,22 @@ ino_t get_inode_of_fd( int id_f_fd )
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ipsm_mem_error::ipsm_mem_error( type_of_errno e_v )
   : std::runtime_error( make_strerror( e_v ) )
+  , e_( e_v )
 {
 }
 ipsm_mem_error::ipsm_mem_error( type_of_errno e_v, const std::string& additional_error_str )
   : std::runtime_error( make_strerror( e_v ) + additional_error_str )
+  , e_( e_v )
 {
 }
 ipsm_mem_error::ipsm_mem_error( const char* p_error_str )
   : std::runtime_error( p_error_str )
+  , e_( 0 )
 {
 }
 ipsm_mem_error::ipsm_mem_error( const std::string& error_str )
   : std::runtime_error( error_str )
+  , e_( 0 )
 {
 }
 
