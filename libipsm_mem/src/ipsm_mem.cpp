@@ -66,7 +66,7 @@ lock_file_guard::lock_file_guard( const std::string& fname, mode_t mode )
 	if ( fd_ < 0 ) {
 		auto cur_errno = errno;
 		psm_logoutput( ipsm::psm_log_lv::kErr, "failed to open lock file: %s, error: %s", fname.c_str(), ipsm::make_strerror( cur_errno ).c_str() );
-		throw ipsm::ipsm_mem_error( cur_errno, "failed to open lock file: " + fname );
+		throw ipsm::ipsm_mem_error( cur_errno, "  failed to open lock file: " + fname );
 	}
 }
 

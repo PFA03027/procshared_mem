@@ -5,10 +5,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(gdb) 起動",
+            "name": "(gdb) test_ipsm_functions 起動",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/a.out",
+            "program": "${workspaceFolder}/build/test/test_ipsm_functions",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -32,7 +32,7 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "make build-test"
+            "preLaunchTask": "make BUILD_TYPE=Debug build-test-no-sanitizer"
         }
     ]
 }

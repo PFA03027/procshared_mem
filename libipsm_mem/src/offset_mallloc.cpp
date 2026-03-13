@@ -17,7 +17,7 @@ namespace ipsm {
 
 offset_malloc::~offset_malloc()
 {
-	offset_malloc_impl::teardown( p_impl_ );
+	offset_malloc_impl::unbind( p_impl_ );
 	p_impl_ = nullptr;
 }
 
@@ -37,7 +37,7 @@ offset_malloc& offset_malloc::operator=( const offset_malloc& src )
 	if ( this == &src ) return *this;
 	if ( p_impl_ == src.p_impl_ ) return *this;   // 同一のメモリ領域を指している場合は、何もしない
 
-	offset_malloc_impl::teardown( p_impl_ );
+	offset_malloc_impl::unbind( p_impl_ );
 	p_impl_ = offset_malloc_impl::bind( src.p_impl_ );
 
 	return *this;
@@ -48,12 +48,12 @@ offset_malloc& offset_malloc::operator=( offset_malloc&& src ) noexcept
 	if ( this == &src ) return *this;
 	if ( p_impl_ == src.p_impl_ ) {
 		// 同一のメモリ領域を指している場合は、src側を開放するだけ。
-		offset_malloc_impl::teardown( src.p_impl_ );
+		offset_malloc_impl::unbind( src.p_impl_ );
 		src.p_impl_ = nullptr;
 		return *this;
 	}
 
-	offset_malloc_impl::teardown( p_impl_ );
+	offset_malloc_impl::unbind( p_impl_ );
 	p_impl_     = src.p_impl_;
 	src.p_impl_ = nullptr;
 

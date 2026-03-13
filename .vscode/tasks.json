@@ -24,9 +24,9 @@
 			}
 		},
 		{
-			"label": "make BUILD_TYPE=Debug test",
+			"label": "make BUILD_TYPE=Debug build-test-no-sanitizer",
 			"type": "shell",
-			"command": "make BUILD_TYPE=Debug test",
+			"command": "make BUILD_TYPE=Debug build-test-no-sanitizer",
 			"problemMatcher": [
 				"$gcc"
 			],

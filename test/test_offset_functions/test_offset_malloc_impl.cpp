@@ -32,7 +32,7 @@ TEST( ProcShared_KRmalloc_Cntr, CanConstruct )
 	EXPECT_EQ( p_mem_alloc->get_bind_count(), 1 );
 
 	// Clean-up
-	offset_malloc::offset_malloc_impl::teardown( p_mem_alloc );
+	offset_malloc::offset_malloc_impl::unbind( p_mem_alloc );
 }
 
 TEST( ProcShared_KRmalloc_Cntr, CanBind )
@@ -52,9 +52,9 @@ TEST( ProcShared_KRmalloc_Cntr, CanBind )
 	EXPECT_EQ( p_mem_alloc2->get_bind_count(), 2 );
 
 	// Clean-up
-	offset_malloc::offset_malloc_impl::teardown( p_mem_alloc );
+	offset_malloc::offset_malloc_impl::unbind( p_mem_alloc );
 	EXPECT_EQ( p_mem_alloc2->get_bind_count(), 1 );
-	offset_malloc::offset_malloc_impl::teardown( p_mem_alloc2 );
+	offset_malloc::offset_malloc_impl::unbind( p_mem_alloc2 );
 }
 
 TEST( ProcShared_KRmalloc_Cntr, FailConstruct1 )
@@ -104,7 +104,7 @@ public:
 	void TearDown() override
 	{
 		// Clean-up
-		offset_malloc::offset_malloc_impl::teardown( p_sut_ );
+		offset_malloc::offset_malloc_impl::unbind( p_sut_ );
 		free( p_mem_ );
 	}
 

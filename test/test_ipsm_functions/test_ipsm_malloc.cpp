@@ -29,7 +29,7 @@
 using namespace ipsm;
 
 #define SHM_OBJ_NAME_STRING               "/my_test_shm_test_ipsm_malloc"
-#define SHM_OBJ_NAME_LIFETIME_CTRL_STRING "/my_test_shm_test_ipsm_malloc.lifetime_ctrl"
+#define SHM_OBJ_NAME_LIFETIME_CTRL_STRING "/tmp/my_test_shm_test_ipsm_malloc.lifetime_ctrl"
 
 TEST( Test_ipsm_malloc, CanDefaultConstruct_CanDestruct )
 {
@@ -212,6 +212,7 @@ TEST( Test_ipsm_malloc, CanAllocateBwProcess )
 	std::string shm_name            = "/test_ipsm_malloc_" + std::to_string( getpid() );
 	std::string lifetime_ctrl_fname = "/tmp/test_ipsm_malloc_lifetime_ctrl_" + std::to_string( getpid() );
 	ipsm_malloc shm_malloc_obj( shm_name.c_str(), lifetime_ctrl_fname.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	EXPECT_EQ( shm_malloc_obj.get_bind_count(), 1 + ipsm_malloc::channel_size() );
 
 	std::packaged_task<child_proc_return_t( std::function<int()> )> task1( call_pred_on_child_process );   // 非同期実行する関数を登録する
 	std::future<child_proc_return_t>                                f1 = task1.get_future();
@@ -219,7 +220,11 @@ TEST( Test_ipsm_malloc, CanAllocateBwProcess )
 	// Act
 	std::thread t1( std::move( task1 ), [shm_name, lifetime_ctrl_fname]() -> int {
 		ipsm_malloc sut_secondary( shm_name.c_str(), lifetime_ctrl_fname.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
-		if ( sut_secondary.get_bind_count() != 2 ) {
+		if ( sut_secondary.get_bind_count() < 0 ) {
+			fprintf( stderr, "Error: bind count is %d\n", sut_secondary.get_bind_count() );
+			return 4;
+		}
+		if ( static_cast<unsigned int>( sut_secondary.get_bind_count() ) != ( 2U + ipsm_malloc::channel_size() ) ) {
 			fprintf( stderr, "Error: bind count is %d\n", sut_secondary.get_bind_count() );
 			return 3;
 		}

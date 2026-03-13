@@ -284,18 +284,14 @@ offset_malloc::offset_malloc_impl* offset_malloc::offset_malloc_impl::bind( offs
 	return p_mem;
 }
 
-void offset_malloc::offset_malloc_impl::teardown( offset_malloc::offset_malloc_impl* p_mem ) noexcept
+void offset_malloc::offset_malloc_impl::unbind( offset_malloc::offset_malloc_impl* p_mem ) noexcept
 {
 	if ( p_mem == nullptr ) {
 		return;
 	}
 	int cnt = p_mem->unbind();
-	if ( cnt == 0 ) {
-		return;
-	} else if ( cnt < 0 ) {
-		psm_logoutput( psm_log_lv::kErr, "Error: teardown already, p_mem=%p", p_mem );
-	} else {
-		// nothing to do
+	if ( cnt < 0 ) {
+		psm_logoutput( psm_log_lv::kErr, "Error: over unbind, p_mem=%p", p_mem );
 	}
 	return;
 }

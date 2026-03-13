@@ -263,24 +263,22 @@ TEST( Test_ipsm_recursive_mutex, CanRecoverByRobustnessViaTryLock )
 #else
 //===========================================
 #define SHM_OBJ_NAME_STRING               "/my_test_shm_test_ipsm_mutex"
-#define SHM_OBJ_NAME_LIFETIME_CTRL_STRING "/my_test_shm_test_ipsm_mutex.lifetime_ctrl"
+#define SHM_OBJ_NAME_LIFETIME_CTRL_STRING "/tmp/my_test_shm_test_ipsm_mutex.lifetime_ctrl"
 
 TEST( Test_ipsm_mutex_bw_proc, CanLock_CanTryLock_CanUnlock )
 {
 	// Arrange
-	ipsm_mem shm_obj(
-		SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
-		[]( void* p_mem, off_t len ) -> void* {
-			if ( p_mem == nullptr ) {
-				return nullptr;
-			}
-			if ( len < 4096 ) {
-				return nullptr;
-			}
-			[[maybe_unused]] ipsm_mutex* p_ps_mtx = new ( p_mem ) ipsm_mutex();
-			return nullptr;
-		},
-		[]( void*, size_t ) { /* 何もしない */ } );
+	auto init_functor = []( void* p_mem, off_t len ) -> std::uintptr_t {
+		if ( p_mem == nullptr ) {
+			return ~( (std::uintptr_t)0 );
+		}
+		if ( len < 4096 ) {
+			return ~( (std::uintptr_t)0 );
+		}
+		[[maybe_unused]] ipsm_mutex* p_ps_mtx = new ( p_mem ) ipsm_mutex();
+		return 0;
+	};
+	ipsm_mem    shm_obj( SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, init_functor );
 	ipsm_mutex* p_ps_mtx = reinterpret_cast<ipsm_mutex*>( shm_obj.get() );
 	p_ps_mtx->lock();
 
@@ -288,14 +286,8 @@ TEST( Test_ipsm_mutex_bw_proc, CanLock_CanTryLock_CanUnlock )
 	std::future<child_proc_return_t>                                f1 = task1.get_future();
 
 	// Act
-	std::thread t1( std::move( task1 ), []() -> int {
-		ipsm_mem shm_obj_secondary;
-		shm_obj_secondary.allocate_shm_as_secondary(
-			SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
-			[]( void*, size_t ) { /* 何もしない */ } );
-		if ( not shm_obj_secondary.debug_test_integrity() ) {
-			return 1;
-		}
+	std::thread t1( std::move( task1 ), [init_functor]() -> int {
+		ipsm_mem    shm_obj_secondary( SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, init_functor );
 		ipsm_mutex* p_ps_mtx = reinterpret_cast<ipsm_mutex*>( shm_obj_secondary.get() );
 
 		return ( p_ps_mtx->try_lock() ) ? 2 : 3;
@@ -318,19 +310,17 @@ TEST( Test_ipsm_mutex_bw_proc, CanLock_CanTryLock_CanUnlock )
 TEST( Test_ipsm_recursive_mutex_bw_proc, CanLock_CanTryLock_CanUnlock )
 {
 	// Arrange
-	ipsm_mem shm_obj(
-		SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
-		[]( void* p_mem, off_t len ) -> void* {
-			if ( p_mem == nullptr ) {
-				return nullptr;
-			}
-			if ( len < 4096 ) {
-				return nullptr;
-			}
-			[[maybe_unused]] ipsm_recursive_mutex* p_ps_mtx = new ( p_mem ) ipsm_recursive_mutex();
-			return nullptr;
-		},
-		[]( void*, size_t ) { /* 何もしない */ } );
+	auto init_functor = []( void* p_mem, off_t len ) -> std::uintptr_t {
+		if ( p_mem == nullptr ) {
+			return ~( (std::uintptr_t)0 );
+		}
+		if ( len < 4096 ) {
+			return ~( (std::uintptr_t)0 );
+		}
+		[[maybe_unused]] ipsm_recursive_mutex* p_ps_mtx = new ( p_mem ) ipsm_recursive_mutex();
+		return 0;
+	};
+	ipsm_mem              shm_obj( SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, init_functor );
 	ipsm_recursive_mutex* p_ps_mtx = reinterpret_cast<ipsm_recursive_mutex*>( shm_obj.get() );
 	p_ps_mtx->lock();
 
@@ -338,14 +328,8 @@ TEST( Test_ipsm_recursive_mutex_bw_proc, CanLock_CanTryLock_CanUnlock )
 	std::future<child_proc_return_t>                                f1 = task1.get_future();
 
 	// Act
-	std::thread t1( std::move( task1 ), []() -> int {
-		ipsm_mem shm_obj_secondary;
-		shm_obj_secondary.allocate_shm_as_secondary(
-			SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
-			[]( void*, size_t ) { /* 何もしない */ } );
-		if ( not shm_obj_secondary.debug_test_integrity() ) {
-			return 1;
-		}
+	std::thread t1( std::move( task1 ), [init_functor]() -> int {
+		ipsm_mem              shm_obj_secondary( SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, init_functor );
 		ipsm_recursive_mutex* p_ps_mtx = reinterpret_cast<ipsm_recursive_mutex*>( shm_obj_secondary.get() );
 
 		return ( p_ps_mtx->try_lock() ) ? 2 : 3;

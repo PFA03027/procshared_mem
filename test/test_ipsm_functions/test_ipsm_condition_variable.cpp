@@ -225,7 +225,7 @@ TEST( Test_ipsm_condition_variable, CanWaitForPred_NoTimeout )
 #else
 //===========================================
 #define SHM_OBJ_NAME_STRING               "/my_test_shm_test_ipsm_condition_variable"
-#define SHM_OBJ_NAME_LIFETIME_CTRL_STRING "/my_test_shm_test_ipsm_condition_variable.lifetime_ctrl"
+#define SHM_OBJ_NAME_LIFETIME_CTRL_STRING "/tmp/my_test_shm_test_ipsm_condition_variable.lifetime_ctrl"
 
 struct test_shared_data {
 	bool                              shared_state_flag_;
@@ -243,33 +243,26 @@ struct test_shared_data {
 TEST( Test_ipsm_condition_variable_bw_proc, CanWaitForPred_Timeout )
 {
 	// Arrange
-	ipsm_mem shm_obj(
-		SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
-		[]( void* p_mem, off_t len ) -> void* {
-			if ( p_mem == nullptr ) {
-				return nullptr;
-			}
-			if ( len < 4096 ) {
-				return nullptr;
-			}
-			[[maybe_unused]] test_shared_data* p_sut = new ( p_mem ) test_shared_data();
-			return nullptr;
-		},
-		[]( void*, size_t ) { /* 何もしない */ } );
+	auto init_functor = []( void* p_mem, off_t len ) -> std::uintptr_t {
+		if ( p_mem == nullptr ) {
+			return ~( (std::uintptr_t)0 );
+		}
+		if ( len < 4096 ) {
+			return ~( (std::uintptr_t)0 );
+		}
+		[[maybe_unused]] test_shared_data* p_sut = new ( p_mem ) test_shared_data();
+		return 0;
+	};
+
+	ipsm_mem                           shm_obj( SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, init_functor );
 	[[maybe_unused]] test_shared_data* p_sut = reinterpret_cast<test_shared_data*>( shm_obj.get() );
 
 	std::packaged_task<child_proc_return_t( std::function<int()> )> task1( call_pred_on_child_process );   // 非同期実行する関数を登録する
 	std::future<child_proc_return_t>                                f1 = task1.get_future();
 
 	// Act
-	std::thread t1( std::move( task1 ), []() -> int {
-		ipsm_mem shm_obj_secondary;
-		shm_obj_secondary.allocate_shm_as_secondary(
-			SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
-			[]( void*, size_t ) { /* 何もしない */ } );
-		if ( not shm_obj_secondary.debug_test_integrity() ) {
-			return 1;
-		}
+	std::thread t1( std::move( task1 ), [init_functor]() -> int {
+		ipsm_mem          shm_obj_secondary( SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, init_functor );
 		test_shared_data* p_sut = reinterpret_cast<test_shared_data*>( shm_obj_secondary.get() );
 
 		std::unique_lock<ipsm_mutex> lk( p_sut->mtx_ );
@@ -296,32 +289,24 @@ TEST( Test_ipsm_condition_variable_bw_proc, CanWaitForPred_Timeout )
 TEST( Test_ipsm_condition_variable_bw_proc, CanWaitForPred_NoTimeout )
 {
 	// Arrange
-	ipsm_mem shm_obj(
-		SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
-		[]( void* p_mem, off_t len ) -> void* {
-			if ( p_mem == nullptr ) {
-				return nullptr;
-			}
-			if ( len < 4096 ) {
-				return nullptr;
-			}
-			[[maybe_unused]] test_shared_data* p_sut = new ( p_mem ) test_shared_data();
-			return nullptr;
-		},
-		[]( void*, size_t ) { /* 何もしない */ } );
+	auto init_functor = []( void* p_mem, off_t len ) -> std::uintptr_t {
+		if ( p_mem == nullptr ) {
+			return ~( (std::uintptr_t)0 );
+		}
+		if ( len < 4096 ) {
+			return ~( (std::uintptr_t)0 );
+		}
+		[[maybe_unused]] test_shared_data* p_sut = new ( p_mem ) test_shared_data();
+		return 0;
+	};
+	ipsm_mem          shm_obj( SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, init_functor );
 	test_shared_data* p_sut = reinterpret_cast<test_shared_data*>( shm_obj.get() );
 
 	std::packaged_task<child_proc_return_t( std::function<int()> )> task1( call_pred_on_child_process );   // 非同期実行する関数を登録する
 	std::future<child_proc_return_t>                                f1 = task1.get_future();
 
-	std::thread t1( std::move( task1 ), []() -> int {
-		ipsm_mem shm_obj_secondary;
-		shm_obj_secondary.allocate_shm_as_secondary(
-			SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
-			[]( void*, size_t ) { /* 何もしない */ } );
-		if ( not shm_obj_secondary.debug_test_integrity() ) {
-			return 1;
-		}
+	std::thread t1( std::move( task1 ), [init_functor]() -> int {
+		ipsm_mem          shm_obj_secondary( SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, init_functor );
 		test_shared_data* p_sut = reinterpret_cast<test_shared_data*>( shm_obj_secondary.get() );
 
 		std::unique_lock<ipsm_mutex> lk( p_sut->mtx_ );
