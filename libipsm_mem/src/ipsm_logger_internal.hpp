@@ -9,50 +9,30 @@
  *
  */
 
-#ifndef IPSM_LOGGER_HPP_
-#define IPSM_LOGGER_HPP_
+#ifndef IPSM_LOGGER_INTERNAL_HPP_
+#define IPSM_LOGGER_INTERNAL_HPP_
 
 #include <cstdio>
 
+#include "ipsm_logger.hpp"
+
 namespace ipsm {
 
-enum class psm_log_lv {
-	kTest,
-	kDebug,
-	kInfo,
-	kWarn,
-	kErr
-};
+constexpr size_t log_buff_size = 1024;
+
+extern void ( *p_ipsm_logger )( psm_log_lv, const char* );
+void call_logger( psm_log_lv ll, const char* p_log ) noexcept;
 
 constexpr inline bool psm_filter( psm_log_lv ll )
 {
-#ifdef ENABLE_DEBUG_LOGOUTPUT
+#if defined( ENABLE_DEBUG_LOGOUTPUT ) || defined( ENABLE_DELEGATION_OF_FILTERING )
 	return true;
 #else
-#if 1
 	// C++11 and after
 	return ( ll == psm_log_lv::kTest ) ||
 	       ( ll == psm_log_lv::kInfo ) ||
 	       ( ll == psm_log_lv::kWarn ) ||
 	       ( ll == psm_log_lv::kErr );
-#else
-	// C++14 and after
-	bool is_output = false;
-	switch ( ll ) {
-		case psm_log_lv::kTest:
-		case psm_log_lv::kInfo:
-		case psm_log_lv::kWarn:
-		case psm_log_lv::kErr: {
-			is_output = true;
-		} break;
-
-		case psm_log_lv::kDebug:
-		default: {
-		} break;
-	}
-
-	return is_output;
-#endif
 #endif
 }
 
@@ -60,8 +40,9 @@ template <typename... Args>
 inline void psm_logoutput( psm_log_lv ll, const char* p_fmt, Args... args ) noexcept
 {
 	if ( psm_filter( ll ) ) {
-		fprintf( stderr, p_fmt, args... );
-		fprintf( stderr, "\n" );
+		char log_buff[log_buff_size];
+		snprintf( log_buff, sizeof( log_buff ), p_fmt, args... );
+		call_logger( ll, log_buff );
 	}
 }
 
@@ -69,10 +50,12 @@ template <>
 inline void psm_logoutput( psm_log_lv ll, const char* p_fmt ) noexcept
 {
 	if ( psm_filter( ll ) ) {
-		fprintf( stderr, "%s\n", p_fmt );
+		char log_buff[log_buff_size];
+		snprintf( log_buff, sizeof( log_buff ), "%s", p_fmt );
+		call_logger( ll, log_buff );
 	}
 }
 
 }   // namespace ipsm
 
-#endif   // IPSM_LOGGER_HPP_
+#endif   // IPSM_LOGGER_INTERNAL_HPP_

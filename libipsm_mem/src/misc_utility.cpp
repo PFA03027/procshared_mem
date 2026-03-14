@@ -51,21 +51,6 @@ std::string make_strerror( type_of_errno e_v )
 #endif
 }
 
-ino_t get_inode_of_fd( int id_f_fd )
-{
-	struct stat stat_buff;
-	int         ret = fstat( id_f_fd, &stat_buff );
-	if ( ret != 0 ) {
-		auto cur_errno = errno;
-		char buff[1024];
-		snprintf( buff, 1024, "Error: Fail to fstat(%d)", id_f_fd );
-		psm_logoutput( psm_log_lv::kErr, "Error: %s", buff );
-		throw ipsm_mem_error( cur_errno, buff );
-	}
-
-	return stat_buff.st_ino;
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ipsm_mem_error::ipsm_mem_error( type_of_errno e_v )
   : std::runtime_error( make_strerror( e_v ) )

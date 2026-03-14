@@ -45,8 +45,6 @@ static_assert( std::is_integral<off_t>::value, "off_t is not integral..." );
 
 std::string make_strerror( type_of_errno e_v );
 
-ino_t get_inode_of_fd( int id_f_fd );
-
 }   // namespace ipsm
 
 #endif   // MISC_UTILITY_HPP_

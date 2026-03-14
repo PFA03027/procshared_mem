@@ -33,6 +33,7 @@ target_sources(test_ipsm_functions PRIVATE
   test_ipsm_functions/test_ipsm_malloc.cpp
   test_ipsm_functions/test_ipsm_mem.cpp
   test_ipsm_functions/test_misc_utility_and_other.cpp
+  test_ipsm_functions/test_ipsm_logger.cpp
   )
 target_include_directories( test_ipsm_functions  PRIVATE ../libipsm_mem/src )
 target_link_libraries(test_ipsm_functions ipsm_mem test_ipsm_common gtest gtest_main )
