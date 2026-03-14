@@ -23,6 +23,7 @@ else()
   add_library(test_ipsm_common STATIC test_ipsm_common/test_ipsm_common.cpp )
 endif()
 target_include_directories(test_ipsm_common  PUBLIC test_ipsm_common/ ../libipsm_mem/src )
+target_compile_options( test_ipsm_common  PRIVATE -Wall -Wconversion -Wsign-conversion -Werror )
 
 ########################
 add_executable(test_ipsm_functions EXCLUDE_FROM_ALL)
@@ -37,6 +38,7 @@ target_sources(test_ipsm_functions PRIVATE
   )
 target_include_directories( test_ipsm_functions  PRIVATE ../libipsm_mem/src )
 target_link_libraries(test_ipsm_functions ipsm_mem test_ipsm_common gtest gtest_main )
+target_compile_options( test_ipsm_functions  PRIVATE -Wall -Wconversion -Wsign-conversion -Werror )
 add_dependencies(build-test test_ipsm_functions)
 add_test(NAME test_ipsm_functions COMMAND $<TARGET_FILE:test_ipsm_functions>)
 
@@ -57,6 +59,7 @@ set(TEST_OFFSET_FUNCTIONS_SOURCES
 add_executable(test_offset_functions EXCLUDE_FROM_ALL ${TEST_OFFSET_FUNCTIONS_SOURCES})
 # target_include_directories(test_offset_functions_cpp  PUBLIC ../inc  )
 target_link_libraries(test_offset_functions ipsm_mem test_ipsm_common gtest gtest_main )
+target_compile_options( test_offset_functions  PRIVATE -Wall -Wconversion -Wsign-conversion -Werror )
 add_dependencies(build-test test_offset_functions)
 add_test(NAME test_offset_functions COMMAND $<TARGET_FILE:test_offset_functions>)
 
@@ -64,16 +67,20 @@ add_test(NAME test_offset_functions COMMAND $<TARGET_FILE:test_offset_functions>
 ##############################
 add_executable(loadtest_ipsm_malloc_highload EXCLUDE_FROM_ALL test_ipsm_malloc_highload.cpp)
 target_link_libraries(loadtest_ipsm_malloc_highload ipsm_mem )
+target_compile_options( loadtest_ipsm_malloc_highload  PRIVATE -Wall -Wconversion -Wsign-conversion -Werror )
 add_dependencies(build-test loadtest_ipsm_malloc_highload)
 
 add_executable(loadtest_ipsm_malloc_highload_sub EXCLUDE_FROM_ALL test_ipsm_malloc_highload_sub.cpp)
 target_link_libraries(loadtest_ipsm_malloc_highload_sub ipsm_mem )
+target_compile_options( loadtest_ipsm_malloc_highload_sub  PRIVATE -Wall -Wconversion -Wsign-conversion -Werror )
 add_dependencies(build-test loadtest_ipsm_malloc_highload_sub)
 
 add_executable(loadtest_ipsm_mem_setup_highload EXCLUDE_FROM_ALL test_ipsm_mem_setup_highload.cpp)
 target_link_libraries(loadtest_ipsm_mem_setup_highload ipsm_mem )
+target_compile_options( loadtest_ipsm_mem_setup_highload  PRIVATE -Wall -Wconversion -Wsign-conversion -Werror )
 add_dependencies(build-test loadtest_ipsm_mem_setup_highload)
 
 add_executable(loadtest_ipsm_mem_setup_highload_subprocess EXCLUDE_FROM_ALL test_ipsm_mem_setup_highload_subprocess.cpp)
 target_link_libraries(loadtest_ipsm_mem_setup_highload_subprocess ipsm_mem )
+target_compile_options( loadtest_ipsm_mem_setup_highload_subprocess  PRIVATE -Wall -Wconversion -Wsign-conversion -Werror )
 add_dependencies(build-test loadtest_ipsm_mem_setup_highload_subprocess)
