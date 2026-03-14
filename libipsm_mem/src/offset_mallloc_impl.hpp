@@ -14,7 +14,7 @@
 
 #include <cstddef>
 
-#include "ipsm_logger.hpp"
+#include "ipsm_logger_internal.hpp"
 #include "ipsm_mutex.hpp"
 #include "offset_malloc.hpp"
 #include "offset_ptr.hpp"

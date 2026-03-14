@@ -17,7 +17,7 @@
 #include <execinfo.h>
 #include <pthread.h>
 
-#include "ipsm_logger.hpp"
+#include "ipsm_logger_internal.hpp"
 #include "ipsm_mutex.hpp"
 
 namespace ipsm {

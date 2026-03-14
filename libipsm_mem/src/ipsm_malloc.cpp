@@ -12,7 +12,7 @@
 #include <memory>
 #include <type_traits>
 
-#include "ipsm_logger.hpp"
+#include "ipsm_logger_internal.hpp"
 #include "ipsm_malloc.hpp"
 
 namespace ipsm {

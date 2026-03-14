@@ -18,7 +18,7 @@
 #include <pthread.h>
 
 #include "ipsm_condition_variable.hpp"
-#include "ipsm_logger.hpp"
+#include "ipsm_logger_internal.hpp"
 #include "ipsm_time_util.hpp"
 
 namespace ipsm {

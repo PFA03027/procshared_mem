@@ -22,7 +22,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "ipsm_logger.hpp"
+#include "ipsm_logger_internal.hpp"
 #include "lockfile_mutex.hpp"
 #include "misc_utility.hpp"
 

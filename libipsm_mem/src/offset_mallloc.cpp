@@ -9,7 +9,7 @@
  *
  */
 
-#include "ipsm_logger.hpp"
+#include "ipsm_logger_internal.hpp"
 #include "offset_mallloc_impl.hpp"
 #include "offset_malloc.hpp"
 
