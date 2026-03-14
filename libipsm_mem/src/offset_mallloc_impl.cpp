@@ -216,20 +216,13 @@ int offset_malloc::offset_malloc_impl::bind( void )
 {
 	std::lock_guard<ipsm_mutex> lk( mtx_ );
 
-	if ( bind_cnt_ < 0 ) {
-		// 0の場合、すでに解放済みの領域を指している。rece conditionと考えられるため、あえて例外を投げる。
-		throw std::bad_alloc();
-	}
-
 	bind_cnt_++;
 	return bind_cnt_;
 }
 int offset_malloc::offset_malloc_impl::unbind( void )
 {
 	std::lock_guard<ipsm_mutex> lk( mtx_ );
-	if ( bind_cnt_ >= 0 ) {
-		bind_cnt_--;
-	}
+	bind_cnt_--;
 	return bind_cnt_;
 }
 

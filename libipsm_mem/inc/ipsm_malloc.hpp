@@ -51,19 +51,81 @@ public:
 		int         retry_interval_msec = 100     //!< [in] retry interval in milliseconds for waiting for shared memory initialization.
 	);
 
+	/**
+	 * @brief Allocate memory from shared memory
+	 *
+	 * @param n the number of bytes to allocate
+	 * @param alignment the alignment of allocated memory. default value is alignof(std::max_align_t). if alignment is 0, it is treated as 1.
+	 *
+	 * @return void* pointer to allocated memory as the address of a process. if allocation failed, return nullptr.
+	 */
 #if __has_cpp_attribute( nodiscard )
 	[[nodiscard]]
 #endif
 	void* allocate( size_t n, size_t alignment = alignof( std::max_align_t ) );
-	void  deallocate( void* p, size_t alignment = alignof( std::max_align_t ) );
 
+	/**
+	 * @brief Deallocate memory from shared memory
+	 *
+	 * @param p pointer to the memory to deallocate
+	 * @param alignment the alignment of the memory to deallocate. default value is alignof(std::max_align_t). if alignment is 0, it is treated as 1.
+	 */
+	void deallocate( void* p, size_t alignment = alignof( std::max_align_t ) );
+
+	/**
+	 * @brief Get the bind count object
+	 *
+	 * Indicates how many ipsm_malloc instances or their allocators are referencing this object. Mainly used for inspection in tests.
+	 * Note: If any process referencing this shared memory terminates abnormally, this counter may not reflect the correct value.
+	 *
+	 * @return int
+	 */
 	int get_bind_count( void ) const;
 
+	/**
+	 * @brief Get the allocator object that is bound to this shared memory
+	 *
+	 * @tparam T
+	 * @return offset_allocator<T>
+	 */
 	template <typename T>
 	offset_allocator<T> get_allocator( void );
 
-	void                send( unsigned int ch, offset_ptr<void> sending_value );   // 仮実装
-	offset_ptr<void>    receive( unsigned int ch );                                // 仮実装
+	/**
+	 * @brief Send the value object
+	 *
+	 * Uses a pre-constructed message channel to send and receive values between processes.
+	 *
+	 * 事前に構築されているmessage channelを利用して、プロセス間で値を送受信する。
+	 *
+	 * @param ch Channel number. Specify a value in the range from 0 to channel_size() - 1. The channel number to use for communication must be agreed upon in advance between communicating processes.
+	 * @param sending_value Offset pointer to the region obtained by allocate(). The type of value to send must be agreed upon in advance between communicating processes.
+	 *
+	 * @param ch チャンネル番号。0からchannel_size() - 1の範囲で指定する。どのチャンネル番号を使って通信するかは、通信するプロセス間で事前に合意しておく必要がある。
+	 * @param sending_value allocate()で取得した領域へのオフセットポインタ。送信する値の型は、通信するプロセス間で事前に合意しておく必要がある。
+	 */
+	void send( unsigned int ch, offset_ptr<void> sending_value );
+
+	/**
+	 * @brief Receive a value object
+	 *
+	 * Uses a pre-constructed message channel to send and receive values between processes.
+	 *
+	 * 事前に構築されているmessage channelを利用して、プロセス間で値を送受信する。
+	 *
+	 * @param ch Channel number. Specify a value in the range from 0 to channel_size() - 1. The channel number to use for communication must be agreed upon in advance between communicating processes.
+	 * @return offset_ptr<void> Offset pointer to the region obtained by allocate(). The type of value to receive must be agreed upon in advance between communicating processes.
+	 *
+	 * @param ch チャンネル番号。0からchannel_size() - 1の範囲で指定する。どのチャンネル番号を使って通信するかは、通信するプロセス間で事前に合意しておく必要がある。
+	 * @return offset_ptr<void> allocate()で取得した領域へのオフセットポインタ。受信する値の型は、通信するプロセス間で事前に合意しておく必要がある。
+	 */
+	offset_ptr<void> receive( unsigned int ch );
+
+	/**
+	 * @brief Get the number of channels
+	 *
+	 * @return unsigned int the number of channels
+	 */
 	static unsigned int channel_size( void );
 
 private:

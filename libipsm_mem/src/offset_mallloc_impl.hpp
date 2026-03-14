@@ -143,10 +143,10 @@ private:
 	static constexpr size_t size_of_block_header( void );
 	static constexpr size_t bytes2blocksize( size_t bytes );
 
-	const offset_ptr<unsigned char> op_end_;
-	mutable ipsm_mutex              mtx_;
-	int                             bind_cnt_;   // このインスタンスが、現在のメモリ領域に対して何個バインドされているかを表す。負の数のとき、メモリ領域は破棄されたことを示す。
-	offset_ptr<block>               op_freep_;
+	const offset_ptr<unsigned char> op_end_;     //!< メモリ領域の終端を指すオフセットポインタ。メモリ領域の先頭は、このクラス構造が配置されている位置になる。
+	mutable ipsm_mutex              mtx_;        //!< 以下に宣言されているメンバ変数のアクセスを保護するためのミューテックス
+	int                             bind_cnt_;   //!< このインスタンスが、現在のメモリ領域に対して何個バインドされているかを表す。主にテストでの検査用に使用する。
+	offset_ptr<block>               op_freep_;   //!< 空きブロックリストの先頭を指すオフセットポインタ。
 	block                           base_blk_;   //!< bigger address of this member variable is allocation memory area
 };
 

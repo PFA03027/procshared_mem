@@ -467,7 +467,7 @@ ipsm_mem::ipsm_mem(
 {
 	bool ret = setup( p_shm_name, p_lifetime_ctrl_fname, length, mode, init_functor_arg, timeout_msec, retry_interval_msec );
 	if ( !ret ) {
-		// 共有メモリの初期化に失敗した場合、共有メモリの初期化を行うプロセスが初期化処理中にプロセスが終了したことを示す。
+		// 共有メモリの初期化に失敗した場合、共有メモリの初期化完了、あるいは初期化完了待ちに時間がかかりすぎて、timeoutが発生したことを示す。
 		psm_logoutput( ipsm::psm_log_lv::kWarn, "failed to setup shared memory: %s", p_shm_name );
 		delete p_impl_;
 		p_impl_ = nullptr;
