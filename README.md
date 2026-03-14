@@ -24,6 +24,3 @@
 * ipsm_mem.hpp
 * ipsm_malloc.hpp
 * ipsm_allocator.hpp / ipsm_memory_resource.hpp
-
-### AI memo
-* ipsm_logger.hpp supports the logger exchange.
