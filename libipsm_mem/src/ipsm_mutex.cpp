@@ -19,8 +19,6 @@
 
 #include "ipsm_logger.hpp"
 #include "ipsm_mutex.hpp"
-#include "ipsm_mutex_base.hpp"
-#include "ipsm_recursive_mutex.hpp"
 
 namespace ipsm {
 

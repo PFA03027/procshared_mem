@@ -20,7 +20,6 @@
 #include "ipsm_condition_variable.hpp"
 #include "ipsm_mem.hpp"
 #include "ipsm_mutex.hpp"
-#include "ipsm_recursive_mutex.hpp"
 #include "test_ipsm_common.hpp"
 
 using namespace ipsm;

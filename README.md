@@ -26,5 +26,4 @@
 * ipsm_allocator.hpp / ipsm_memory_resource.hpp
 
 ### AI memo
-* integrate ipsm_mutex.hpp, ipsm_mutex_base.hpp , ipsm_recursive_mutex.hpp to one header file
 * ipsm_logger.hpp supports the logger exchange.
