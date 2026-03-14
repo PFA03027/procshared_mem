@@ -104,6 +104,13 @@ build-test-no-sanitizer: configure-cmake-no-sanitizer
 	cmake --build ${BUILD_DIR} -j ${JOBS} -v --target build-test
 
 #############################################################################################
+sample: build-sample
+	-./build/sample/sample_01_msg_exchange_via_shared_memory
+
+build-sample: configure-cmake-no-sanitizer
+	cmake --build ${BUILD_DIR} -j ${JOBS} -v --target build-sample
+
+#############################################################################################
 configure-cmake.%.sanitizer:
 	cmake -S . -B ${BUILD_DIR} -G "${CMAKE_GENERATE_TARGET}" ${CMAKE_CONFIGURE_OPTS} -DSANITIZER_TYPE=$*
 

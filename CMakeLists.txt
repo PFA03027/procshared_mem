@@ -21,3 +21,4 @@ enable_testing()
 
 add_subdirectory(libipsm_mem)
 add_subdirectory(test EXCLUDE_FROM_ALL)
+add_subdirectory(sample EXCLUDE_FROM_ALL)

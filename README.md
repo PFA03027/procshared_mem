@@ -18,8 +18,7 @@
 * offset_malloc.hpp
 * offset_allocator.hpp( / offset_memory_resource.hpp未実装)
 * offset_list.hpp
-* ipsm_mutex_base.hpp
-* ipsm_mutex.hpp / ipsm_recursive_mutex.hpp
+* ipsm_mutex.hpp
 * ipsm_condition_variable.hpp
 * ipsm_mem.hpp
 * ipsm_malloc.hpp
