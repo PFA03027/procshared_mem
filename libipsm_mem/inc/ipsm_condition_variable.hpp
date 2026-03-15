@@ -90,10 +90,13 @@ public:
 	}
 
 	template <class Predicate>
-	bool wait_until( std::unique_lock<ipsm_mutex>& lock,
-	                 const time_util::timespec_ct<CT>&   abs_time,
-	                 Predicate                           pred )
+	bool wait_until( std::unique_lock<ipsm_mutex>&     lock,
+	                 const time_util::timespec_ct<CT>& abs_time,
+	                 Predicate                         pred )
 	{
+		// if ( lock.owns_lock() == false ) {
+		// 	throw std::logic_error( "ipsm_condition_variable::wait_until() requires lock.owns_lock() == true, before calling this function" );
+		// }
 		while ( !pred() ) {
 			if ( wait_until( lock, abs_time ) == std::cv_status::timeout ) {
 				return pred();
@@ -103,14 +106,14 @@ public:
 	}
 
 	template <class Rep, class Period, clockid_t CTX = CT, typename std::enable_if<time_util::timespec_ct<CT>::is_steady>::type* = nullptr>
-	std::cv_status wait_for( std::unique_lock<ipsm_mutex>&       lock,
+	std::cv_status wait_for( std::unique_lock<ipsm_mutex>&             lock,
 	                         const std::chrono::duration<Rep, Period>& rel_time )
 	{
 		return wait_until( lock, time_util::timespec_ct<CT>::now() + rel_time );
 	}
 
 	template <class Rep, class Period, class Predicate, clockid_t CTX = CT, typename std::enable_if<time_util::timespec_ct<CT>::is_steady>::type* = nullptr>
-	bool wait_for( std::unique_lock<ipsm_mutex>&       lock,
+	bool wait_for( std::unique_lock<ipsm_mutex>&             lock,
 	               const std::chrono::duration<Rep, Period>& rel_time,
 	               Predicate                                 pred )
 	{

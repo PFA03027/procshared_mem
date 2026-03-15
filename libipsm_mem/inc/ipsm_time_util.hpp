@@ -101,9 +101,19 @@ struct is_steady_clock_impl {
 template <clockid_t CT>
 class timespec_ct {
 public:
+	~timespec_ct() = default;
 	constexpr timespec_ct( void )
 	  : tsp_ { 0 }
 	{
+	}
+	constexpr timespec_ct( const timespec_ct& src )            = default;
+	constexpr timespec_ct( timespec_ct&& src )                 = default;
+	constexpr timespec_ct& operator=( const timespec_ct& src ) = default;
+	constexpr timespec_ct& operator=( timespec_ct&& src )      = default;
+
+	void swap( timespec_ct& src )
+	{
+		std::swap( tsp_, src.tsp_ );
 	}
 
 	template <typename TimePointT, clockid_t CTX = CT, typename std::enable_if<is_exchangable_timediff<typename TimePointT::clock, CTX>::value>::type* = nullptr>

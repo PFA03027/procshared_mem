@@ -461,6 +461,12 @@ public:
 		return reinterpret_cast<void*>( calc_address() );
 	}
 
+	template <typename U, typename std::enable_if<!std::is_same<U, void>::value>::type* = nullptr>
+	offset_ptr<U> reinterpret_to_offset_ptr() const
+	{
+		return offset_ptr<U>( reinterpret_cast<U*>( get() ) );
+	}
+
 #if ( __cpp_impl_three_way_comparison > 201907L )
 	constexpr bool operator==( const offset_ptr& c ) const noexcept
 	{

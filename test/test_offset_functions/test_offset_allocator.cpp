@@ -18,7 +18,6 @@
 
 using namespace ipsm;
 
-
 TEST( Offset_Allocator_Cntr, CanDefaultConstruct )
 {
 	// Arrange
@@ -273,7 +272,7 @@ TEST( Offset_Allocator, CanMakeObj )
 	offset_allocator<EmplacementTestData> sut( p_mem, 1024 );
 
 	// Act
-	EmplacementTestData* p = make_obj_construct_using_allocator<EmplacementTestData>( sut, 1, 2.0 );
+	EmplacementTestData* p = ipsm::allocate_instance<EmplacementTestData>( sut, 1, 2.0 );
 
 	// Assert
 	EXPECT_EQ( p->x_, 1 );

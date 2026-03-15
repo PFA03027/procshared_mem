@@ -71,6 +71,7 @@ std::cv_status ipsm_condition_variable_base::wait_until(
 	std::cv_status ans      = std::cv_status::no_timeout;
 
 	do {
+		// TODO: should change to pthread_cond_clockwait
 		int ret = pthread_cond_timedwait( &cond_, lock.mutex()->native_handle(), &( abs_time ) );
 		switch ( ret ) {
 			case 0: {

@@ -12,6 +12,7 @@
 #include <memory>
 #include <type_traits>
 
+#include "ipsm_condition_variable.hpp"
 #include "ipsm_logger_internal.hpp"
 #include "ipsm_malloc.hpp"
 
@@ -167,6 +168,49 @@ offset_ptr<void> ipsm_malloc::receive( unsigned int ch )
 	p_msgch_->cond_.wait( lk, [this, ch]() -> bool {
 		return !( p_msgch_->msgch_[ch].empty() );
 	} );
+	offset_ptr<void> ans = p_msgch_->msgch_[ch].front();
+	p_msgch_->msgch_[ch].pop_front();
+	return ans;
+}
+
+std::optional<offset_ptr<void>> ipsm_malloc::try_receive( unsigned int ch )
+{
+	if ( p_msgch_ == nullptr ) {
+		psm_logoutput( psm_log_lv::kErr, "Error: in ipsm_malloc::try_receive(), p_msgch_ of ipsm_malloc is nullptr" );
+		return std::nullopt;
+	}
+	if ( ch >= p_msgch_->channel_size_ ) {
+		psm_logoutput( psm_log_lv::kErr, "Error: in ipsm_malloc::try_receive(), ch is too big, requested ch=%u, actual channel_size=%u", ch, p_msgch_->channel_size_ );
+		return std::nullopt;
+	}
+
+	std::lock_guard<ipsm_mutex> lk( p_msgch_->mtx_ );
+	if ( p_msgch_->msgch_[ch].empty() ) {
+		return std::nullopt;
+	}
+	offset_ptr<void> ans = p_msgch_->msgch_[ch].front();
+	p_msgch_->msgch_[ch].pop_front();
+	return ans;
+}
+
+std::optional<offset_ptr<void>> ipsm_malloc::try_receive_until( unsigned int ch, const time_util::timespec_monotonic& abs_timeout_time )
+{
+	if ( p_msgch_ == nullptr ) {
+		psm_logoutput( psm_log_lv::kErr, "Error: in ipsm_malloc::try_receive_until(), p_msgch_ of ipsm_malloc is nullptr" );
+		return std::nullopt;
+	}
+	if ( ch >= p_msgch_->channel_size_ ) {
+		psm_logoutput( psm_log_lv::kErr, "Error: in ipsm_malloc::try_receive_until(), ch is too big, requested ch=%u, actual channel_size=%u", ch, p_msgch_->channel_size_ );
+		return std::nullopt;
+	}
+
+	std::unique_lock<ipsm_mutex> lk( p_msgch_->mtx_ );
+	bool                         has_msg = p_msgch_->cond_.wait_until( lk, abs_timeout_time, [this, ch]() -> bool {
+        return !( p_msgch_->msgch_[ch].empty() );
+    } );
+	if ( !has_msg ) {
+		return std::nullopt;
+	}
 	offset_ptr<void> ans = p_msgch_->msgch_[ch].front();
 	p_msgch_->msgch_[ch].pop_front();
 	return ans;

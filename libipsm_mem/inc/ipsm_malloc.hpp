@@ -12,11 +12,13 @@
 #ifndef IPSM_MALLOC_HPP_
 #define IPSM_MALLOC_HPP_
 
+#include <chrono>
 #include <cstddef>
+#include <optional>
 
-#include "ipsm_condition_variable.hpp"
 #include "ipsm_mem.hpp"
 #include "ipsm_mutex.hpp"
+#include "ipsm_time_util.hpp"
 #include "offset_allocator.hpp"
 #include "offset_list.hpp"
 #include "offset_malloc.hpp"
@@ -121,6 +123,31 @@ public:
 	 * @return offset_ptr<void> allocate()で取得した領域へのオフセットポインタ。受信する値の型は、通信するプロセス間で事前に合意しておく必要がある。
 	 */
 	offset_ptr<void> receive( unsigned int ch );
+
+	/**
+	 * @brief Try to receive a value object
+	 *
+	 * please refer to receive() for details. This function does not block and returns immediately if no value is available.
+	 */
+	std::optional<offset_ptr<void>> try_receive( unsigned int ch );
+
+	/**
+	 * @brief Try to receive a value object until the specified absolute timeout time
+	 *
+	 * please refer to receive() for details. This function returns std::nullopt if no value is available until the specified absolute timeout time.
+	 */
+	std::optional<offset_ptr<void>> try_receive_until( unsigned int ch, const time_util::timespec_monotonic& abs_timeout_time );
+
+	/**
+	 * @brief Try to receive a value object until the specified relative timeout time
+	 *
+	 * please refer to receive() for details. This function returns std::nullopt if no value is available until the specified relative timeout time.
+	 */
+	template <class Rep, class Period>
+	std::optional<offset_ptr<void>> try_receive_for( unsigned int ch, const std::chrono::duration<Rep, Period>& rel_time )
+	{
+		return try_receive_until( ch, time_util::timespec_monotonic::now() + rel_time );
+	}
 
 	/**
 	 * @brief Get the number of channels

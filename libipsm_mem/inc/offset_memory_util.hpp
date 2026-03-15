@@ -21,7 +21,7 @@ template <typename T, typename Allocator, typename... Args,
           typename std::enable_if<
 			  ( !std::uses_allocator<T, Allocator>::value ) &&
 			  ( !std::is_constructible<T, Args...>::value )>::type* = nullptr>
-inline T* make_obj_construct_using_allocator( const Allocator& alloc_arg, Args&&... args )
+inline T* allocate_instance( const Allocator& alloc_arg, Args&&... args )
 {
 	using target_allocator_type        = typename std::allocator_traits<Allocator>::template rebind_alloc<T>;
 	using target_allocator_traits_type = std::allocator_traits<target_allocator_type>;
@@ -38,7 +38,7 @@ template <typename T, typename Allocator, typename... Args,
           typename std::enable_if<
 			  ( !std::uses_allocator<T, Allocator>::value ) &&
 			  std::is_constructible<T, Args...>::value>::type* = nullptr>
-inline T* make_obj_construct_using_allocator( const Allocator& alloc_arg, Args&&... args )
+inline T* allocate_instance( const Allocator& alloc_arg, Args&&... args )
 {
 	using target_allocator_type        = typename std::allocator_traits<Allocator>::template rebind_alloc<T>;
 	using target_allocator_traits_type = std::allocator_traits<target_allocator_type>;
@@ -55,7 +55,7 @@ template <typename T, typename Allocator, typename... Args,
           typename std::enable_if<
 			  std::uses_allocator<T, Allocator>::value &&
 			  std::is_constructible<T, std::allocator_arg_t, Allocator, Args...>::value>::type* = nullptr>
-inline T* make_obj_construct_using_allocator( const Allocator& alloc_arg, Args&&... args )
+inline T* allocate_instance( const Allocator& alloc_arg, Args&&... args )
 {
 	using target_allocator_type        = typename std::allocator_traits<Allocator>::template rebind_alloc<T>;
 	using target_allocator_traits_type = std::allocator_traits<target_allocator_type>;
@@ -72,7 +72,7 @@ template <typename T, typename Allocator, typename... Args,
           typename std::enable_if<
 			  std::uses_allocator<T, Allocator>::value &&
 			  std::is_constructible<T, Args..., Allocator>::value>::type* = nullptr>
-inline T* make_obj_construct_using_allocator( const Allocator& alloc_arg, Args&&... args )
+inline T* allocate_instance( const Allocator& alloc_arg, Args&&... args )
 {
 	using target_allocator_type        = typename std::allocator_traits<Allocator>::template rebind_alloc<T>;
 	using target_allocator_traits_type = std::allocator_traits<target_allocator_type>;

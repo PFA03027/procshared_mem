@@ -23,13 +23,11 @@
 
 #include "gtest/gtest.h"
 
+#include "ipsm_condition_variable.hpp"
 #include "ipsm_malloc.hpp"
 #include "test_ipsm_common.hpp"
 
 using namespace ipsm;
-
-#define SHM_OBJ_NAME_STRING               "/my_test_shm_test_ipsm_malloc"
-#define SHM_OBJ_NAME_LIFETIME_CTRL_STRING "/tmp/my_test_shm_test_ipsm_malloc.lifetime_ctrl"
 
 TEST( Test_ipsm_malloc, CanDefaultConstruct_CanDestruct )
 {
@@ -71,35 +69,6 @@ TEST( Test_ipsm_malloc, CanConstruct_CanDestruct )
 	// Assert
 }
 
-TEST( Test_ipsm_malloc, CanConstruct_ThenAllocate )
-{
-	// Arrange
-	std::string shm_name            = "/test_ipsm_malloc_" + std::to_string( getpid() );
-	std::string lifetime_ctrl_fname = "/tmp/test_ipsm_malloc_lifetime_ctrl_" + std::to_string( getpid() );
-	ipsm_malloc sut( shm_name.c_str(), lifetime_ctrl_fname.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
-
-	// Act
-	auto p = sut.allocate( 10 );
-
-	// Assert
-	EXPECT_NE( p, nullptr );
-}
-
-TEST( Test_ipsm_malloc, CanConstruct_ThenAllocateDeallocate )
-{
-	// Arrange
-	std::string shm_name            = "/test_ipsm_malloc_" + std::to_string( getpid() );
-	std::string lifetime_ctrl_fname = "/tmp/test_ipsm_malloc_lifetime_ctrl_" + std::to_string( getpid() );
-	ipsm_malloc sut( shm_name.c_str(), lifetime_ctrl_fname.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
-	auto        p = sut.allocate( 10 );
-	EXPECT_NE( p, nullptr );
-
-	// Act
-	ASSERT_NO_THROW( { sut.deallocate( p ); } );
-
-	// Assert
-}
-
 TEST( Test_ipsm_malloc, CanMoveConstruct )
 {
 	// Arrange
@@ -116,92 +85,190 @@ TEST( Test_ipsm_malloc, CanMoveConstruct )
 	// Assert
 }
 
-TEST( Test_ipsm_malloc, CanMoveConstruct_ThenAllocate )
+// ===============================================================================
+class TestIpsmMallocFixture : public ::testing::Test {
+protected:
+	std::string shm_name_;
+	std::string lifetime_ctrl_fname;
+	ipsm_malloc sut_;
+
+	void SetUp( void ) override
+	{
+		shm_name_           = "/test_ipsm_malloc_" + std::to_string( getpid() );
+		lifetime_ctrl_fname = "/tmp/test_ipsm_malloc_lifetime_ctrl_" + std::to_string( getpid() );
+		sut_                = ipsm_malloc( shm_name_.c_str(), lifetime_ctrl_fname.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	}
+
+	void TearDown( void ) override
+	{
+	}
+};
+
+TEST_F( TestIpsmMallocFixture, CanConstruct_ThenAllocate )
 {
 	// Arrange
-	std::string shm_name            = "/test_ipsm_malloc_" + std::to_string( getpid() );
-	std::string lifetime_ctrl_fname = "/tmp/test_ipsm_malloc_lifetime_ctrl_" + std::to_string( getpid() );
-	ipsm_malloc sut;
-	sut = ipsm_malloc( shm_name.c_str(), lifetime_ctrl_fname.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 
 	// Act
-	auto p = sut.allocate( 10 );
+	auto p = sut_.allocate( 10 );
 
 	// Assert
 	EXPECT_NE( p, nullptr );
 }
 
-TEST( Test_ipsm_malloc, CanMoveConstruct_ThenAllocateDeallocate )
+TEST_F( TestIpsmMallocFixture, CanConstruct_ThenAllocateDeallocate )
 {
 	// Arrange
-	std::string shm_name            = "/test_ipsm_malloc_" + std::to_string( getpid() );
-	std::string lifetime_ctrl_fname = "/tmp/test_ipsm_malloc_lifetime_ctrl_" + std::to_string( getpid() );
-	ipsm_malloc sut;
-	sut    = ipsm_malloc( shm_name.c_str(), lifetime_ctrl_fname.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
-	auto p = sut.allocate( 10 );
+	auto p = sut_.allocate( 10 );
 	EXPECT_NE( p, nullptr );
 
 	// Act
-	ASSERT_NO_THROW( { sut.deallocate( p ); } );
+	ASSERT_NO_THROW( { sut_.deallocate( p ); } );
 
 	// Assert
 }
 
-TEST( Test_ipsm_malloc, CanMoveAssignment )
+TEST_F( TestIpsmMallocFixture, CanMoveConstruct_ThenAllocate )
 {
 	// Arrange
-	std::string shm_name1            = "/test_ipsm_malloc1_" + std::to_string( getpid() );
-	std::string lifetime_ctrl_fname1 = "/tmp/test_ipsm_malloc_lifetime_ctrl1_" + std::to_string( getpid() );
-	ipsm_malloc sut( shm_name1.c_str(), lifetime_ctrl_fname1.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
-	auto        p1 = sut.allocate( 10 );
+	ipsm_malloc sut2( std::move( sut_ ) );
+
+	// Act
+	auto p = sut2.allocate( 10 );
+
+	// Assert
+	EXPECT_NE( p, nullptr );
+}
+
+TEST_F( TestIpsmMallocFixture, CanMoveConstruct_ThenAllocateDeallocate )
+{
+	// Arrange
+	ipsm_malloc sut2( std::move( sut_ ) );
+	auto        p = sut2.allocate( 10 );
+	EXPECT_NE( p, nullptr );
+
+	// Act
+	ASSERT_NO_THROW( { sut2.deallocate( p ); } );
+
+	// Assert
+}
+
+TEST_F( TestIpsmMallocFixture, CanMoveAssignment )
+{
+	// Arrange
+	auto p1 = sut_.allocate( 10 );
 	EXPECT_NE( p1, nullptr );
 
 	std::string shm_name2            = "/test_ipsm_malloc2_" + std::to_string( getpid() );
 	std::string lifetime_ctrl_fname2 = "/tmp/test_ipsm_malloc_lifetime_ctrl2_" + std::to_string( getpid() );
 
 	// Act
-	sut     = ipsm_malloc( shm_name2.c_str(), lifetime_ctrl_fname2.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
-	auto p2 = sut.allocate( 10 );
+	sut_ = ipsm_malloc( shm_name2.c_str(), lifetime_ctrl_fname2.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 
 	// Assert
+	auto p2 = sut_.allocate( 10 );
 	EXPECT_NE( p2, nullptr );
 	EXPECT_NE( p1, p2 );
 }
 
-TEST( Test_ipsm_malloc, CanMoveAssignment_ThenDeallocate )
+TEST_F( TestIpsmMallocFixture, CanMoveAssignment_ThenDeallocate )
 {
 	// Arrange
-	std::string shm_name1            = "/test_ipsm_malloc1_" + std::to_string( getpid() );
-	std::string lifetime_ctrl_fname1 = "/tmp/test_ipsm_malloc_lifetime_ctrl1_" + std::to_string( getpid() );
-	ipsm_malloc sut( shm_name1.c_str(), lifetime_ctrl_fname1.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
-	auto        p1 = sut.allocate( 10 );
+	auto p1 = sut_.allocate( 10 );
 	EXPECT_NE( p1, nullptr );
 
 	std::string shm_name2            = "/test_ipsm_malloc2_" + std::to_string( getpid() );
 	std::string lifetime_ctrl_fname2 = "/tmp/test_ipsm_malloc_lifetime_ctrl2_" + std::to_string( getpid() );
-	sut                              = ipsm_malloc( shm_name2.c_str(), lifetime_ctrl_fname2.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
-	auto p2                          = sut.allocate( 10 );
+	sut_                             = ipsm_malloc( shm_name2.c_str(), lifetime_ctrl_fname2.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	auto p2                          = sut_.allocate( 10 );
 	EXPECT_NE( p2, nullptr );
 	EXPECT_NE( p1, p2 );
 
 	// Act
-	ASSERT_NO_THROW( { sut.deallocate( p2 ); } );
+	ASSERT_NO_THROW( { sut_.deallocate( p2 ); } );
 
 	// Assert
 }
 
-TEST( Test_ipsm_malloc, TryOversizeAllocation )
+TEST_F( TestIpsmMallocFixture, TryOversizeAllocation )
 {
 	// Arrange
-	std::string shm_name            = "/test_ipsm_malloc_" + std::to_string( getpid() );
-	std::string lifetime_ctrl_fname = "/tmp/test_ipsm_malloc_lifetime_ctrl_" + std::to_string( getpid() );
-	ipsm_malloc sut( shm_name.c_str(), lifetime_ctrl_fname.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 
 	// Act
-	auto p = sut.allocate( 4096 );
+	auto p = sut_.allocate( 4096 * 2 );   // 共有メモリのサイズを超えるサイズの割り当てを試みる
 
 	// Assert
-	EXPECT_NE( p, nullptr );
+	EXPECT_EQ( p, nullptr );
+}
+
+TEST_F( TestIpsmMallocFixture, CanSend_ThenReceive )
+{
+	// Arrange
+
+	int* p_send = ipsm::allocate_instance<int>( sut_.get_allocator<int>(), 12345 );
+
+	// Act
+	sut_.send( 0, p_send );   // 通常の生ポインタは、send()の引数型であるoffset_ptr<void>に暗黙的に変換され、送信される。
+
+	// Assert
+	auto p_recv = sut_.receive( 0 );
+	ASSERT_NE( p_recv, nullptr );
+	EXPECT_EQ( *reinterpret_cast<int*>( p_recv.get() ), 12345 );
+}
+
+TEST_F( TestIpsmMallocFixture, ChannelIsEmpty_CanTryReceive_ThenReturnNullopt )
+{
+	// Arrange
+
+	// Act
+	auto opt_recv = sut_.try_receive( 0 );
+
+	// Assert
+	EXPECT_EQ( opt_recv, std::nullopt );
+}
+
+TEST_F( TestIpsmMallocFixture, ChannelIsEmpty_CanTryReceiveUntilWithStdChronoSteadyClockNow_ThenReturnNullopt )
+{
+	// Arrange
+
+	// Act
+	auto opt_recv = sut_.try_receive_until( 0, std::chrono::steady_clock::now() );
+
+	// Assert
+	EXPECT_EQ( opt_recv, std::nullopt );
+}
+
+TEST_F( TestIpsmMallocFixture, ChannelIsEmpty_CanTryReceiveFor1msec_ThenReturnNullopt )
+{
+	// Arrange
+
+	// Act
+	auto opt_recv = sut_.try_receive_for( 0, std::chrono::milliseconds( 1 ) );
+
+	// Assert
+	EXPECT_EQ( opt_recv, std::nullopt );
+}
+
+TEST_F( TestIpsmMallocFixture, SendMsg_CanTryReceiveFor1sec_ThenReturnMsg )
+{
+	// Arrange
+	std::thread sender( [this]() {
+		std::this_thread::sleep_for( std::chrono::milliseconds( 10 ) );
+		int* p_send = ipsm::allocate_instance<int>( sut_.get_allocator<int>(), 12345 );
+		sut_.send( 0, p_send );
+	} );
+
+	// Act
+	auto opt_recv = sut_.try_receive_for( 0, std::chrono::seconds( 1 ) );
+
+	// Assert
+	if ( sender.joinable() ) {
+		sender.join();
+	}
+	ASSERT_NE( opt_recv, std::nullopt );
+	EXPECT_NE( *opt_recv, nullptr );
+	EXPECT_EQ( *( opt_recv->reinterpret_to_offset_ptr<int>() ), 12345 );
+
+	// Clean up
 }
 
 #if defined( TEST_ENABLE_ADDRESSSANITIZER ) || defined( TEST_ENABLE_LEAKSANITIZER )
@@ -224,7 +291,7 @@ TEST( Test_ipsm_malloc, CanAllocateBwProcess )
 			fprintf( stderr, "Error: bind count is %d\n", sut_secondary.get_bind_count() );
 			return 4;
 		}
-		if ( static_cast<unsigned int>( sut_secondary.get_bind_count() ) != ( 2U + shm_malloc_obj.channel_size() ) ) {
+		if ( static_cast<unsigned int>( sut_secondary.get_bind_count() ) != ( 2U + sut_secondary.channel_size() ) ) {
 			fprintf( stderr, "Error: bind count is %d\n", sut_secondary.get_bind_count() );
 			return 3;
 		}
@@ -289,13 +356,16 @@ private:
 	offset_list<T, offset_allocator<T>> que_;
 };
 
+#define SHM_OBJ_NAME_STRING               "/my_test_shm_test_ipsm_malloc"
+#define SHM_OBJ_NAME_LIFETIME_CTRL_STRING "/tmp/my_test_shm_test_ipsm_malloc.lifetime_ctrl"
+
 TEST( Test_ipsm_malloc, CanMsgChannel )
 {
 	// Arrange
 	constexpr int  num_of_threads = 100;
 	constexpr int  num_of_loop    = 10000;
 	ipsm_malloc    shm_malloc_obj( SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096UL * 100UL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
-	fifo_que<int>* p_sut_list = make_obj_construct_using_allocator<fifo_que<int>>( shm_malloc_obj.get_allocator<fifo_que<int>>(), shm_malloc_obj.get_allocator<int>() );
+	fifo_que<int>* p_sut_list = ipsm::allocate_instance<fifo_que<int>>( shm_malloc_obj.get_allocator<fifo_que<int>>(), shm_malloc_obj.get_allocator<int>() );
 	proc_task_data pt_pack[num_of_threads];
 	// Act
 	for ( auto& e : pt_pack ) {
@@ -314,7 +384,7 @@ TEST( Test_ipsm_malloc, CanMsgChannel )
 				v      = vv + 1;
 			}
 
-			int* p_ret = make_obj_construct_using_allocator<int>( sut_secondary.get_allocator<int>(), v );
+			int* p_ret = ipsm::allocate_instance<int>( sut_secondary.get_allocator<int>(), v );
 			sut_secondary.send( 1, p_ret );
 			return EXIT_SUCCESS;
 		} );
