@@ -56,17 +56,28 @@ void receive_and_print_message( ipsm::ipsm_malloc& shared_memory )
 	std::printf( "Received message: %s\n", received_message );
 }
 
+void fork_and_run( void )
+{
+	pid_t pid = fork();
+	if ( pid < 0 ) {
+		throw std::runtime_error( "Failed to fork process" );
+	} else if ( pid == 0 ) {
+		// Child process: allocate and send message
+		ipsm::ipsm_malloc shared_memory_child_side = setup_shared_memory();
+		allocate_and_send_message( shared_memory_child_side );
+		exit( EXIT_SUCCESS );
+	}
+}
+
 int main( void )
 {
-    try {
-        ipsm::ipsm_malloc shared_memory = setup_shared_memory();
-
-        // In a real application, the following two functions would be called in different processes.
-        allocate_and_send_message( shared_memory );
-        receive_and_print_message( shared_memory );
-    } catch ( const std::exception& e ) {
-        std::fprintf( stderr, "Error: %s\n", e.what() );
-        return EXIT_FAILURE;
-    }
+	try {
+		ipsm::ipsm_malloc shared_memory = setup_shared_memory();
+		fork_and_run();
+		receive_and_print_message( shared_memory );
+	} catch ( const std::exception& e ) {
+		std::fprintf( stderr, "Error: %s\n", e.what() );
+		return EXIT_FAILURE;
+	}
 	return EXIT_SUCCESS;
 }

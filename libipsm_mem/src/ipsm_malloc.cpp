@@ -133,8 +133,11 @@ void ipsm_malloc::send( unsigned int ch, offset_ptr<void> sending_value )
 		return;
 	}
 
-	std::lock_guard<ipsm_mutex> lk( p_msgch_->mtx_ );
-	p_msgch_->msgch_[ch].emplace_back( sending_value );
+	{
+		std::lock_guard<ipsm_mutex> lk( p_msgch_->mtx_ );
+		p_msgch_->msgch_[ch].emplace_back( sending_value );
+	}
+	p_msgch_->cond_.notify_all();
 	return;
 }
 offset_ptr<void> ipsm_malloc::receive( unsigned int ch )
