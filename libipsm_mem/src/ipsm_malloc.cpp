@@ -79,24 +79,25 @@ ipsm_malloc::ipsm_malloc(
   , shm_heap_()
   , p_msgch_( nullptr )
 {
-	bool setup_ret = shm_obj_.setup(
-		p_shm_name, p_lifetime_ctrl_fname, length, mode,
-		[channel_size]( void* p_mem, size_t len ) -> std::uintptr_t {
-			offset_malloc                      shm_heap_setup = offset_malloc( p_mem, len );
-			offset_allocator<msg_channels>     msg_channels_allocator_obj( shm_heap_setup );
-			offset_allocator<offset_ptr<void>> chdata_t_allocator_obj( shm_heap_setup );
+	size_t actual_request_length = length + msg_channels::calc_required_bytes( channel_size ) + alignof( msg_channels );
+	bool   setup_ret             = shm_obj_.setup(
+        p_shm_name, p_lifetime_ctrl_fname, actual_request_length, mode,
+        [channel_size]( void* p_mem, size_t len ) -> std::uintptr_t {
+            offset_malloc                      shm_heap_setup = offset_malloc( p_mem, len );
+            offset_allocator<msg_channels>     msg_channels_allocator_obj( shm_heap_setup );
+            offset_allocator<offset_ptr<void>> chdata_t_allocator_obj( shm_heap_setup );
 
-			using target_allocator_traits_type = std::allocator_traits<offset_allocator<msg_channels>>;
+            using target_allocator_traits_type = std::allocator_traits<offset_allocator<msg_channels>>;
 
-			// msg_channels* p_msgch_setup = target_allocator_traits_type::allocate( msg_channels_allocator_obj, 1 );
-			msg_channels* p_msgch_setup = reinterpret_cast<msg_channels*>( shm_heap_setup.allocate( msg_channels::calc_required_bytes( channel_size ), alignof( msg_channels ) ) );
-			target_allocator_traits_type::construct( msg_channels_allocator_obj, p_msgch_setup, chdata_t_allocator_obj, channel_size );
+            // msg_channels* p_msgch_setup = target_allocator_traits_type::allocate( msg_channels_allocator_obj, 1 );
+            msg_channels* p_msgch_setup = reinterpret_cast<msg_channels*>( shm_heap_setup.allocate( msg_channels::calc_required_bytes( channel_size ), alignof( msg_channels ) ) );
+            target_allocator_traits_type::construct( msg_channels_allocator_obj, p_msgch_setup, chdata_t_allocator_obj, channel_size );
 
-			std::uintptr_t p_msgch_offset = reinterpret_cast<std::uintptr_t>( p_msgch_setup ) - reinterpret_cast<std::uintptr_t>( p_mem );
+            std::uintptr_t p_msgch_offset = reinterpret_cast<std::uintptr_t>( p_msgch_setup ) - reinterpret_cast<std::uintptr_t>( p_mem );
 
-			return p_msgch_offset;   // セカンダリ側に通知する情報は、message channelへのオフセット。
-		},
-		timeout_msec, retry_interval_msec );
+            return p_msgch_offset;   // セカンダリ側に通知する情報は、message channelへのオフセット。
+        },
+        timeout_msec, retry_interval_msec );
 
 	if ( !setup_ret ) {
 		psm_logoutput( ipsm::psm_log_lv::kWarn, "fail to construct offset_malloc on shared memory: %s", p_shm_name );
