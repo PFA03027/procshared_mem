@@ -23,7 +23,7 @@
 
 namespace ipsm {
 
-struct msg_channel;
+struct msg_channels;
 
 class ipsm_malloc {
 public:
@@ -47,6 +47,7 @@ public:
 		const char* p_lifetime_ctrl_fname,        //!< [in] lifetime control file name.
 		size_t      length,                       //!< [in] shared memory size
 		mode_t      mode,                         //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
+		size_t      channel_size        = 2,      //!< [in] the number of channels for message passing. this value must be agreed upon in advance between communicating processes.
 		int         timeout_msec        = 1000,   //!< [in] timeout in milliseconds for waiting for shared memory initialization.
 		int         retry_interval_msec = 100     //!< [in] retry interval in milliseconds for waiting for shared memory initialization.
 	);
@@ -124,9 +125,9 @@ public:
 	/**
 	 * @brief Get the number of channels
 	 *
-	 * @return unsigned int the number of channels
+	 * @return size_t the number of channels
 	 */
-	static unsigned int channel_size( void );
+	size_t channel_size( void ) const;
 
 private:
 	ipsm_malloc( const ipsm_malloc& src )            = delete;
@@ -136,7 +137,7 @@ private:
 
 	ipsm_mem      shm_obj_;    //!< shared memory object. this member variable declaration order required like ipsm_mem, then offset_malloc
 	offset_malloc shm_heap_;   //!< offset base memory allocator on shared memory. this member variable declaration order required like ipsm_mem, then offset_malloc
-	msg_channel*  p_msgch_;
+	msg_channels* p_msgch_;
 };
 
 ////////////////////////////////////////////////////////////////////

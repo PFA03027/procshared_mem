@@ -17,26 +17,34 @@
 
 namespace ipsm {
 
-constexpr unsigned int default_channel_size = 2;
+struct msg_channels {
+	using data_type              = offset_ptr<void>;
+	using channel_container_type = offset_list<data_type, offset_allocator<data_type>>;
 
-unsigned int ipsm_malloc::channel_size( void )
-{
-	return default_channel_size;
-}
+	const size_t                      channel_size_;
+	ipsm_condition_variable_monotonic cond_;
+	ipsm_mutex                        mtx_;
+	channel_container_type            msgch_[0];
 
-struct msg_channel {
-	using data_type = offset_ptr<void>;
-	ipsm_mutex                                          mtx_;
-	ipsm_condition_variable_monotonic                   cond_;
-	offset_list<data_type, offset_allocator<data_type>> msgch_[default_channel_size];
-
-	msg_channel( const offset_allocator<data_type> a )
-	  : mtx_()
+	msg_channels( const offset_allocator<data_type> a, size_t channel_size_arg )
+	  : channel_size_( channel_size_arg )
 	  , cond_()
-	  , msgch_ { offset_list<data_type, offset_allocator<data_type>>( a ), offset_list<data_type, offset_allocator<data_type>>( a ) }
+	  , mtx_()
+	  , msgch_ {}
 	{
+		for ( size_t i = 0; i < channel_size_arg; ++i ) {
+			new ( &msgch_[i] ) channel_container_type( a );
+		}
 	}
+
+	static size_t calc_required_bytes( size_t channel_size_arg );
 };
+
+size_t msg_channels::calc_required_bytes( size_t channel_size_arg )
+{
+	size_t required_bytes = sizeof( msg_channels ) + sizeof( channel_container_type ) * channel_size_arg;
+	return required_bytes;
+}
 
 ipsm_malloc::ipsm_malloc( void )
   : shm_obj_()
@@ -64,6 +72,7 @@ ipsm_malloc::ipsm_malloc(
 	const char* p_lifetime_ctrl_fname,
 	size_t      length,
 	mode_t      mode,
+	size_t      channel_size,
 	int         timeout_msec,
 	int         retry_interval_msec )
   : shm_obj_()
@@ -72,15 +81,16 @@ ipsm_malloc::ipsm_malloc(
 {
 	bool setup_ret = shm_obj_.setup(
 		p_shm_name, p_lifetime_ctrl_fname, length, mode,
-		[]( void* p_mem, size_t len ) -> std::uintptr_t {
+		[channel_size]( void* p_mem, size_t len ) -> std::uintptr_t {
 			offset_malloc                      shm_heap_setup = offset_malloc( p_mem, len );
-			offset_allocator<msg_channel>      msg_channel_allocator_obj( shm_heap_setup );
-			offset_allocator<offset_ptr<void>> int_allocator_obj( shm_heap_setup );
+			offset_allocator<msg_channels>     msg_channels_allocator_obj( shm_heap_setup );
+			offset_allocator<offset_ptr<void>> chdata_t_allocator_obj( shm_heap_setup );
 
-			using target_allocator_traits_type = std::allocator_traits<offset_allocator<msg_channel>>;
+			using target_allocator_traits_type = std::allocator_traits<offset_allocator<msg_channels>>;
 
-			msg_channel* p_msgch_setup = target_allocator_traits_type::allocate( msg_channel_allocator_obj, 1 );
-			target_allocator_traits_type::construct( msg_channel_allocator_obj, p_msgch_setup, int_allocator_obj );
+			// msg_channels* p_msgch_setup = target_allocator_traits_type::allocate( msg_channels_allocator_obj, 1 );
+			msg_channels* p_msgch_setup = reinterpret_cast<msg_channels*>( shm_heap_setup.allocate( msg_channels::calc_required_bytes( channel_size ), alignof( msg_channels ) ) );
+			target_allocator_traits_type::construct( msg_channels_allocator_obj, p_msgch_setup, chdata_t_allocator_obj, channel_size );
 
 			std::uintptr_t p_msgch_offset = reinterpret_cast<std::uintptr_t>( p_msgch_setup ) - reinterpret_cast<std::uintptr_t>( p_mem );
 
@@ -94,7 +104,7 @@ ipsm_malloc::ipsm_malloc(
 	}
 
 	shm_heap_ = offset_malloc( shm_obj_.get() );   // setup()では、必ずしもコールバック関数が呼び出されるとは限らないため、get()で取得したアドレスを利用して、改めてoffset_mallocを初期化する。
-	p_msgch_  = reinterpret_cast<msg_channel*>( reinterpret_cast<std::uintptr_t>( shm_obj_.get() ) + reinterpret_cast<std::uintptr_t>( shm_obj_.get_hint_value() ) );
+	p_msgch_  = reinterpret_cast<msg_channels*>( reinterpret_cast<std::uintptr_t>( shm_obj_.get() ) + reinterpret_cast<std::uintptr_t>( shm_obj_.get_hint_value() ) );
 }
 
 #if __has_cpp_attribute( nodiscard )
@@ -128,8 +138,8 @@ void ipsm_malloc::send( unsigned int ch, offset_ptr<void> sending_value )
 		psm_logoutput( psm_log_lv::kErr, "Error: in ipsm_malloc::send(), p_msgch_ of ipsm_malloc is nullptr" );
 		return;
 	}
-	if ( ch >= default_channel_size ) {
-		psm_logoutput( psm_log_lv::kErr, "Error: in ipsm_malloc::send(), ch is too big, ch=%u", ch );
+	if ( ch >= p_msgch_->channel_size_ ) {
+		psm_logoutput( psm_log_lv::kErr, "Error: in ipsm_malloc::send(), ch is too big, requested ch=%u, actual channel_size=%u", ch, p_msgch_->channel_size_ );
 		return;
 	}
 
@@ -147,8 +157,8 @@ offset_ptr<void> ipsm_malloc::receive( unsigned int ch )
 		// TODO: should throw exception?
 		return nullptr;
 	}
-	if ( ch >= default_channel_size ) {
-		psm_logoutput( psm_log_lv::kErr, "Error: in ipsm_malloc::send(), ch is too big, ch=%u", ch );
+	if ( ch >= p_msgch_->channel_size_ ) {
+		psm_logoutput( psm_log_lv::kErr, "Error: in ipsm_malloc::receive(), ch is too big, requested ch=%u, actual channel_size=%u", ch, p_msgch_->channel_size_ );
 		return nullptr;
 	}
 
@@ -159,6 +169,15 @@ offset_ptr<void> ipsm_malloc::receive( unsigned int ch )
 	offset_ptr<void> ans = p_msgch_->msgch_[ch].front();
 	p_msgch_->msgch_[ch].pop_front();
 	return ans;
+}
+
+size_t ipsm_malloc::channel_size( void ) const
+{
+	if ( p_msgch_ == nullptr ) {
+		psm_logoutput( psm_log_lv::kErr, "Error: in ipsm_malloc::channel_size(), p_msgch_ of ipsm_malloc is nullptr" );
+		return 0;
+	}
+	return p_msgch_->channel_size_;
 }
 
 }   // namespace ipsm
