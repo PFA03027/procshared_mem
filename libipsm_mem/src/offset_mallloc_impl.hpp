@@ -44,7 +44,7 @@ public:
 
 	int get_bind_count( void ) const;
 
-	bool is_belong_to( void* p_mem ) const;
+	bool is_belong_to( void* p_mem ) const noexcept;
 
 	inline static constexpr size_t test_block_header_size( void )
 	{

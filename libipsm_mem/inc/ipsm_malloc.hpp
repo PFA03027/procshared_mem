@@ -61,6 +61,9 @@ public:
 	 * @param alignment the alignment of allocated memory. default value is alignof(std::max_align_t). if alignment is 0, it is treated as 1.
 	 *
 	 * @return void* pointer to allocated memory as the address of a process. if allocation failed, return nullptr.
+	 *
+	 * @note
+	 * This interface is analogy to std::malloc();
 	 */
 #if __has_cpp_attribute( nodiscard )
 	[[nodiscard]]
@@ -72,8 +75,75 @@ public:
 	 *
 	 * @param p pointer to the memory to deallocate
 	 * @param alignment the alignment of the memory to deallocate. default value is alignof(std::max_align_t). if alignment is 0, it is treated as 1.
+	 *
+	 * @note
+	 * This interface is analogy to std::free();
 	 */
 	void deallocate( void* p, size_t alignment = alignof( std::max_align_t ) );
+
+	/**
+	 * @brief allocate and construct T instance.
+	 *
+	 * @tparam T allocating type
+	 * @tparam Args template parameter pack of argument types to construct T
+	 * @param args paramter pack of arguments to construct T
+	 * @return T* pointer to a constructed instance
+	 *
+	 * @note
+	 * This interface is analogy to non-array type new expression
+	 */
+	template <typename T, typename... Args>
+	T* new_instance( Args&&... args )
+	{
+		return shm_heap_.new_instance( std::forward<Args>( args )... );
+	}
+
+	/**
+	 * @brief destroy and deallocate T instance.
+	 *
+	 * @tparam T allocating type
+	 * @param p pointer to an allocated instance that constructed by new_instance()
+	 * @return T* pointer to a constructed instance
+	 *
+	 * @note
+	 * This interface is analogy to non-array type delete expression
+	 */
+	template <typename T>
+	void delete_instance( T* p )
+	{
+		shm_heap_.delete_instance( p );
+	}
+
+	/**
+	 * @brief allocate and construct T array
+	 *
+	 * @tparam T element type of array
+	 * @param n number of elements
+	 * @return T* pointer to the constructed array
+	 *
+	 * @note
+	 * This interface is analogy to array type new expression
+	 */
+	template <typename T>
+	T* new_array( size_t n )
+	{
+		return shm_heap_.new_array<T>( n );
+	}
+
+	/**
+	 * @brief destroy and deallocate T array
+	 *
+	 * @tparam T element type of array
+	 * @param p pointer to the array
+	 *
+	 * @note
+	 * This interface is analogy to array type delete expression
+	 */
+	template <typename T>
+	void delete_array( T* p )
+	{
+		shm_heap_.delete_array( p );
+	}
 
 	/**
 	 * @brief Get the bind count object

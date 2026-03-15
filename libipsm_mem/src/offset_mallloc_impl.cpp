@@ -232,7 +232,7 @@ int offset_malloc::offset_malloc_impl::get_bind_count( void ) const
 	return bind_cnt_;
 }
 
-bool offset_malloc::offset_malloc_impl::is_belong_to( void* p_mem ) const
+bool offset_malloc::offset_malloc_impl::is_belong_to( void* p_mem ) const noexcept
 {
 	uintptr_t addr_p   = reinterpret_cast<uintptr_t>( p_mem );
 	uintptr_t addr_top = reinterpret_cast<uintptr_t>( base_blk_.block_body_ );

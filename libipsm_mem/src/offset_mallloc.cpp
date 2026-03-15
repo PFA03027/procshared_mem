@@ -106,7 +106,7 @@ int offset_malloc::get_bind_count( void ) const
 	return p_impl_->get_bind_count();
 }
 
-bool offset_malloc::is_belong_to( void* p_mem ) const
+bool offset_malloc::is_belong_to( void* p_mem ) const noexcept
 {
 	if ( p_impl_ == nullptr ) {
 		psm_logoutput( psm_log_lv::kDebug, "Debug: p_impl_ = offset_malloc(%p) is nullptr", this );
