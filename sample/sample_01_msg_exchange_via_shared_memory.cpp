@@ -52,7 +52,7 @@ void receive_and_print_message( ipsm::ipsm_malloc& shared_memory )
 	ipsm::offset_ptr<void> received_message_ptr = shared_memory.receive( 0 );
 
 	// Cast the received message pointer to a char* and print the message
-	const char* received_message = static_cast<const char*>( received_message_ptr.get() );
+	const char* received_message = received_message_ptr.reinterpret_to_offset_ptr<const char>().get();
 	std::printf( "Received message: %s\n", received_message );
 }
 
