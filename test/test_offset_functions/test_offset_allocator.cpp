@@ -16,14 +16,12 @@
 
 #include "test_ipsm_common.hpp"
 
-using namespace ipsm;
-
 TEST( Offset_Allocator_Cntr, CanDefaultConstruct )
 {
 	// Arrange
 
 	// Act
-	offset_allocator<int> sut;
+	ipsm::offset_allocator<int> sut;
 
 	// Assert
 	EXPECT_EQ( sut.get_bind_count(), 0 );
@@ -37,7 +35,7 @@ TEST( Offset_Allocator_Cntr, CanConstruct1 )
 	void*         p_mem = reinterpret_cast<void*>( test_buff );
 
 	// Act
-	offset_allocator<int> sut( p_mem, 1024 );
+	ipsm::offset_allocator<int> sut( p_mem, 1024 );
 
 	// Assert
 	EXPECT_EQ( sut.get_bind_count(), 1 );
@@ -47,12 +45,12 @@ TEST( Offset_Allocator_Cntr, CanConstruct1 )
 TEST( Offset_Allocator_Cntr, CanConstruct2 )
 {
 	// Arrange
-	unsigned char         test_buff[1024];
-	void*                 p_mem = reinterpret_cast<void*>( test_buff );
-	offset_allocator<int> tmp( p_mem, 1024 );
+	unsigned char               test_buff[1024];
+	void*                       p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_allocator<int> tmp( p_mem, 1024 );
 
 	// Act
-	offset_allocator<int> sut( p_mem );
+	ipsm::offset_allocator<int> sut( p_mem );
 
 	// Assert
 	EXPECT_EQ( sut.get_bind_count(), 2 );
@@ -62,12 +60,12 @@ TEST( Offset_Allocator_Cntr, CanConstruct2 )
 TEST( Offset_Allocator_Cntr, CanConstruct3 )
 {
 	// Arrange
-	unsigned char test_buff[1024];
-	void*         p_mem = reinterpret_cast<void*>( test_buff );
-	offset_malloc tmp( p_mem, 1024 );
+	unsigned char       test_buff[1024];
+	void*               p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_malloc tmp( p_mem, 1024 );
 
 	// Act
-	offset_allocator<int> sut( tmp );
+	ipsm::offset_allocator<int> sut( tmp );
 
 	// Assert
 	EXPECT_EQ( sut.get_bind_count(), 2 );
@@ -81,7 +79,7 @@ TEST( Offset_Allocator_Cntr, CanConstruct4 )
 	void*         p_mem = reinterpret_cast<void*>( test_buff );
 
 	// Act
-	offset_allocator<int> sut( offset_malloc( p_mem, 1024 ) );
+	ipsm::offset_allocator<int> sut( ipsm::offset_malloc( p_mem, 1024 ) );
 
 	// Assert
 	EXPECT_EQ( sut.get_bind_count(), 1 );
@@ -91,12 +89,12 @@ TEST( Offset_Allocator_Cntr, CanConstruct4 )
 TEST( Offset_Allocator_Cntr, CanConstruct5 )
 {
 	// Arrange
-	unsigned char         test_buff[1024];
-	void*                 p_mem = reinterpret_cast<void*>( test_buff );
-	offset_allocator<int> tmp( p_mem, 1024 );
+	unsigned char               test_buff[1024];
+	void*                       p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_allocator<int> tmp( p_mem, 1024 );
 
 	// Act
-	offset_allocator<double> sut( tmp );
+	ipsm::offset_allocator<double> sut( tmp );
 
 	// Assert
 	EXPECT_EQ( sut.get_bind_count(), 2 );
@@ -106,10 +104,10 @@ TEST( Offset_Allocator_Cntr, CanConstruct5 )
 TEST( Offset_Allocator_CopyCntr, CanConstructFromInvalidAllocator )
 {
 	// Arrange
-	offset_allocator<int> src;
+	ipsm::offset_allocator<int> src;
 
 	// Act
-	offset_allocator<int> sut( src );
+	ipsm::offset_allocator<int> sut( src );
 
 	// Assert
 	EXPECT_EQ( sut.get_bind_count(), 0 );
@@ -119,15 +117,15 @@ TEST( Offset_Allocator_CopyCntr, CanConstructFromInvalidAllocator )
 TEST( Offset_Allocator_CopyCntr, CanConstructFromValidAllocator )
 {
 	// Arrange
-	unsigned char         test_buff[1024];
-	void*                 p_mem = reinterpret_cast<void*>( test_buff );
-	offset_allocator<int> src( p_mem, 1024 );
-	auto                  p_ret_from_src = src.allocate( 10 );
+	unsigned char               test_buff[1024];
+	void*                       p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_allocator<int> src( p_mem, 1024 );
+	auto                        p_ret_from_src = src.allocate( 10 );
 	EXPECT_NE( p_ret_from_src, nullptr );
 
 	// Act
-	offset_allocator<int> sut( src );
-	auto                  p_ret_from_sut = sut.allocate( 10 );
+	ipsm::offset_allocator<int> sut( src );
+	auto                        p_ret_from_sut = sut.allocate( 10 );
 
 	// Assert
 	EXPECT_EQ( sut.get_bind_count(), 2 );
@@ -138,8 +136,8 @@ TEST( Offset_Allocator_CopyCntr, CanConstructFromValidAllocator )
 TEST( Offset_Allocator_CopyAssingment, CanAssignFromInvalidAllocatorToInvalidAllocator )
 {
 	// Arrange
-	offset_allocator<int> src;
-	offset_allocator<int> sut;
+	ipsm::offset_allocator<int> src;
+	ipsm::offset_allocator<int> sut;
 
 	// Act
 
@@ -151,10 +149,10 @@ TEST( Offset_Allocator_CopyAssingment, CanAssignFromInvalidAllocatorToInvalidAll
 TEST( Offset_Allocator_CopyAssingment, CanAssignFromInvalidAllocatorToValidAllocator )
 {
 	// Arrange
-	offset_allocator<int> src;
-	unsigned char         test_buff[1024];
-	void*                 p_mem = reinterpret_cast<void*>( test_buff );
-	offset_allocator<int> sut( p_mem, 1024 );
+	ipsm::offset_allocator<int> src;
+	unsigned char               test_buff[1024];
+	void*                       p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_allocator<int> sut( p_mem, 1024 );
 
 	// Act
 	sut = src;
@@ -167,12 +165,12 @@ TEST( Offset_Allocator_CopyAssingment, CanAssignFromInvalidAllocatorToValidAlloc
 TEST( Offset_Allocator_CopyAssingment, CanAssignFromValidAllocatorToInvalidAllocator )
 {
 	// Arrange
-	unsigned char         test_buff[1024];
-	void*                 p_mem = reinterpret_cast<void*>( test_buff );
-	offset_allocator<int> src( p_mem, 1024 );
-	auto                  p_ret_from_src = src.allocate( 10 );
+	unsigned char               test_buff[1024];
+	void*                       p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_allocator<int> src( p_mem, 1024 );
+	auto                        p_ret_from_src = src.allocate( 10 );
 	EXPECT_NE( p_ret_from_src, nullptr );
-	offset_allocator<int> sut;
+	ipsm::offset_allocator<int> sut;
 
 	// Act
 	sut                 = src;
@@ -187,16 +185,16 @@ TEST( Offset_Allocator_CopyAssingment, CanAssignFromValidAllocatorToInvalidAlloc
 TEST( Offset_Allocator_CopyAssingment, CanAssignFromValidAllocatorToValidAllocator )
 {
 	// Arrange
-	unsigned char         test_buff[1024];
-	void*                 p_mem = reinterpret_cast<void*>( test_buff );
-	offset_allocator<int> src( p_mem, 1024 );
+	unsigned char               test_buff[1024];
+	void*                       p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_allocator<int> src( p_mem, 1024 );
 	EXPECT_EQ( src.get_bind_count(), 1 );
 	auto p_ret_from_src = src.allocate( 10 );
 	EXPECT_NE( p_ret_from_src, nullptr );
 
-	unsigned char         test_buff2[1024];
-	void*                 p_mem2 = reinterpret_cast<void*>( test_buff2 );
-	offset_allocator<int> sut( p_mem2, 1024 );
+	unsigned char               test_buff2[1024];
+	void*                       p_mem2 = reinterpret_cast<void*>( test_buff2 );
+	ipsm::offset_allocator<int> sut( p_mem2, 1024 );
 	EXPECT_EQ( sut.get_bind_count(), 1 );
 
 	// Act
@@ -213,9 +211,9 @@ TEST( Offset_Allocator_CopyAssingment, CanAssignFromValidAllocatorToValidAllocat
 TEST( Offset_Allocator, CanAllocate )
 {
 	// Arrange
-	unsigned char         test_buff[1024];
-	void*                 p_mem = reinterpret_cast<void*>( test_buff );
-	offset_allocator<int> sut( p_mem, 1024 );
+	unsigned char               test_buff[1024];
+	void*                       p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_allocator<int> sut( p_mem, 1024 );
 	EXPECT_EQ( sut.get_bind_count(), 1 );
 
 	// Act
@@ -228,9 +226,9 @@ TEST( Offset_Allocator, CanAllocate )
 TEST( Offset_Allocator, CanDeallocate1 )
 {
 	// Arrange
-	unsigned char         test_buff[1024];
-	void*                 p_mem = reinterpret_cast<void*>( test_buff );
-	offset_allocator<int> sut( p_mem, 1024 );
+	unsigned char               test_buff[1024];
+	void*                       p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_allocator<int> sut( p_mem, 1024 );
 	EXPECT_EQ( sut.get_bind_count(), 1 );
 	auto ret = sut.allocate( 10 );
 
@@ -244,9 +242,9 @@ TEST( Offset_Allocator, CanDeallocate1 )
 TEST( Offset_Allocator, CanDeallocate2 )
 {
 	// Arrange
-	unsigned char         test_buff[1024];
-	void*                 p_mem = reinterpret_cast<void*>( test_buff );
-	offset_allocator<int> sut( p_mem, 1024 );
+	unsigned char               test_buff[1024];
+	void*                       p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_allocator<int> sut( p_mem, 1024 );
 	EXPECT_EQ( sut.get_bind_count(), 1 );
 	int* p_pre = nullptr;
 	int* p_cur = sut.allocate( 10 );
@@ -267,9 +265,9 @@ TEST( Offset_Allocator, CanDeallocate2 )
 TEST( Offset_Allocator, CanMakeObj )
 {
 	// Arrange
-	unsigned char                         test_buff[1024];
-	void*                                 p_mem = reinterpret_cast<void*>( test_buff );
-	offset_allocator<EmplacementTestData> sut( p_mem, 1024 );
+	unsigned char                               test_buff[1024];
+	void*                                       p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_allocator<EmplacementTestData> sut( p_mem, 1024 );
 
 	// Act
 	EmplacementTestData* p = ipsm::allocate_instance<EmplacementTestData>( sut, 1, 2.0 );

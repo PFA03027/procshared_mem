@@ -19,17 +19,15 @@
 
 #include "test_ipsm_common.hpp"
 
-using namespace ipsm;
-
 TEST( Offset_Malloc_Cntr, CanConstruct )
 {
 	// Arrange
-	unsigned char  test_buff[1024];
-	void*          p_mem       = reinterpret_cast<void*>( test_buff );
-	offset_malloc* p_mem_alloc = nullptr;
+	unsigned char        test_buff[1024];
+	void*                p_mem       = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_malloc* p_mem_alloc = nullptr;
 
 	// Act
-	ASSERT_NO_THROW( p_mem_alloc = new offset_malloc( p_mem, 1024 ) );
+	ASSERT_NO_THROW( p_mem_alloc = new ipsm::offset_malloc( p_mem, 1024 ) );
 
 	// Assert
 	EXPECT_NE( p_mem_alloc, nullptr );
@@ -41,12 +39,12 @@ TEST( Offset_Malloc_Cntr, CanConstruct )
 TEST( Offset_Malloc_Cntr, CanCopyConstruct )
 {
 	// Arrange
-	unsigned char test_buff[1024];
-	void*         p_mem = reinterpret_cast<void*>( test_buff );
-	offset_malloc mem_alloc1( p_mem, 1024 );
+	unsigned char       test_buff[1024];
+	void*               p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_malloc mem_alloc1( p_mem, 1024 );
 
 	// Act
-	ASSERT_NO_THROW( offset_malloc mem_alloc2 = mem_alloc1 );
+	ASSERT_NO_THROW( ipsm::offset_malloc mem_alloc2 = mem_alloc1 );
 
 	// Assert
 
@@ -56,12 +54,12 @@ TEST( Offset_Malloc_Cntr, CanCopyConstruct )
 TEST( Offset_Malloc_Cntr, CanMoveConstruct )
 {
 	// Arrange
-	unsigned char test_buff[1024];
-	void*         p_mem = reinterpret_cast<void*>( test_buff );
-	offset_malloc mem_alloc1( p_mem, 1024 );
+	unsigned char       test_buff[1024];
+	void*               p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_malloc mem_alloc1( p_mem, 1024 );
 
 	// Act
-	ASSERT_NO_THROW( offset_malloc mem_alloc2 = std::move( mem_alloc1 ) );
+	ASSERT_NO_THROW( ipsm::offset_malloc mem_alloc2 = std::move( mem_alloc1 ) );
 
 	// Assert
 
@@ -71,10 +69,10 @@ TEST( Offset_Malloc_Cntr, CanMoveConstruct )
 TEST( Offset_Malloc_Cntr, CanCopyAssignment1 )
 {
 	// Arrange
-	unsigned char test_buff[1024];
-	void*         p_mem = reinterpret_cast<void*>( test_buff );
-	offset_malloc mem_alloc1( p_mem, 1024 );
-	offset_malloc mem_alloc2;
+	unsigned char       test_buff[1024];
+	void*               p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_malloc mem_alloc1( p_mem, 1024 );
+	ipsm::offset_malloc mem_alloc2;
 
 	// Act
 	ASSERT_NO_THROW( mem_alloc2 = mem_alloc1 );
@@ -87,10 +85,10 @@ TEST( Offset_Malloc_Cntr, CanCopyAssignment1 )
 TEST( Offset_Malloc_Cntr, CanCopyAssignment2 )
 {
 	// Arrange
-	unsigned char test_buff1[1024];
-	unsigned char test_buff2[1024];
-	offset_malloc mem_alloc1( reinterpret_cast<void*>( test_buff1 ), 1024 );
-	offset_malloc mem_alloc2( reinterpret_cast<void*>( test_buff2 ), 1024 );
+	unsigned char       test_buff1[1024];
+	unsigned char       test_buff2[1024];
+	ipsm::offset_malloc mem_alloc1( reinterpret_cast<void*>( test_buff1 ), 1024 );
+	ipsm::offset_malloc mem_alloc2( reinterpret_cast<void*>( test_buff2 ), 1024 );
 
 	// Act
 	ASSERT_NO_THROW( mem_alloc2 = mem_alloc1 );
@@ -103,9 +101,9 @@ TEST( Offset_Malloc_Cntr, CanCopyAssignment2 )
 TEST( Offset_Malloc_Cntr, CanMoveAssignment1 )
 {
 	// Arrange
-	unsigned char test_buff[1024];
-	offset_malloc mem_alloc1( reinterpret_cast<void*>( test_buff ), 1024 );
-	offset_malloc mem_alloc2;
+	unsigned char       test_buff[1024];
+	ipsm::offset_malloc mem_alloc1( reinterpret_cast<void*>( test_buff ), 1024 );
+	ipsm::offset_malloc mem_alloc2;
 
 	// Act
 	ASSERT_NO_THROW( mem_alloc2 = std::move( mem_alloc1 ) );
@@ -118,10 +116,10 @@ TEST( Offset_Malloc_Cntr, CanMoveAssignment1 )
 TEST( Offset_Malloc_Cntr, CanMoveAssignment2 )
 {
 	// Arrange
-	unsigned char test_buff1[1024];
-	unsigned char test_buff2[1024];
-	offset_malloc mem_alloc1( reinterpret_cast<void*>( test_buff1 ), 1024 );
-	offset_malloc mem_alloc2( reinterpret_cast<void*>( test_buff2 ), 1024 );
+	unsigned char       test_buff1[1024];
+	unsigned char       test_buff2[1024];
+	ipsm::offset_malloc mem_alloc1( reinterpret_cast<void*>( test_buff1 ), 1024 );
+	ipsm::offset_malloc mem_alloc2( reinterpret_cast<void*>( test_buff2 ), 1024 );
 
 	// Act
 	ASSERT_NO_THROW( mem_alloc2 = std::move( mem_alloc1 ) );
@@ -134,11 +132,11 @@ TEST( Offset_Malloc_Cntr, CanMoveAssignment2 )
 TEST( Offset_Malloc_Cntr, FailConstruct1 )
 {
 	// Arrange
-	unsigned char test_buff[sizeof( offset_malloc ) + 1];
+	unsigned char test_buff[sizeof( ipsm::offset_malloc ) + 1];
 	void*         p_mem = reinterpret_cast<void*>( test_buff );
 
 	// Act
-	EXPECT_ANY_THROW( offset_malloc sut( p_mem, sizeof( offset_malloc ) + 1 ) );
+	EXPECT_ANY_THROW( ipsm::offset_malloc sut( p_mem, sizeof( ipsm::offset_malloc ) + 1 ) );
 
 	// Assert
 
@@ -152,7 +150,7 @@ TEST( Offset_Malloc_Cntr, FailConstruct2 )
 	void*         p_mem = reinterpret_cast<void*>( test_buff );
 
 	// Act
-	EXPECT_ANY_THROW( offset_malloc sut( p_mem, 1 ) );
+	EXPECT_ANY_THROW( ipsm::offset_malloc sut( p_mem, 1 ) );
 
 	// Assert
 
@@ -173,7 +171,7 @@ public:
 		uintptr_t addr = reinterpret_cast<uintptr_t>( p_mem_ );
 		addr           = ( ( addr + 16 - 1 ) / 16 ) * 16;   // block::block_headerのサイズでアライメントを採る。
 
-		p_sut_ = new offset_malloc( reinterpret_cast<void*>( addr ), alloc_mem_size );
+		p_sut_ = new ipsm::offset_malloc( reinterpret_cast<void*>( addr ), alloc_mem_size );
 	}
 	void TearDown() override
 	{
@@ -182,8 +180,8 @@ public:
 		free( p_mem_ );
 	}
 
-	void*          p_mem_;
-	offset_malloc* p_sut_;
+	void*                p_mem_;
+	ipsm::offset_malloc* p_sut_;
 };
 
 TEST_F( Offset_Malloc, CanAllocateSmall )
@@ -284,15 +282,15 @@ TEST( Offset_Malloc_Highload, CanMulti_Thread_Calling )
 
 	std::unique_ptr<unsigned char[]> up_buff( new unsigned char[buff_size] );   // 4MBytes
 	void*                            p_mem = reinterpret_cast<void*>( up_buff.get() );
-	offset_malloc                    sut( p_mem, buff_size );
+	ipsm::offset_malloc              sut( p_mem, buff_size );
 
-	std::packaged_task<int( offset_malloc )> fail_count_tasks[test_thread_num];
-	std::future<int>                         fail_count_task_results[test_thread_num];
-	std::thread                              thread_array[test_thread_num];
+	std::packaged_task<int( ipsm::offset_malloc )> fail_count_tasks[test_thread_num];
+	std::future<int>                               fail_count_task_results[test_thread_num];
+	std::thread                                    thread_array[test_thread_num];
 
 	// Act
 	for ( int i = 0; i < test_thread_num; i++ ) {
-		fail_count_tasks[i]        = std::packaged_task<int( offset_malloc )>( [&loop_flag]( offset_malloc ttsut ) -> int {
+		fail_count_tasks[i]        = std::packaged_task<int( ipsm::offset_malloc )>( [&loop_flag]( ipsm::offset_malloc ttsut ) -> int {
             int fail_count_ret = 0;
             while ( loop_flag.load() ) {
                 auto p_ret = ttsut.allocate( 11 );

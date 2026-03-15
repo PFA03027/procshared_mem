@@ -20,15 +20,13 @@
 
 #include "ipsm_mem.hpp"
 
-using namespace ipsm;
-
 const char* p_shm_obj_name        = "/my_test_shm_obj";
 const char* p_lifetime_ctrl_fname = "/tmp/my_test_shm_obj_lifetime_ctrl";
 
 int main( void )
 {
 	ipsm::ipsm_mem shm_obj;
-	unsigned char     exit_code = 1;
+	unsigned char  exit_code = 1;
 
 	// child process side
 	try {

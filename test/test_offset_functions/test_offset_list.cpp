@@ -19,14 +19,12 @@
 
 #include "test_ipsm_common.hpp"
 
-using namespace ipsm;
-
 TEST( OffsetList_CanDefaultConstruct, CanDefaultConstruct1 )
 {
 	// Arrange
 
 	// Act
-	ASSERT_NO_THROW( offset_list<int> sut; );
+	ASSERT_NO_THROW( ipsm::offset_list<int> sut; );
 
 	// Assert
 }
@@ -34,7 +32,7 @@ TEST( OffsetList_CanDefaultConstruct, CanDefaultConstruct1 )
 TEST( OffsetList_CanDefaultConstruct, CanDefaultConstruct2 )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 
 	// Act
 	auto ret = sut.size();
@@ -47,10 +45,10 @@ TEST( OffsetList_CanDefaultConstruct, CanDefaultConstruct2 )
 TEST( OffsetList_CanCopyConstruct, FromEmpty1 )
 {
 	// Arrange
-	offset_list<int> src;
+	ipsm::offset_list<int> src;
 
 	// Act
-	ASSERT_NO_THROW( offset_list<int> sut( src ); );
+	ASSERT_NO_THROW( ipsm::offset_list<int> sut( src ); );
 
 	// Assert
 }
@@ -58,10 +56,10 @@ TEST( OffsetList_CanCopyConstruct, FromEmpty1 )
 TEST( OffsetList_CanCopyConstruct, FromEmpty2 )
 {
 	// Arrange
-	offset_list<int> src;
+	ipsm::offset_list<int> src;
 
 	// Act
-	offset_list<int> sut( src );
+	ipsm::offset_list<int> sut( src );
 
 	// Assert
 	EXPECT_EQ( sut.size(), 0 );
@@ -72,11 +70,11 @@ TEST( OffsetList_CanCopyConstruct, FromEmpty2 )
 TEST( OffsetList_CanCopyConstruct, From1Node )
 {
 	// Arrange
-	offset_list<int> src;
+	ipsm::offset_list<int> src;
 	src.push_back( 1 );
 
 	// Act
-	offset_list<int> sut( src );
+	ipsm::offset_list<int> sut( src );
 
 	// Assert
 	EXPECT_FALSE( sut.empty() );
@@ -91,12 +89,12 @@ TEST( OffsetList_CanCopyConstruct, From1Node )
 TEST( OffsetList_CanCopyConstruct, From2Nodes )
 {
 	// Arrange
-	offset_list<int> src;
+	ipsm::offset_list<int> src;
 	src.push_back( 1 );
 	src.push_back( 2 );
 
 	// Act
-	offset_list<int> sut( src );
+	ipsm::offset_list<int> sut( src );
 
 	// Assert
 	EXPECT_EQ( sut.size(), 2 );
@@ -110,13 +108,13 @@ TEST( OffsetList_CanCopyConstruct, From2Nodes )
 TEST( OffsetList_CanCopyConstruct, From3Nodes )
 {
 	// Arrange
-	offset_list<int> src;
+	ipsm::offset_list<int> src;
 	src.push_back( 1 );
 	src.push_back( 2 );
 	src.push_back( 3 );
 
 	// Act
-	offset_list<int> sut( src );
+	ipsm::offset_list<int> sut( src );
 
 	// Assert
 	EXPECT_EQ( sut.size(), 3 );
@@ -130,10 +128,10 @@ TEST( OffsetList_CanCopyConstruct, From3Nodes )
 TEST( OffsetList_CanMoveConstruct, FromEmpty1 )
 {
 	// Arrange
-	offset_list<int> src;
+	ipsm::offset_list<int> src;
 
 	// Act
-	ASSERT_NO_THROW( offset_list<int> sut( std::move( src ) ); );
+	ASSERT_NO_THROW( ipsm::offset_list<int> sut( std::move( src ) ); );
 
 	// Assert
 	EXPECT_EQ( src.size(), 0 );   // NOLINT(bugprone-use-after-move,clang-analyzer-cplusplus.Move)
@@ -142,10 +140,10 @@ TEST( OffsetList_CanMoveConstruct, FromEmpty1 )
 TEST( OffsetList_CanMoveConstruct, FromEmpty2 )
 {
 	// Arrange
-	offset_list<int> src;
+	ipsm::offset_list<int> src;
 
 	// Act
-	offset_list<int> sut( std::move( src ) );
+	ipsm::offset_list<int> sut( std::move( src ) );
 
 	// Assert
 	EXPECT_EQ( sut.size(), 0 );
@@ -155,11 +153,11 @@ TEST( OffsetList_CanMoveConstruct, FromEmpty2 )
 TEST( OffsetList_CanMoveConstruct, From1Node )
 {
 	// Arrange
-	offset_list<int> src;
+	ipsm::offset_list<int> src;
 	src.push_back( 1 );
 
 	// Act
-	offset_list<int> sut( std::move( src ) );
+	ipsm::offset_list<int> sut( std::move( src ) );
 
 	// Assert
 	EXPECT_EQ( sut.size(), 1 );
@@ -171,12 +169,12 @@ TEST( OffsetList_CanMoveConstruct, From1Node )
 TEST( OffsetList_CanMoveConstruct, From2Nodes )
 {
 	// Arrange
-	offset_list<int> src;
+	ipsm::offset_list<int> src;
 	src.push_back( 1 );
 	src.push_back( 2 );
 
 	// Act
-	offset_list<int> sut( std::move( src ) );
+	ipsm::offset_list<int> sut( std::move( src ) );
 
 	// Assert
 	EXPECT_EQ( sut.size(), 2 );
@@ -188,13 +186,13 @@ TEST( OffsetList_CanMoveConstruct, From2Nodes )
 TEST( OffsetList_CanMoveConstruct, From3Nodes )
 {
 	// Arrange
-	offset_list<int> src;
+	ipsm::offset_list<int> src;
 	src.push_back( 1 );
 	src.push_back( 2 );
 	src.push_back( 3 );
 
 	// Act
-	offset_list<int> sut( std::move( src ) );
+	ipsm::offset_list<int> sut( std::move( src ) );
 
 	// Assert
 	EXPECT_EQ( sut.size(), 3 );
@@ -206,8 +204,8 @@ TEST( OffsetList_CanMoveConstruct, From3Nodes )
 TEST( OffsetList_CanCopyAssingment, FromEmpty )
 {
 	// Arrange
-	offset_list<int> src;
-	offset_list<int> sut;
+	ipsm::offset_list<int> src;
+	ipsm::offset_list<int> sut;
 
 	// Act
 	ASSERT_NO_THROW( sut = src; );
@@ -220,9 +218,9 @@ TEST( OffsetList_CanCopyAssingment, FromEmpty )
 TEST( OffsetList_CanCopyAssingment, From1Node )
 {
 	// Arrange
-	offset_list<int> src;
+	ipsm::offset_list<int> src;
 	src.push_back( 1 );
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 
 	// Act
 	ASSERT_NO_THROW( sut = src; );
@@ -239,10 +237,10 @@ TEST( OffsetList_CanCopyAssingment, From1Node )
 TEST( OffsetList_CanCopyAssingment, From2Nodes )
 {
 	// Arrange
-	offset_list<int> src;
+	ipsm::offset_list<int> src;
 	src.push_back( 1 );
 	src.push_back( 2 );
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 
 	// Act
 	ASSERT_NO_THROW( sut = src; );
@@ -259,11 +257,11 @@ TEST( OffsetList_CanCopyAssingment, From2Nodes )
 TEST( OffsetList_CanCopyAssingment, From3Nodes )
 {
 	// Arrange
-	offset_list<int> src;
+	ipsm::offset_list<int> src;
 	src.push_back( 1 );
 	src.push_back( 2 );
 	src.push_back( 3 );
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 
 	// Act
 	ASSERT_NO_THROW( sut = src; );
@@ -280,8 +278,8 @@ TEST( OffsetList_CanCopyAssingment, From3Nodes )
 TEST( OffsetList_CanMoveAssingment, FromEmpty )
 {
 	// Arrange
-	offset_list<int> src;
-	offset_list<int> sut;
+	ipsm::offset_list<int> src;
+	ipsm::offset_list<int> sut;
 
 	// Act
 	ASSERT_NO_THROW( sut = std::move( src ); );
@@ -294,9 +292,9 @@ TEST( OffsetList_CanMoveAssingment, FromEmpty )
 TEST( OffsetList_CanMoveAssingment, From1Node )
 {
 	// Arrange
-	offset_list<int> src;
+	ipsm::offset_list<int> src;
 	src.push_back( 1 );
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 
 	// Act
 	ASSERT_NO_THROW( sut = std::move( src ); );
@@ -311,10 +309,10 @@ TEST( OffsetList_CanMoveAssingment, From1Node )
 TEST( OffsetList_CanMoveAssingment, From2Nodes )
 {
 	// Arrange
-	offset_list<int> src;
+	ipsm::offset_list<int> src;
 	src.push_back( 1 );
 	src.push_back( 2 );
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 
 	// Act
 	ASSERT_NO_THROW( sut = std::move( src ); );
@@ -329,11 +327,11 @@ TEST( OffsetList_CanMoveAssingment, From2Nodes )
 TEST( OffsetList_CanMoveAssingment, From3Nodes )
 {
 	// Arrange
-	offset_list<int> src;
+	ipsm::offset_list<int> src;
 	src.push_back( 1 );
 	src.push_back( 2 );
 	src.push_back( 3 );
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 
 	// Act
 	ASSERT_NO_THROW( sut = std::move( src ); );
@@ -350,7 +348,7 @@ TEST( OffsetList_CanConstructInitializerlist, FromEmpty )
 	// Arrange
 
 	// Act
-	offset_list<int> sut = {};
+	ipsm::offset_list<int> sut = {};
 
 	// Assert
 	EXPECT_EQ( sut.size(), 0 );
@@ -361,7 +359,7 @@ TEST( OffsetList_CanConstructInitializerlist, From1Item )
 	// Arrange
 
 	// Act
-	offset_list<int> sut = { 1 };
+	ipsm::offset_list<int> sut = { 1 };
 
 	// Assert
 	EXPECT_EQ( sut.size(), 1 );
@@ -374,7 +372,7 @@ TEST( OffsetList_CanConstructInitializerlist, From2Item )
 	// Arrange
 
 	// Act
-	offset_list<int> sut = { 1, 2 };
+	ipsm::offset_list<int> sut = { 1, 2 };
 
 	// Assert
 	EXPECT_EQ( sut.size(), 2 );
@@ -387,7 +385,7 @@ TEST( OffsetList_CanConstructInitializerlist, From3Item )
 	// Arrange
 
 	// Act
-	offset_list<int> sut = { 1, 2, 3 };
+	ipsm::offset_list<int> sut = { 1, 2, 3 };
 
 	// Assert
 	EXPECT_EQ( sut.size(), 3 );
@@ -398,7 +396,7 @@ TEST( OffsetList_CanConstructInitializerlist, From3Item )
 TEST( OffsetList_CanInitializerlistAssignment, Assign3ItemToEmpty )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 
 	// Act
 	sut = { 1, 2, 3 };
@@ -412,7 +410,7 @@ TEST( OffsetList_CanInitializerlistAssignment, Assign3ItemToEmpty )
 TEST( OffsetList_CanInitializerlistAssignment, Assign3ItemTo1ItemList )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_back( 10 );
 
 	// Act
@@ -429,7 +427,7 @@ TEST( OffsetList_Construct, CanTypeSelf )
 	// Arrange
 
 	// Act
-	offset_list<offset_list<int>> src;
+	ipsm::offset_list<ipsm::offset_list<int>> src;
 
 	// Assert
 }
@@ -437,10 +435,10 @@ TEST( OffsetList_Construct, CanTypeSelf )
 TEST( OffsetList_Construct, CanPushTypeSelf )
 {
 	// Arrange
-	offset_list<offset_list<int>> src;
+	ipsm::offset_list<ipsm::offset_list<int>> src;
 
 	// Act
-	src.push_back( offset_list<int>() );
+	src.push_back( ipsm::offset_list<int>() );
 
 	// Assert
 }
@@ -448,7 +446,7 @@ TEST( OffsetList_Construct, CanPushTypeSelf )
 TEST( OffsetList_Push, CanPushBack1 )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 
 	// Act
 	sut.push_back( 1 );
@@ -463,7 +461,7 @@ TEST( OffsetList_Push, CanPushBack1 )
 TEST( OffsetList_Push, CanPushBack2 )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_back( 1 );
 
 	// Act
@@ -479,7 +477,7 @@ TEST( OffsetList_Push, CanPushBack2 )
 TEST( OffsetList_Push, CanPushBack3 )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_back( 1 );
 	sut.push_back( 2 );
 
@@ -496,7 +494,7 @@ TEST( OffsetList_Push, CanPushBack3 )
 TEST( OffsetList_Push, CanPushFront1 )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 
 	// Act
 	sut.push_front( 1 );
@@ -511,7 +509,7 @@ TEST( OffsetList_Push, CanPushFront1 )
 TEST( OffsetList_Push, CanPushFront2 )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_front( 1 );
 
 	// Act
@@ -527,7 +525,7 @@ TEST( OffsetList_Push, CanPushFront2 )
 TEST( OffsetList_Push, CanPushFront3 )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_front( 1 );
 	sut.push_front( 2 );
 
@@ -544,7 +542,7 @@ TEST( OffsetList_Push, CanPushFront3 )
 TEST( OffsetList_Push, CanEmplaceFront1 )
 {
 	// Arrange
-	offset_list<EmplacementTestData> sut;
+	ipsm::offset_list<EmplacementTestData> sut;
 
 	// Act
 	sut.emplace_front( 1, 2.0 );
@@ -559,7 +557,7 @@ TEST( OffsetList_Push, CanEmplaceFront1 )
 TEST( OffsetList_Push, CanEmplaceFront2 )
 {
 	// Arrange
-	offset_list<EmplacementTestData> sut;
+	ipsm::offset_list<EmplacementTestData> sut;
 	sut.emplace_front( 1, 2.0 );
 
 	// Act
@@ -575,7 +573,7 @@ TEST( OffsetList_Push, CanEmplaceFront2 )
 TEST( OffsetList_Push, CanEmplaceFront3 )
 {
 	// Arrange
-	offset_list<EmplacementTestData> sut;
+	ipsm::offset_list<EmplacementTestData> sut;
 	sut.emplace_front( 1, 2.0 );
 	sut.emplace_front( 3, 4.0 );
 
@@ -592,7 +590,7 @@ TEST( OffsetList_Push, CanEmplaceFront3 )
 TEST( OffsetList_Push, CanEmplaceBack1 )
 {
 	// Arrange
-	offset_list<EmplacementTestData> sut;
+	ipsm::offset_list<EmplacementTestData> sut;
 
 	// Act
 	sut.emplace_back( 1, 2.0 );
@@ -607,7 +605,7 @@ TEST( OffsetList_Push, CanEmplaceBack1 )
 TEST( OffsetList_Push, CanEmplaceBack2 )
 {
 	// Arrange
-	offset_list<EmplacementTestData> sut;
+	ipsm::offset_list<EmplacementTestData> sut;
 	sut.emplace_back( 1, 2.0 );
 
 	// Act
@@ -623,7 +621,7 @@ TEST( OffsetList_Push, CanEmplaceBack2 )
 TEST( OffsetList_Push, CanEmplaceBack3 )
 {
 	// Arrange
-	offset_list<EmplacementTestData> sut;
+	ipsm::offset_list<EmplacementTestData> sut;
 	sut.emplace_back( 1, 2.0 );
 	sut.emplace_back( 3, 4.0 );
 
@@ -640,7 +638,7 @@ TEST( OffsetList_Push, CanEmplaceBack3 )
 TEST( OffsetList_BeginEnd, CanBeginEnd1 )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 
 	// Act
 	auto bit = sut.begin();
@@ -653,7 +651,7 @@ TEST( OffsetList_BeginEnd, CanBeginEnd1 )
 TEST( OffsetList_BeginEnd, CanBeginEnd2 )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_front( 1 );
 	sut.push_back( 2 );
 
@@ -671,7 +669,7 @@ TEST( OffsetList_BeginEnd, CanBeginEnd2 )
 TEST( OffsetList_BeginEnd, CanBeginEnd3 )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_front( 1 );
 	sut.push_back( 2 );
 	sut.push_back( 3 );
@@ -690,7 +688,7 @@ TEST( OffsetList_BeginEnd, CanBeginEnd3 )
 TEST( OffsetList_BeginEnd, CanRbeginRend1 )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 
 	// Act
 	auto bit = sut.rbegin();
@@ -703,7 +701,7 @@ TEST( OffsetList_BeginEnd, CanRbeginRend1 )
 TEST( OffsetList_BeginEnd, CanRbeginRend2 )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_front( 1 );
 	sut.push_back( 2 );
 
@@ -721,7 +719,7 @@ TEST( OffsetList_BeginEnd, CanRbeginRend2 )
 TEST( OffsetList_BeginEnd, CanRbeginRend3 )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_front( 1 );
 	sut.push_back( 2 );
 	sut.push_back( 3 );
@@ -740,7 +738,7 @@ TEST( OffsetList_BeginEnd, CanRbeginRend3 )
 TEST( OffsetList_BeginEnd, CanCBeginCEnd1 )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 
 	// Act
 	auto bit = sut.cbegin();
@@ -753,7 +751,7 @@ TEST( OffsetList_BeginEnd, CanCBeginCEnd1 )
 TEST( OffsetList_BeginEnd, CanCBeginCEnd2 )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_front( 1 );
 	sut.push_back( 2 );
 
@@ -771,7 +769,7 @@ TEST( OffsetList_BeginEnd, CanCBeginCEnd2 )
 TEST( OffsetList_BeginEnd, CanCBeginCEnd3 )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_front( 1 );
 	sut.push_back( 2 );
 	sut.push_back( 3 );
@@ -790,7 +788,7 @@ TEST( OffsetList_BeginEnd, CanCBeginCEnd3 )
 TEST( OffsetList_BeginEnd, CanCRbeginCRend1 )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 
 	// Act
 	auto bit = sut.crbegin();
@@ -803,7 +801,7 @@ TEST( OffsetList_BeginEnd, CanCRbeginCRend1 )
 TEST( OffsetList_BeginEnd, CanCRbeginCRend2 )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_front( 1 );
 	sut.push_back( 2 );
 
@@ -821,7 +819,7 @@ TEST( OffsetList_BeginEnd, CanCRbeginCRend2 )
 TEST( OffsetList_BeginEnd, CanCRbeginCRend3 )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_front( 1 );
 	sut.push_back( 2 );
 	sut.push_back( 3 );
@@ -840,8 +838,8 @@ TEST( OffsetList_BeginEnd, CanCRbeginCRend3 )
 TEST( OffsetList_Insert, CanInsertToEmptyList1 )
 {
 	// Arrange
-	offset_list<int> sut;
-	auto             it = sut.begin();
+	ipsm::offset_list<int> sut;
+	auto                   it = sut.begin();
 
 	// Act
 	auto ret = sut.insert( it, 1 );
@@ -856,8 +854,8 @@ TEST( OffsetList_Insert, CanInsertToEmptyList1 )
 TEST( OffsetList_Insert, CanInsertToEmptyList2 )
 {
 	// Arrange
-	offset_list<int> sut;
-	auto             it = sut.cbegin();
+	ipsm::offset_list<int> sut;
+	auto                   it = sut.cbegin();
 
 	// Act
 	auto ret = sut.insert( it, 1 );
@@ -872,7 +870,7 @@ TEST( OffsetList_Insert, CanInsertToEmptyList2 )
 TEST( OffsetList_Insert, CanInsertTo1ItemList )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_back( 2 );
 	auto bit = sut.begin();
 	auto eit = sut.end();
@@ -896,7 +894,7 @@ TEST( OffsetList_Insert, CanInsertTo1ItemList )
 TEST( OffsetList_Insert, CanInsertTo2ItemList1 )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_back( 2 );
 	sut.push_back( 4 );
 	auto bit = sut.begin();
@@ -926,12 +924,12 @@ TEST( OffsetList_Insert, CanInsertTo2ItemList1 )
 TEST( OffsetList_Insert, CanInsertTo2ItemList2 )
 {
 	// Arrange
-	auto                             td1 = EmplacementTestData { 1, 2.0 };
-	auto                             td2 = EmplacementTestData { 3, 4.0 };
-	auto                             td3 = EmplacementTestData { 5, 6.0 };
-	auto                             td4 = EmplacementTestData { 7, 8.0 };
-	auto                             td5 = EmplacementTestData { 9, 10.0 };
-	offset_list<EmplacementTestData> sut;
+	auto                                   td1 = EmplacementTestData { 1, 2.0 };
+	auto                                   td2 = EmplacementTestData { 3, 4.0 };
+	auto                                   td3 = EmplacementTestData { 5, 6.0 };
+	auto                                   td4 = EmplacementTestData { 7, 8.0 };
+	auto                                   td5 = EmplacementTestData { 9, 10.0 };
+	ipsm::offset_list<EmplacementTestData> sut;
 	sut.push_back( EmplacementTestData { 3, 4.0 } );
 	sut.push_back( EmplacementTestData { 7, 8.0 } );
 	auto bit = sut.begin();
@@ -961,12 +959,12 @@ TEST( OffsetList_Insert, CanInsertTo2ItemList2 )
 TEST( OffsetList_Insert, CanEmplaceTo2ItemList )
 {
 	// Arrange
-	auto                             td1 = EmplacementTestData { 1, 2.0 };
-	auto                             td2 = EmplacementTestData { 3, 4.0 };
-	auto                             td3 = EmplacementTestData { 5, 6.0 };
-	auto                             td4 = EmplacementTestData { 7, 8.0 };
-	auto                             td5 = EmplacementTestData { 9, 10.0 };
-	offset_list<EmplacementTestData> sut;
+	auto                                   td1 = EmplacementTestData { 1, 2.0 };
+	auto                                   td2 = EmplacementTestData { 3, 4.0 };
+	auto                                   td3 = EmplacementTestData { 5, 6.0 };
+	auto                                   td4 = EmplacementTestData { 7, 8.0 };
+	auto                                   td5 = EmplacementTestData { 9, 10.0 };
+	ipsm::offset_list<EmplacementTestData> sut;
 	sut.push_back( EmplacementTestData { 3, 4.0 } );
 	sut.push_back( EmplacementTestData { 7, 8.0 } );
 	auto bit = sut.begin();
@@ -996,7 +994,7 @@ TEST( OffsetList_Insert, CanEmplaceTo2ItemList )
 TEST( OffsetList_Pop, CanPopFrontFromEmpty )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 
 	// Act
 	ASSERT_NO_THROW( sut.pop_front() );
@@ -1010,7 +1008,7 @@ TEST( OffsetList_Pop, CanPopFrontFromEmpty )
 TEST( OffsetList_Pop, CanPopBackFromEmpty )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 
 	// Act
 	ASSERT_NO_THROW( sut.pop_back() );
@@ -1024,7 +1022,7 @@ TEST( OffsetList_Pop, CanPopBackFromEmpty )
 TEST( OffsetList_Pop, CanPopFrontFrom1ItemList )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_back( 1 );
 	EXPECT_FALSE( sut.empty() );
 	EXPECT_EQ( sut.size(), 1 );
@@ -1041,7 +1039,7 @@ TEST( OffsetList_Pop, CanPopFrontFrom1ItemList )
 TEST( OffsetList_Pop, CanPopBackFrom1ItemList )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_back( 1 );
 	EXPECT_FALSE( sut.empty() );
 	EXPECT_EQ( sut.size(), 1 );
@@ -1058,7 +1056,7 @@ TEST( OffsetList_Pop, CanPopBackFrom1ItemList )
 TEST( OffsetList_Pop, CanPopFrontFrom2ItemList )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_back( 1 );
 	sut.push_back( 2 );
 	EXPECT_FALSE( sut.empty() );
@@ -1078,7 +1076,7 @@ TEST( OffsetList_Pop, CanPopFrontFrom2ItemList )
 TEST( OffsetList_Pop, CanPopBackFrom2ItemList )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_back( 1 );
 	sut.push_back( 2 );
 	EXPECT_FALSE( sut.empty() );
@@ -1098,8 +1096,8 @@ TEST( OffsetList_Pop, CanPopBackFrom2ItemList )
 TEST( OffsetList_Erase, CanEraseFromEmpty )
 {
 	// Arrange
-	offset_list<int>           sut;
-	offset_list<int>::iterator ret1, ret2;
+	ipsm::offset_list<int>           sut;
+	ipsm::offset_list<int>::iterator ret1, ret2;
 
 	// Act
 	ASSERT_NO_THROW( ret1 = sut.erase( sut.begin() ) );
@@ -1116,8 +1114,8 @@ TEST( OffsetList_Erase, CanEraseFromEmpty )
 TEST( OffsetList_Erase, CanEraseFrom1ItemList1 )
 {
 	// Arrange
-	offset_list<int>           sut;
-	offset_list<int>::iterator ret;
+	ipsm::offset_list<int>           sut;
+	ipsm::offset_list<int>::iterator ret;
 	sut.push_back( 1 );
 	EXPECT_FALSE( sut.empty() );
 	EXPECT_EQ( sut.size(), 1 );
@@ -1135,8 +1133,8 @@ TEST( OffsetList_Erase, CanEraseFrom1ItemList1 )
 TEST( OffsetList_Erase, CanEraseFrom1ItemList2 )
 {
 	// Arrange
-	offset_list<int>           sut;
-	offset_list<int>::iterator ret;
+	ipsm::offset_list<int>           sut;
+	ipsm::offset_list<int>::iterator ret;
 	sut.push_back( 1 );
 	EXPECT_FALSE( sut.empty() );
 	EXPECT_EQ( sut.size(), 1 );
@@ -1156,8 +1154,8 @@ TEST( OffsetList_Erase, CanEraseFrom1ItemList2 )
 TEST( OffsetList_Erase, CanEraseFrom1ItemList3 )
 {
 	// Arrange
-	offset_list<int>           sut;
-	offset_list<int>::iterator ret;
+	ipsm::offset_list<int>           sut;
+	ipsm::offset_list<int>::iterator ret;
 	sut.push_back( 1 );
 	EXPECT_FALSE( sut.empty() );
 	EXPECT_EQ( sut.size(), 1 );
@@ -1176,13 +1174,13 @@ TEST( OffsetList_Erase, CanEraseFrom1ItemList3 )
 TEST( OffsetList_Erase, CanEraseFrom2ItemList1 )
 {
 	// Arrange
-	offset_list<int>           sut;
-	offset_list<int>::iterator ret;
+	ipsm::offset_list<int>           sut;
+	ipsm::offset_list<int>::iterator ret;
 	sut.push_back( 1 );
 	sut.push_back( 2 );
 	EXPECT_FALSE( sut.empty() );
 	EXPECT_EQ( sut.size(), 2 );
-	offset_list<int>::iterator td = ++( sut.begin() );
+	ipsm::offset_list<int>::iterator td = ++( sut.begin() );
 
 	// Act
 	ASSERT_NO_THROW( ret = sut.erase( sut.begin() ) );
@@ -1199,8 +1197,8 @@ TEST( OffsetList_Erase, CanEraseFrom2ItemList1 )
 TEST( OffsetList_Erase, CanEraseFrom2ItemList2 )
 {
 	// Arrange
-	offset_list<int>           sut;
-	offset_list<int>::iterator ret;
+	ipsm::offset_list<int>           sut;
+	ipsm::offset_list<int>::iterator ret;
 	sut.push_back( 1 );
 	sut.push_back( 2 );
 	EXPECT_FALSE( sut.empty() );
@@ -1223,8 +1221,8 @@ TEST( OffsetList_Erase, CanEraseFrom2ItemList2 )
 TEST( OffsetList_Erase, CanEraseFrom2ItemList3 )
 {
 	// Arrange
-	offset_list<int>           sut;
-	offset_list<int>::iterator ret;
+	ipsm::offset_list<int>           sut;
+	ipsm::offset_list<int>::iterator ret;
 	sut.push_back( 1 );
 	sut.push_back( 2 );
 	EXPECT_FALSE( sut.empty() );
@@ -1245,15 +1243,15 @@ TEST( OffsetList_Erase, CanEraseFrom2ItemList3 )
 TEST( OffsetList_Erase, CanEraseFrom3ItemList )
 {
 	// Arrange
-	offset_list<int>           sut;
-	offset_list<int>::iterator ret;
+	ipsm::offset_list<int>           sut;
+	ipsm::offset_list<int>::iterator ret;
 	sut.push_back( 1 );
 	sut.push_back( 2 );
 	sut.push_back( 3 );
 	EXPECT_FALSE( sut.empty() );
 	EXPECT_EQ( sut.size(), 3 );
-	auto                       it_2 = ++( sut.begin() );
-	offset_list<int>::iterator it_3 = it_2;
+	auto                             it_2 = ++( sut.begin() );
+	ipsm::offset_list<int>::iterator it_3 = it_2;
 	it_3++;
 
 	// Act
@@ -1271,7 +1269,7 @@ TEST( OffsetList_Erase, CanEraseFrom3ItemList )
 TEST( OffsetList_Erase, CanClearFromEmpty )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	EXPECT_TRUE( sut.empty() );
 	EXPECT_EQ( sut.size(), 0 );
 
@@ -1287,7 +1285,7 @@ TEST( OffsetList_Erase, CanClearFromEmpty )
 TEST( OffsetList_Erase, CanClearFrom1ItemList )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_back( 1 );
 	EXPECT_FALSE( sut.empty() );
 	EXPECT_EQ( sut.size(), 1 );
@@ -1304,7 +1302,7 @@ TEST( OffsetList_Erase, CanClearFrom1ItemList )
 TEST( OffsetList_Erase, CanClearFrom2ItemList )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_back( 1 );
 	sut.push_back( 2 );
 	EXPECT_FALSE( sut.empty() );
@@ -1322,7 +1320,7 @@ TEST( OffsetList_Erase, CanClearFrom2ItemList )
 TEST( OffsetList_Erase, CanClearFrom3ItemList )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_back( 1 );
 	sut.push_back( 2 );
 	sut.push_back( 3 );
@@ -1341,8 +1339,8 @@ TEST( OffsetList_Erase, CanClearFrom3ItemList )
 TEST( OffsetList_Swap, CanSwapBwEmptyAndEmpty )
 {
 	// Arrange
-	offset_list<int> sut1;
-	offset_list<int> sut2;
+	ipsm::offset_list<int> sut1;
+	ipsm::offset_list<int> sut2;
 
 	// Act
 	ASSERT_NO_THROW( sut1.swap( sut2 ) );
@@ -1359,8 +1357,8 @@ TEST( OffsetList_Swap, CanSwapBwEmptyAndEmpty )
 TEST( OffsetList_Swap, CanSwapBwEmptyAnd1Item )
 {
 	// Arrange
-	offset_list<int> sut1;
-	offset_list<int> sut2;
+	ipsm::offset_list<int> sut1;
+	ipsm::offset_list<int> sut2;
 	sut2.push_back( 1 );
 	EXPECT_FALSE( sut2.empty() );
 	EXPECT_EQ( sut2.size(), 1 );
@@ -1382,8 +1380,8 @@ TEST( OffsetList_Swap, CanSwapBwEmptyAnd1Item )
 TEST( OffsetList_Swap, CanSwapBwEmptyAnd2Item )
 {
 	// Arrange
-	offset_list<int> sut1;
-	offset_list<int> sut2 = { 1, 2 };
+	ipsm::offset_list<int> sut1;
+	ipsm::offset_list<int> sut2 = { 1, 2 };
 	EXPECT_FALSE( sut2.empty() );
 	EXPECT_EQ( sut2.size(), 2 );
 
@@ -1404,8 +1402,8 @@ TEST( OffsetList_Swap, CanSwapBwEmptyAnd2Item )
 TEST( OffsetList_Swap, CanSwapBw3ItemAnd2Item )
 {
 	// Arrange
-	offset_list<int> sut1 = { 1, 2, 3 };
-	offset_list<int> sut2 = { 4, 5 };
+	ipsm::offset_list<int> sut1 = { 1, 2, 3 };
+	ipsm::offset_list<int> sut2 = { 4, 5 };
 	EXPECT_FALSE( sut1.empty() );
 	EXPECT_EQ( sut1.size(), 3 );
 	EXPECT_FALSE( sut2.empty() );
@@ -1430,7 +1428,7 @@ TEST( OffsetList_Swap, CanSwapBw3ItemAnd2Item )
 TEST( OffsetList_Swap, CanSwapFrom3ItemList )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_back( 1 );
 	sut.push_back( 2 );
 	sut.push_back( 3 );
@@ -1449,7 +1447,7 @@ TEST( OffsetList_Swap, CanSwapFrom3ItemList )
 TEST( OffsetList_Iterator, CanIteratePreIncrementPreDecrement )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_front( 1 );
 	sut.push_back( 2 );
 	sut.push_back( 3 );
@@ -1478,7 +1476,7 @@ TEST( OffsetList_Iterator, CanIteratePreIncrementPreDecrement )
 TEST( OffsetList_Iterator, CanConstIteratePreIncrementPreDecrement )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_front( 1 );
 	sut.push_back( 2 );
 	sut.push_back( 3 );
@@ -1510,7 +1508,7 @@ TEST( OffsetList_Iterator, CanConstIteratePreIncrementPreDecrement )
 TEST( OffsetList_Iterator, CanIteratePostIncrementPreDecrement )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_front( 1 );
 	sut.push_back( 2 );
 	sut.push_back( 3 );
@@ -1538,7 +1536,7 @@ TEST( OffsetList_Iterator, CanIteratePostIncrementPreDecrement )
 TEST( OffsetList_Iterator, CanConstIteratePostIncrementPreDecrement )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_front( 1 );
 	sut.push_back( 2 );
 	sut.push_back( 3 );
@@ -1568,7 +1566,7 @@ TEST( OffsetList_Iterator, CanConstIteratePostIncrementPreDecrement )
 TEST( OffsetList_ReverseIterator, CanReverseIteratePreIncrementPreDecrement )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_front( 1 );
 	sut.push_back( 2 );
 	sut.push_back( 3 );
@@ -1597,7 +1595,7 @@ TEST( OffsetList_ReverseIterator, CanReverseIteratePreIncrementPreDecrement )
 TEST( OffsetList_ReverseIterator, CanConstReverseIteratePreIncrementPreDecrement )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_front( 1 );
 	sut.push_back( 2 );
 	sut.push_back( 3 );
@@ -1629,7 +1627,7 @@ TEST( OffsetList_ReverseIterator, CanConstReverseIteratePreIncrementPreDecrement
 TEST( OffsetList_ReverseIterator, CanReverseIteratePostIncrementPreDecrement )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_front( 1 );
 	sut.push_back( 2 );
 	sut.push_back( 3 );
@@ -1657,7 +1655,7 @@ TEST( OffsetList_ReverseIterator, CanReverseIteratePostIncrementPreDecrement )
 TEST( OffsetList_ReverseIterator, CanConstReverseIteratePostIncrementPreDecrement )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 	sut.push_front( 1 );
 	sut.push_back( 2 );
 	sut.push_back( 3 );
@@ -1687,7 +1685,7 @@ TEST( OffsetList_ReverseIterator, CanConstReverseIteratePostIncrementPreDecremen
 TEST( OffsetList, CanCallMaxSize )
 {
 	// Arrange
-	offset_list<int> sut;
+	ipsm::offset_list<int> sut;
 
 	// Act
 	auto ret = sut.max_size();
@@ -1699,13 +1697,13 @@ TEST( OffsetList, CanCallMaxSize )
 TEST( OffsetList_Allocator, CanConstruct )
 {
 	// Arrange
-	unsigned char         test_buff[1024];
-	void*                 p_mem = reinterpret_cast<void*>( test_buff );
-	offset_malloc         malloc_obj( p_mem, 1024 );
-	offset_allocator<int> allocator_obj( malloc_obj );
+	unsigned char               test_buff[1024];
+	void*                       p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_malloc         malloc_obj( p_mem, 1024 );
+	ipsm::offset_allocator<int> allocator_obj( malloc_obj );
 
 	// Act
-	offset_list<int, offset_allocator<int>> sut( allocator_obj );
+	ipsm::offset_list<int, ipsm::offset_allocator<int>> sut( allocator_obj );
 
 	// Assert
 }
@@ -1713,11 +1711,11 @@ TEST( OffsetList_Allocator, CanConstruct )
 TEST( OffsetList_Allocator, CanPush )
 {
 	// Arrange
-	unsigned char                           test_buff[1024];
-	void*                                   p_mem = reinterpret_cast<void*>( test_buff );
-	offset_malloc                           malloc_obj( p_mem, 1024 );
-	offset_allocator<int>                   allocator_obj( malloc_obj );
-	offset_list<int, offset_allocator<int>> sut( allocator_obj );
+	unsigned char                                       test_buff[1024];
+	void*                                               p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_malloc                                 malloc_obj( p_mem, 1024 );
+	ipsm::offset_allocator<int>                         allocator_obj( malloc_obj );
+	ipsm::offset_list<int, ipsm::offset_allocator<int>> sut( allocator_obj );
 
 	// Act
 	sut.push_back( 1 );
@@ -1731,15 +1729,15 @@ TEST( OffsetList_Allocator, CanPush )
 TEST( OffsetList_Allocator, CanCopyConstruct )
 {
 	// Arrange
-	unsigned char                           test_buff[1024];
-	void*                                   p_mem = reinterpret_cast<void*>( test_buff );
-	offset_malloc                           malloc_obj( p_mem, 1024 );
-	offset_allocator<int>                   allocator_obj( malloc_obj );
-	offset_list<int, offset_allocator<int>> src( allocator_obj );
+	unsigned char                                       test_buff[1024];
+	void*                                               p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_malloc                                 malloc_obj( p_mem, 1024 );
+	ipsm::offset_allocator<int>                         allocator_obj( malloc_obj );
+	ipsm::offset_list<int, ipsm::offset_allocator<int>> src( allocator_obj );
 	src.push_back( 1 );
 
 	// Act
-	offset_list<int, offset_allocator<int>> sut( src );
+	ipsm::offset_list<int, ipsm::offset_allocator<int>> sut( src );
 
 	// Assert
 	auto it            = sut.begin();
@@ -1751,15 +1749,15 @@ TEST( OffsetList_Allocator, CanCopyConstruct )
 TEST( OffsetList_Allocator, CanMoveConstruct )
 {
 	// Arrange
-	unsigned char                           test_buff[1024];
-	void*                                   p_mem = reinterpret_cast<void*>( test_buff );
-	offset_malloc                           malloc_obj( p_mem, 1024 );
-	offset_allocator<int>                   allocator_obj( malloc_obj );
-	offset_list<int, offset_allocator<int>> src( allocator_obj );
+	unsigned char                                       test_buff[1024];
+	void*                                               p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_malloc                                 malloc_obj( p_mem, 1024 );
+	ipsm::offset_allocator<int>                         allocator_obj( malloc_obj );
+	ipsm::offset_list<int, ipsm::offset_allocator<int>> src( allocator_obj );
 	src.push_back( 1 );
 
 	// Act
-	offset_list<int, offset_allocator<int>> sut( std::move( src ) );
+	ipsm::offset_list<int, ipsm::offset_allocator<int>> sut( std::move( src ) );
 
 	// Assert
 	auto it            = sut.begin();
@@ -1775,18 +1773,18 @@ TEST( OffsetList_Allocator, CanMoveConstruct )
 TEST( OffsetList_Allocator, CanCopyAssingment )
 {
 	// Arrange
-	unsigned char                           test_buff[1024];
-	void*                                   p_mem = reinterpret_cast<void*>( test_buff );
-	offset_malloc                           malloc_obj( p_mem, 1024 );
-	offset_allocator<int>                   allocator_obj( malloc_obj );
-	offset_list<int, offset_allocator<int>> src( allocator_obj );
+	unsigned char                                       test_buff[1024];
+	void*                                               p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_malloc                                 malloc_obj( p_mem, 1024 );
+	ipsm::offset_allocator<int>                         allocator_obj( malloc_obj );
+	ipsm::offset_list<int, ipsm::offset_allocator<int>> src( allocator_obj );
 	src.push_back( 1 );
 
-	unsigned char                           test_buff2[1024];
-	void*                                   p_mem2 = reinterpret_cast<void*>( test_buff2 );
-	offset_malloc                           malloc_obj2( p_mem2, 1024 );
-	offset_allocator<int>                   allocator_obj2( malloc_obj2 );
-	offset_list<int, offset_allocator<int>> sut( allocator_obj2 );
+	unsigned char                                       test_buff2[1024];
+	void*                                               p_mem2 = reinterpret_cast<void*>( test_buff2 );
+	ipsm::offset_malloc                                 malloc_obj2( p_mem2, 1024 );
+	ipsm::offset_allocator<int>                         allocator_obj2( malloc_obj2 );
+	ipsm::offset_list<int, ipsm::offset_allocator<int>> sut( allocator_obj2 );
 
 	// Act
 	sut = src;
@@ -1801,18 +1799,18 @@ TEST( OffsetList_Allocator, CanCopyAssingment )
 TEST( OffsetList_Allocator, CanMoveAssignment )
 {
 	// Arrange
-	unsigned char                           test_buff[1024];
-	void*                                   p_mem = reinterpret_cast<void*>( test_buff );
-	offset_malloc                           malloc_obj( p_mem, 1024 );
-	offset_allocator<int>                   allocator_obj( malloc_obj );
-	offset_list<int, offset_allocator<int>> src( allocator_obj );
+	unsigned char                                       test_buff[1024];
+	void*                                               p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_malloc                                 malloc_obj( p_mem, 1024 );
+	ipsm::offset_allocator<int>                         allocator_obj( malloc_obj );
+	ipsm::offset_list<int, ipsm::offset_allocator<int>> src( allocator_obj );
 	src.push_back( 1 );
 
-	unsigned char                           test_buff2[1024];
-	void*                                   p_mem2 = reinterpret_cast<void*>( test_buff2 );
-	offset_malloc                           malloc_obj2( p_mem2, 1024 );
-	offset_allocator<int>                   allocator_obj2( malloc_obj2 );
-	offset_list<int, offset_allocator<int>> sut( allocator_obj2 );
+	unsigned char                                       test_buff2[1024];
+	void*                                               p_mem2 = reinterpret_cast<void*>( test_buff2 );
+	ipsm::offset_malloc                                 malloc_obj2( p_mem2, 1024 );
+	ipsm::offset_allocator<int>                         allocator_obj2( malloc_obj2 );
+	ipsm::offset_list<int, ipsm::offset_allocator<int>> sut( allocator_obj2 );
 
 	// Act
 	sut = std::move( src );
@@ -1831,13 +1829,13 @@ TEST( OffsetList_Allocator, CanMoveAssignment )
 TEST( OffsetList_Allocator, CanTypeSelf )
 {
 	// Arrange
-	unsigned char         test_buff[1024];
-	void*                 p_mem = reinterpret_cast<void*>( test_buff );
-	offset_malloc         malloc_obj( p_mem, 1024 );
-	offset_allocator<int> allocator_obj( malloc_obj );
+	unsigned char               test_buff[1024];
+	void*                       p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_malloc         malloc_obj( p_mem, 1024 );
+	ipsm::offset_allocator<int> allocator_obj( malloc_obj );
 
 	// Act
-	offset_list<offset_list<int>, offset_allocator<offset_list<int>>> sut( allocator_obj );
+	ipsm::offset_list<ipsm::offset_list<int>, ipsm::offset_allocator<ipsm::offset_list<int>>> sut( allocator_obj );
 
 	// Assert
 }
@@ -1845,12 +1843,12 @@ TEST( OffsetList_Allocator, CanTypeSelf )
 TEST( OffsetList_Allocator, CanEmplaceFrontUsesAllocatableType )
 {
 	// Arrange
-	using TestElementType = offset_list<double, offset_allocator<double>>;
-	unsigned char                                                   test_buff[1024];
-	void*                                                           p_mem = reinterpret_cast<void*>( test_buff );
-	offset_malloc                                                   malloc_obj( p_mem, 1024 );
-	offset_allocator<TestElementType>                               allocator_obj( malloc_obj );
-	offset_list<TestElementType, offset_allocator<TestElementType>> sut( allocator_obj );
+	using TestElementType = ipsm::offset_list<double, ipsm::offset_allocator<double>>;
+	unsigned char                                                               test_buff[1024];
+	void*                                                                       p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_malloc                                                         malloc_obj( p_mem, 1024 );
+	ipsm::offset_allocator<TestElementType>                                     allocator_obj( malloc_obj );
+	ipsm::offset_list<TestElementType, ipsm::offset_allocator<TestElementType>> sut( allocator_obj );
 
 	// Act
 	sut.emplace_front();
@@ -1864,12 +1862,12 @@ TEST( OffsetList_Allocator, CanEmplaceFrontUsesAllocatableType )
 TEST( OffsetList_Allocator, CanEmplaceBackUsesAllocatableType )
 {
 	// Arrange
-	using TestElementType = offset_list<double, offset_allocator<double>>;
-	unsigned char                                                   test_buff[1024];
-	void*                                                           p_mem = reinterpret_cast<void*>( test_buff );
-	offset_malloc                                                   malloc_obj( p_mem, 1024 );
-	offset_allocator<TestElementType>                               allocator_obj( malloc_obj );
-	offset_list<TestElementType, offset_allocator<TestElementType>> sut( allocator_obj );
+	using TestElementType = ipsm::offset_list<double, ipsm::offset_allocator<double>>;
+	unsigned char                                                               test_buff[1024];
+	void*                                                                       p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_malloc                                                         malloc_obj( p_mem, 1024 );
+	ipsm::offset_allocator<TestElementType>                                     allocator_obj( malloc_obj );
+	ipsm::offset_list<TestElementType, ipsm::offset_allocator<TestElementType>> sut( allocator_obj );
 
 	// Act
 	sut.emplace_back();
@@ -1883,13 +1881,13 @@ TEST( OffsetList_Allocator, CanEmplaceBackUsesAllocatableType )
 TEST( OffsetList_Allocator, CanInsertUsesAllocatableType )
 {
 	// Arrange
-	using TestElementType = offset_list<double, offset_allocator<double>>;
-	unsigned char                                                   test_buff[1024];
-	void*                                                           p_mem = reinterpret_cast<void*>( test_buff );
-	offset_malloc                                                   malloc_obj( p_mem, 1024 );
-	offset_allocator<TestElementType>                               allocator_obj( malloc_obj );
-	offset_list<TestElementType, offset_allocator<TestElementType>> sut( allocator_obj );
-	auto                                                            bit = sut.begin();
+	using TestElementType = ipsm::offset_list<double, ipsm::offset_allocator<double>>;
+	unsigned char                                                               test_buff[1024];
+	void*                                                                       p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_malloc                                                         malloc_obj( p_mem, 1024 );
+	ipsm::offset_allocator<TestElementType>                                     allocator_obj( malloc_obj );
+	ipsm::offset_list<TestElementType, ipsm::offset_allocator<TestElementType>> sut( allocator_obj );
+	auto                                                                        bit = sut.begin();
 
 	// Act
 	auto it = sut.insert( bit, TestElementType() );
@@ -1902,12 +1900,12 @@ TEST( OffsetList_Allocator, CanInsertUsesAllocatableType )
 TEST( OffsetList_Allocator, CanEmplaceToMovingPushedInnerElement1 )
 {
 	// Arrange
-	using TestElementType = offset_list<double, offset_allocator<double>>;
-	unsigned char                                                   test_buff[1024];
-	void*                                                           p_mem = reinterpret_cast<void*>( test_buff );
-	offset_malloc                                                   malloc_obj( p_mem, 1024 );
-	offset_allocator<TestElementType>                               allocator_obj( malloc_obj );
-	offset_list<TestElementType, offset_allocator<TestElementType>> sut( allocator_obj );
+	using TestElementType = ipsm::offset_list<double, ipsm::offset_allocator<double>>;
+	unsigned char                                                               test_buff[1024];
+	void*                                                                       p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_malloc                                                         malloc_obj( p_mem, 1024 );
+	ipsm::offset_allocator<TestElementType>                                     allocator_obj( malloc_obj );
+	ipsm::offset_list<TestElementType, ipsm::offset_allocator<TestElementType>> sut( allocator_obj );
 	sut.push_back( TestElementType() );
 	auto it = sut.begin();
 
@@ -1923,18 +1921,18 @@ TEST( OffsetList_Allocator, CanEmplaceToMovingPushedInnerElement1 )
 TEST( OffsetList_Allocator, CanEmplaceToMovingPushedInnerElement2 )
 {
 	// Arrange
-	using TestElementType = offset_list<double, offset_allocator<double>>;
-	unsigned char            test_buff2[1024];
-	void*                    p_mem2 = reinterpret_cast<void*>( test_buff2 );
-	offset_malloc            malloc_obj2( p_mem2, 1024 );
-	offset_allocator<double> allocator_obj2( malloc_obj2 );
-	TestElementType          src( allocator_obj2 );
+	using TestElementType = ipsm::offset_list<double, ipsm::offset_allocator<double>>;
+	unsigned char                  test_buff2[1024];
+	void*                          p_mem2 = reinterpret_cast<void*>( test_buff2 );
+	ipsm::offset_malloc            malloc_obj2( p_mem2, 1024 );
+	ipsm::offset_allocator<double> allocator_obj2( malloc_obj2 );
+	TestElementType                src( allocator_obj2 );
 
-	unsigned char                                                   test_buff[1024];
-	void*                                                           p_mem = reinterpret_cast<void*>( test_buff );
-	offset_malloc                                                   malloc_obj( p_mem, 1024 );
-	offset_allocator<TestElementType>                               allocator_obj( malloc_obj );
-	offset_list<TestElementType, offset_allocator<TestElementType>> sut( allocator_obj );
+	unsigned char                                                               test_buff[1024];
+	void*                                                                       p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_malloc                                                         malloc_obj( p_mem, 1024 );
+	ipsm::offset_allocator<TestElementType>                                     allocator_obj( malloc_obj );
+	ipsm::offset_list<TestElementType, ipsm::offset_allocator<TestElementType>> sut( allocator_obj );
 
 	sut.push_back( std::move( src ) );
 	auto it = sut.begin();
@@ -1952,19 +1950,19 @@ TEST( OffsetList_Allocator, CanEmplaceToMovingPushedInnerElement2 )
 TEST( OffsetList_Allocator, CanEmplaceToMovingPushedInnerElement3 )
 {
 	// Arrange
-	using TestElementType = offset_list<double, offset_allocator<double>>;
-	unsigned char            test_buff2[1024];
-	void*                    p_mem2 = reinterpret_cast<void*>( test_buff2 );
-	offset_malloc            malloc_obj2( p_mem2, 1024 );
-	offset_allocator<double> allocator_obj2( malloc_obj2 );
-	TestElementType          src( allocator_obj2 );
+	using TestElementType = ipsm::offset_list<double, ipsm::offset_allocator<double>>;
+	unsigned char                  test_buff2[1024];
+	void*                          p_mem2 = reinterpret_cast<void*>( test_buff2 );
+	ipsm::offset_malloc            malloc_obj2( p_mem2, 1024 );
+	ipsm::offset_allocator<double> allocator_obj2( malloc_obj2 );
+	TestElementType                src( allocator_obj2 );
 	src.emplace_back( 1.0 );
 
-	unsigned char                                                   test_buff[1024];
-	void*                                                           p_mem = reinterpret_cast<void*>( test_buff );
-	offset_malloc                                                   malloc_obj( p_mem, 1024 );
-	offset_allocator<TestElementType>                               allocator_obj( malloc_obj );
-	offset_list<TestElementType, offset_allocator<TestElementType>> sut( allocator_obj );
+	unsigned char                                                               test_buff[1024];
+	void*                                                                       p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_malloc                                                         malloc_obj( p_mem, 1024 );
+	ipsm::offset_allocator<TestElementType>                                     allocator_obj( malloc_obj );
+	ipsm::offset_list<TestElementType, ipsm::offset_allocator<TestElementType>> sut( allocator_obj );
 
 	// Act
 	sut.push_back( std::move( src ) );
@@ -1983,16 +1981,16 @@ TEST( OffsetList_Allocator, CanEmplaceToMovingPushedInnerElement3 )
 TEST( OffsetList_Allocator, CanEmplaceToCopyingPushedInnerElement1 )
 {
 	// Arrange
-	using TestElementType = offset_list<double, offset_allocator<double>>;
-	unsigned char test_buff[1024];
-	void*         p_mem = reinterpret_cast<void*>( test_buff );
-	offset_malloc malloc_obj( p_mem, 1024 );
+	using TestElementType = ipsm::offset_list<double, ipsm::offset_allocator<double>>;
+	unsigned char       test_buff[1024];
+	void*               p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_malloc malloc_obj( p_mem, 1024 );
 
-	offset_allocator<double> allocator_obj2( malloc_obj );
-	TestElementType          src( allocator_obj2 );
+	ipsm::offset_allocator<double> allocator_obj2( malloc_obj );
+	TestElementType                src( allocator_obj2 );
 
-	offset_allocator<TestElementType>                               allocator_obj( malloc_obj );
-	offset_list<TestElementType, offset_allocator<TestElementType>> sut( allocator_obj );
+	ipsm::offset_allocator<TestElementType>                                     allocator_obj( malloc_obj );
+	ipsm::offset_list<TestElementType, ipsm::offset_allocator<TestElementType>> sut( allocator_obj );
 
 	sut.push_back( src );
 	auto it = sut.begin();
@@ -2010,18 +2008,18 @@ TEST( OffsetList_Allocator, CanEmplaceToCopyingPushedInnerElement1 )
 TEST( OffsetList_Allocator, CanEmplaceToCopyingPushedInnerElement2 )
 {
 	// Arrange
-	using TestElementType = offset_list<double, offset_allocator<double>>;
-	unsigned char            test_buff2[1024];
-	void*                    p_mem2 = reinterpret_cast<void*>( test_buff2 );
-	offset_malloc            malloc_obj2( p_mem2, 1024 );
-	offset_allocator<double> allocator_obj2( malloc_obj2 );
-	TestElementType          src( allocator_obj2 );
+	using TestElementType = ipsm::offset_list<double, ipsm::offset_allocator<double>>;
+	unsigned char                  test_buff2[1024];
+	void*                          p_mem2 = reinterpret_cast<void*>( test_buff2 );
+	ipsm::offset_malloc            malloc_obj2( p_mem2, 1024 );
+	ipsm::offset_allocator<double> allocator_obj2( malloc_obj2 );
+	TestElementType                src( allocator_obj2 );
 
-	unsigned char                                                   test_buff[1024];
-	void*                                                           p_mem = reinterpret_cast<void*>( test_buff );
-	offset_malloc                                                   malloc_obj( p_mem, 1024 );
-	offset_allocator<TestElementType>                               allocator_obj( malloc_obj );
-	offset_list<TestElementType, offset_allocator<TestElementType>> sut( allocator_obj );
+	unsigned char                                                               test_buff[1024];
+	void*                                                                       p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_malloc                                                         malloc_obj( p_mem, 1024 );
+	ipsm::offset_allocator<TestElementType>                                     allocator_obj( malloc_obj );
+	ipsm::offset_list<TestElementType, ipsm::offset_allocator<TestElementType>> sut( allocator_obj );
 
 	sut.push_back( src );
 	auto it = sut.begin();
@@ -2039,19 +2037,19 @@ TEST( OffsetList_Allocator, CanEmplaceToCopyingPushedInnerElement2 )
 TEST( OffsetList_Allocator, CanEmplaceToCopyingPushedInnerElement3 )
 {
 	// Arrange
-	using TestElementType = offset_list<double, offset_allocator<double>>;
-	unsigned char            test_buff2[1024];
-	void*                    p_mem2 = reinterpret_cast<void*>( test_buff2 );
-	offset_malloc            malloc_obj2( p_mem2, 1024 );
-	offset_allocator<double> allocator_obj2( malloc_obj2 );
-	TestElementType          src( allocator_obj2 );
+	using TestElementType = ipsm::offset_list<double, ipsm::offset_allocator<double>>;
+	unsigned char                  test_buff2[1024];
+	void*                          p_mem2 = reinterpret_cast<void*>( test_buff2 );
+	ipsm::offset_malloc            malloc_obj2( p_mem2, 1024 );
+	ipsm::offset_allocator<double> allocator_obj2( malloc_obj2 );
+	TestElementType                src( allocator_obj2 );
 	src.emplace_back( 1.0 );
 
-	unsigned char                                                   test_buff[1024];
-	void*                                                           p_mem = reinterpret_cast<void*>( test_buff );
-	offset_malloc                                                   malloc_obj( p_mem, 1024 );
-	offset_allocator<TestElementType>                               allocator_obj( malloc_obj );
-	offset_list<TestElementType, offset_allocator<TestElementType>> sut( allocator_obj );
+	unsigned char                                                               test_buff[1024];
+	void*                                                                       p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_malloc                                                         malloc_obj( p_mem, 1024 );
+	ipsm::offset_allocator<TestElementType>                                     allocator_obj( malloc_obj );
+	ipsm::offset_list<TestElementType, ipsm::offset_allocator<TestElementType>> sut( allocator_obj );
 
 	// Act
 	sut.push_back( src );
@@ -2067,12 +2065,12 @@ TEST( OffsetList_Allocator, CanEmplaceToCopyingPushedInnerElement3 )
 TEST( OffsetList_Allocator, CanEmplaceToEmplacedInnerElement )
 {
 	// Arrange
-	using TestElementType = offset_list<double, offset_allocator<double>>;
-	unsigned char                                                   test_buff[1024];
-	void*                                                           p_mem = reinterpret_cast<void*>( test_buff );
-	offset_malloc                                                   malloc_obj( p_mem, 1024 );
-	offset_allocator<int>                                           allocator_obj( malloc_obj );
-	offset_list<TestElementType, offset_allocator<TestElementType>> sut( allocator_obj );
+	using TestElementType = ipsm::offset_list<double, ipsm::offset_allocator<double>>;
+	unsigned char                                                               test_buff[1024];
+	void*                                                                       p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_malloc                                                         malloc_obj( p_mem, 1024 );
+	ipsm::offset_allocator<int>                                                 allocator_obj( malloc_obj );
+	ipsm::offset_list<TestElementType, ipsm::offset_allocator<TestElementType>> sut( allocator_obj );
 	sut.emplace_back();
 	auto it = sut.begin();
 

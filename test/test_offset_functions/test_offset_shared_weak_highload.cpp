@@ -20,8 +20,6 @@
 
 #include "test_ipsm_common.hpp"
 
-using namespace ipsm;
-
 struct DerivedArrowOpTest2 : public ArrowOpTest {
 	std::atomic<int> at_z_;
 };
@@ -32,7 +30,7 @@ TEST( OffsetSharedWeakHighLoad, CanDoMultConstruct )
 	constexpr unsigned int max_threads = 20;
 	std::atomic<bool>      loop_flag( true );
 
-	offset_shared_ptr<DerivedArrowOpTest2> sp_sut = make_offset_shared<DerivedArrowOpTest2>();
+	ipsm::offset_shared_ptr<DerivedArrowOpTest2> sp_sut = ipsm::make_offset_shared<DerivedArrowOpTest2>();
 
 	// Act
 	std::array<std::thread, max_threads>    ta;
@@ -42,7 +40,7 @@ TEST( OffsetSharedWeakHighLoad, CanDoMultConstruct )
 			[&sp_sut, &loop_flag]( std::uintptr_t* p_loop_count ) {
 				*p_loop_count = 0;
 				while ( loop_flag.load() ) {
-					offset_shared_ptr<DerivedArrowOpTest2> sp_tx( sp_sut );
+					ipsm::offset_shared_ptr<DerivedArrowOpTest2> sp_tx( sp_sut );
 					sp_tx->at_z_++;
 					( *p_loop_count )++;
 				}
@@ -72,9 +70,9 @@ TEST( OffsetSharedWeakHighLoad, CanDoMultConstruct2 )
 	constexpr unsigned int max_threads = 20;
 	std::atomic<bool>      loop_flag( true );
 
-	offset_shared_ptr<DerivedArrowOpTest2> sp_sut = make_offset_shared<DerivedArrowOpTest2>();
+	ipsm::offset_shared_ptr<DerivedArrowOpTest2> sp_sut = ipsm::make_offset_shared<DerivedArrowOpTest2>();
 	EXPECT_EQ( sp_sut.use_count(), 1 );
-	offset_weak_ptr<DerivedArrowOpTest2> wp_sut( sp_sut );
+	ipsm::offset_weak_ptr<DerivedArrowOpTest2> wp_sut( sp_sut );
 	EXPECT_EQ( wp_sut.use_count(), 1 );
 
 	// Act
@@ -85,7 +83,7 @@ TEST( OffsetSharedWeakHighLoad, CanDoMultConstruct2 )
 			[wp_sut, &loop_flag]( std::uintptr_t* p_loop_count ) {
 				*p_loop_count = 0;
 				while ( loop_flag.load() ) {
-					offset_shared_ptr<DerivedArrowOpTest2> sp_tx( wp_sut );
+					ipsm::offset_shared_ptr<DerivedArrowOpTest2> sp_tx( wp_sut );
 					sp_tx->at_z_++;
 					( *p_loop_count )++;
 				}

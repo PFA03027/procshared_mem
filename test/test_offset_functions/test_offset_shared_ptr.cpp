@@ -18,14 +18,12 @@
 
 #include "test_ipsm_common.hpp"
 
-using namespace ipsm;
-
 TEST( TestOffsetSharedPtr, CanDoDefaultConstruct )
 {
 	// Arrange
 
 	// Act
-	offset_shared_ptr<ArrowOpTest> sp_sut;
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut;
 
 	// Assert
 	EXPECT_EQ( sp_sut.get(), nullptr );
@@ -37,7 +35,7 @@ TEST( TestOffsetSharedPtr, CanDoDefaultConstruct )
 TEST( TestOffsetSharedPtr, CanDoDefaultConstruct_Then_Reset )
 {
 	// Arrange
-	offset_shared_ptr<ArrowOpTest> sp_sut;
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut;
 
 	// Act
 	sp_sut.reset();
@@ -55,7 +53,7 @@ TEST( TestOffsetSharedPtr, CanDoConstructWithTPtr )
 	ArrowOpTest* p = new ArrowOpTest;
 
 	// Act
-	offset_shared_ptr<ArrowOpTest> sp_sut( p );
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut( p );
 
 	// Assert
 	EXPECT_EQ( sp_sut.get(), p );
@@ -67,8 +65,8 @@ TEST( TestOffsetSharedPtr, CanDoConstructWithTPtr )
 TEST( TestOffsetSharedPtr, CanDoConstructWithTPtr_Then_Reset1 )
 {
 	// Arrange
-	ArrowOpTest*                   p = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_sut( p );
+	ArrowOpTest*                         p = new ArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut( p );
 
 	// Act
 	sp_sut.reset();
@@ -83,9 +81,9 @@ TEST( TestOffsetSharedPtr, CanDoConstructWithTPtr_Then_Reset1 )
 TEST( TestOffsetSharedPtr, CanDoConstructWithTPtr_Then_Reset2_1 )
 {
 	// Arrange
-	ArrowOpTest*                   p1 = new ArrowOpTest;
-	ArrowOpTest*                   p2 = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_sut( p1 );
+	ArrowOpTest*                         p1 = new ArrowOpTest;
+	ArrowOpTest*                         p2 = new ArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut( p1 );
 
 	// Act
 	sp_sut.reset( p2 );
@@ -100,9 +98,9 @@ TEST( TestOffsetSharedPtr, CanDoConstructWithTPtr_Then_Reset2_1 )
 TEST( TestOffsetSharedPtr, CanDoConstructWithTPtr_Then_Reset2_2 )
 {
 	// Arrange
-	ArrowOpTest*                   p1 = new ArrowOpTest;
-	ArrowOpTest*                   p2 = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_sut( p1 );
+	ArrowOpTest*                         p1 = new ArrowOpTest;
+	ArrowOpTest*                         p2 = new ArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut( p1 );
 
 	// Act
 	sp_sut.reset( p2, std::default_delete<ArrowOpTest>() );
@@ -117,9 +115,9 @@ TEST( TestOffsetSharedPtr, CanDoConstructWithTPtr_Then_Reset2_2 )
 TEST( TestOffsetSharedPtr, CanDoConstructWithTPtr_Then_Reset2_3 )
 {
 	// Arrange
-	ArrowOpTest*                   p1 = new ArrowOpTest;
-	ArrowOpTest*                   p2 = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_sut( p1 );
+	ArrowOpTest*                         p1 = new ArrowOpTest;
+	ArrowOpTest*                         p2 = new ArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut( p1 );
 
 	// Act
 	sp_sut.reset( p2, std::default_delete<ArrowOpTest>(), std::allocator<ArrowOpTest>() );
@@ -134,9 +132,9 @@ TEST( TestOffsetSharedPtr, CanDoConstructWithTPtr_Then_Reset2_3 )
 TEST( TestOffsetSharedPtr, CanDoConstructWithTPtr_Then_Reset3_1 )
 {
 	// Arrange
-	ArrowOpTest*                   p1 = new ArrowOpTest;
-	DerivedArrowOpTest*            p2 = new DerivedArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_sut( p1 );
+	ArrowOpTest*                         p1 = new ArrowOpTest;
+	DerivedArrowOpTest*                  p2 = new DerivedArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut( p1 );
 
 	// Act
 	sp_sut.reset( p2 );
@@ -152,9 +150,9 @@ TEST( TestOffsetSharedPtr, CanDoConstructWithTPtr_Then_Reset3_1 )
 TEST( TestOffsetSharedPtr, CanDoConstructWithTPtr_Then_Reset3_2 )
 {
 	// Arrange
-	ArrowOpTest*                   p1 = new ArrowOpTest;
-	DerivedArrowOpTest*            p2 = new DerivedArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_sut( p1 );
+	ArrowOpTest*                         p1 = new ArrowOpTest;
+	DerivedArrowOpTest*                  p2 = new DerivedArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut( p1 );
 
 	// Act
 	sp_sut.reset( p2, std::default_delete<DerivedArrowOpTest>() );
@@ -170,9 +168,9 @@ TEST( TestOffsetSharedPtr, CanDoConstructWithTPtr_Then_Reset3_2 )
 TEST( TestOffsetSharedPtr, CanDoConstructWithTPtr_Then_Reset3_3 )
 {
 	// Arrange
-	ArrowOpTest*                   p1 = new ArrowOpTest;
-	DerivedArrowOpTest*            p2 = new DerivedArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_sut( p1 );
+	ArrowOpTest*                         p1 = new ArrowOpTest;
+	DerivedArrowOpTest*                  p2 = new DerivedArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut( p1 );
 
 	// Act
 	sp_sut.reset( p2, std::default_delete<DerivedArrowOpTest>(), std::allocator<DerivedArrowOpTest>() );
@@ -188,9 +186,9 @@ TEST( TestOffsetSharedPtr, CanDoConstructWithTPtr_Then_Reset3_3 )
 TEST( TestOffsetSharedPtr, CanDoSwap1 )
 {
 	// Arrange
-	ArrowOpTest*                   p = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_t1( p );
-	offset_shared_ptr<ArrowOpTest> sp_sut;
+	ArrowOpTest*                         p = new ArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_t1( p );
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut;
 
 	// Act
 	sp_sut.swap( sp_t1 );
@@ -205,10 +203,10 @@ TEST( TestOffsetSharedPtr, CanDoSwap1 )
 TEST( TestOffsetSharedPtr, CanDoSwap2 )
 {
 	// Arrange
-	ArrowOpTest*                   p1 = new ArrowOpTest;
-	ArrowOpTest*                   p2 = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
-	offset_shared_ptr<ArrowOpTest> sp_sut( p2 );
+	ArrowOpTest*                         p1 = new ArrowOpTest;
+	ArrowOpTest*                         p2 = new ArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut( p2 );
 
 	// Act
 	sp_sut.swap( sp_t1 );
@@ -226,7 +224,7 @@ TEST( TestOffsetSharedPtr, CanDoConstructWithTArrayPtrDeleter )
 	ArrowOpTest* p = new ArrowOpTest[10];
 
 	// Act
-	offset_shared_ptr<ArrowOpTest> sp_sut( p, std::default_delete<ArrowOpTest[]>() );
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut( p, std::default_delete<ArrowOpTest[]>() );
 
 	// Assert
 	EXPECT_EQ( sp_sut.get(), p );
@@ -239,7 +237,7 @@ TEST( TestOffsetSharedPtr, CanDoConstructWithTArrayPtrDeleterAlloc )
 	ArrowOpTest* p = new ArrowOpTest[10];
 
 	// Act
-	offset_shared_ptr<ArrowOpTest> sp_sut( p, std::default_delete<ArrowOpTest[]>(), std::allocator<ArrowOpTest>() );
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut( p, std::default_delete<ArrowOpTest[]>(), std::allocator<ArrowOpTest>() );
 
 	// Assert
 	EXPECT_EQ( sp_sut.get(), p );
@@ -249,8 +247,8 @@ TEST( TestOffsetSharedPtr, CanDoConstructWithTArrayPtrDeleterAlloc )
 TEST( TestOffsetSharedPtr, CanDoConstructWithTArrayPtrDeleter_Then_Reset )
 {
 	// Arrange
-	ArrowOpTest*                   p = new ArrowOpTest[10];
-	offset_shared_ptr<ArrowOpTest> sp_sut( p, std::default_delete<ArrowOpTest[]>() );
+	ArrowOpTest*                         p = new ArrowOpTest[10];
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut( p, std::default_delete<ArrowOpTest[]>() );
 
 	// Act
 	sp_sut.reset();
@@ -266,7 +264,7 @@ TEST( TestOffsetSharedPtr, CanDoOperator_Arrow )
 	ArrowOpTest* p = new ArrowOpTest;
 	p->x_          = 1;
 	p->y_          = 2;
-	offset_shared_ptr<ArrowOpTest> sp_sut( p );
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut( p );
 
 	// Act
 
@@ -281,7 +279,7 @@ TEST( TestOffsetSharedPtr, CanDoOperator_Ref )
 	ArrowOpTest* p = new ArrowOpTest;
 	p->x_          = 1;
 	p->y_          = 2;
-	offset_shared_ptr<ArrowOpTest> sp_sut( p );
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut( p );
 
 	// Act
 
@@ -298,7 +296,7 @@ TEST( TestOffsetSharedPtr, CanDoOperatorArray )
 	p[0].y_        = 2;
 	p[1].x_        = 3;
 	p[1].y_        = 4;
-	offset_shared_ptr<ArrowOpTest> sp_sut( p, std::default_delete<ArrowOpTest[]>() );
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut( p, std::default_delete<ArrowOpTest[]>() );
 
 	// Act
 
@@ -312,10 +310,10 @@ TEST( TestOffsetSharedPtr, CanDoOperatorArray )
 TEST( TestOffsetSharedPtr, CanDoOwnerBefore )
 {
 	// Arrange
-	ArrowOpTest*                          p1 = new ArrowOpTest;
-	DerivedArrowOpTest*                   p2 = new DerivedArrowOpTest;
-	offset_shared_ptr<ArrowOpTest>        sp_t1( p1 );
-	offset_shared_ptr<DerivedArrowOpTest> sp_sut( p2 );
+	ArrowOpTest*                                p1 = new ArrowOpTest;
+	DerivedArrowOpTest*                         p2 = new DerivedArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest>        sp_t1( p1 );
+	ipsm::offset_shared_ptr<DerivedArrowOpTest> sp_sut( p2 );
 
 	// Act
 
@@ -326,11 +324,11 @@ TEST( TestOffsetSharedPtr, CanDoOwnerBefore )
 TEST( TestOffsetSharedPtr, CanDoCopyConstruct )
 {
 	// Arrange
-	ArrowOpTest*                   p1 = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
+	ArrowOpTest*                         p1 = new ArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
 
 	// Act
-	offset_shared_ptr<ArrowOpTest> sp_sut( sp_t1 );
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut( sp_t1 );
 
 	// Assert
 	EXPECT_EQ( sp_t1.get(), p1 );
@@ -342,9 +340,9 @@ TEST( TestOffsetSharedPtr, CanDoCopyConstruct )
 TEST( TestOffsetSharedPtr, CanDoCopyConstruct_Then_Reset )
 {
 	// Arrange
-	ArrowOpTest*                   p1 = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
-	offset_shared_ptr<ArrowOpTest> sp_sut( sp_t1 );
+	ArrowOpTest*                         p1 = new ArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut( sp_t1 );
 	EXPECT_EQ( sp_t1.get(), p1 );
 	EXPECT_EQ( sp_t1.use_count(), 2 );
 	EXPECT_EQ( sp_sut.get(), p1 );
@@ -363,10 +361,10 @@ TEST( TestOffsetSharedPtr, CanDoCopyConstruct_Then_Reset )
 TEST( TestOffsetSharedPtr, CanDoCopyConstructByDerivedDefaultConstructed )
 {
 	// Arrange
-	offset_shared_ptr<DerivedArrowOpTest> sp_t1;
+	ipsm::offset_shared_ptr<DerivedArrowOpTest> sp_t1;
 
 	// Act
-	offset_shared_ptr<ArrowOpTest> sp_sut( sp_t1 );
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut( sp_t1 );
 
 	// Assert
 	EXPECT_EQ( sp_sut.get(), nullptr );
@@ -378,10 +376,10 @@ TEST( TestOffsetSharedPtr, CanDoCopyConstructByDerivedDefaultConstructed )
 TEST( TestOffsetSharedPtr, CanDoMoveConstructByDerivedDefaultConstructed )
 {
 	// Arrange
-	offset_shared_ptr<DerivedArrowOpTest> sp_t1;
+	ipsm::offset_shared_ptr<DerivedArrowOpTest> sp_t1;
 
 	// Act
-	offset_shared_ptr<ArrowOpTest> sp_sut( std::move( sp_t1 ) );
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut( std::move( sp_t1 ) );
 
 	// Assert
 	EXPECT_EQ( sp_sut.get(), nullptr );
@@ -393,11 +391,11 @@ TEST( TestOffsetSharedPtr, CanDoMoveConstructByDerivedDefaultConstructed )
 TEST( TestOffsetSharedPtr, CanDoCopyConstructedByConstructedWithDerivedTPtr )
 {
 	// Arrange
-	DerivedArrowOpTest*                   p = new DerivedArrowOpTest;
-	offset_shared_ptr<DerivedArrowOpTest> sp_t1( p );
+	DerivedArrowOpTest*                         p = new DerivedArrowOpTest;
+	ipsm::offset_shared_ptr<DerivedArrowOpTest> sp_t1( p );
 
 	// Act
-	offset_shared_ptr<ArrowOpTest> sp_sut( sp_t1 );
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut( sp_t1 );
 
 	// Assert
 	EXPECT_EQ( sp_sut.get(), p );
@@ -412,11 +410,11 @@ TEST( TestOffsetSharedPtr, CanDoCopyConstructedByConstructedWithDerivedTPtr )
 TEST( TestOffsetSharedPtr, CanDoMoveConstructedByConstructedWithDerivedTPtr )
 {
 	// Arrange
-	DerivedArrowOpTest*                   p = new DerivedArrowOpTest;
-	offset_shared_ptr<DerivedArrowOpTest> sp_t1( p );
+	DerivedArrowOpTest*                         p = new DerivedArrowOpTest;
+	ipsm::offset_shared_ptr<DerivedArrowOpTest> sp_t1( p );
 
 	// Act
-	offset_shared_ptr<ArrowOpTest> sp_sut( std::move( sp_t1 ) );
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut( std::move( sp_t1 ) );
 
 	// Assert
 	EXPECT_EQ( sp_sut.get(), p );
@@ -431,11 +429,11 @@ TEST( TestOffsetSharedPtr, CanDoMoveConstructedByConstructedWithDerivedTPtr )
 TEST( TestOffsetSharedPtr, CanDoMoveConstruct )
 {
 	// Arrange
-	ArrowOpTest*                   p1 = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
+	ArrowOpTest*                         p1 = new ArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
 
 	// Act
-	offset_shared_ptr<ArrowOpTest> sp_sut( std::move( sp_t1 ) );
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut( std::move( sp_t1 ) );
 
 	// Assert
 	EXPECT_EQ( sp_t1.get(), nullptr );   // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move)
@@ -447,9 +445,9 @@ TEST( TestOffsetSharedPtr, CanDoMoveConstruct )
 TEST( TestOffsetSharedPtr, CanDoCopyAssignmentFromNullToValid )
 {
 	// Arrange
-	ArrowOpTest*                   p1 = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
-	offset_shared_ptr<ArrowOpTest> sp_sut;
+	ArrowOpTest*                         p1 = new ArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut;
 
 	// Act
 	sp_sut = sp_t1;
@@ -464,10 +462,10 @@ TEST( TestOffsetSharedPtr, CanDoCopyAssignmentFromNullToValid )
 TEST( TestOffsetSharedPtr, CanDoCopyAssignmentFromValidToValid )
 {
 	// Arrange
-	ArrowOpTest*                   p1 = new ArrowOpTest;
-	ArrowOpTest*                   p2 = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
-	offset_shared_ptr<ArrowOpTest> sp_sut( p2 );
+	ArrowOpTest*                         p1 = new ArrowOpTest;
+	ArrowOpTest*                         p2 = new ArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut( p2 );
 
 	// Act
 	sp_sut = sp_t1;
@@ -482,9 +480,9 @@ TEST( TestOffsetSharedPtr, CanDoCopyAssignmentFromValidToValid )
 TEST( TestOffsetSharedPtr, CanDoMoveAssignmentFromNullToValid )
 {
 	// Arrange
-	ArrowOpTest*                   p1 = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
-	offset_shared_ptr<ArrowOpTest> sp_sut;
+	ArrowOpTest*                         p1 = new ArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut;
 
 	// Act
 	sp_sut = std::move( sp_t1 );
@@ -499,10 +497,10 @@ TEST( TestOffsetSharedPtr, CanDoMoveAssignmentFromNullToValid )
 TEST( TestOffsetSharedPtr, CanDoMoveAssignmentFromValidToValid )
 {
 	// Arrange
-	ArrowOpTest*                   p1 = new ArrowOpTest;
-	ArrowOpTest*                   p2 = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
-	offset_shared_ptr<ArrowOpTest> sp_sut( p2 );
+	ArrowOpTest*                         p1 = new ArrowOpTest;
+	ArrowOpTest*                         p2 = new ArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut( p2 );
 
 	// Act
 	sp_sut = std::move( sp_t1 );
@@ -517,12 +515,12 @@ TEST( TestOffsetSharedPtr, CanDoMoveAssignmentFromValidToValid )
 TEST( TestOffsetSharedPtr, CanDoConstructFromWeakPtr1 )
 {
 	// Arrange
-	ArrowOpTest*                   p1 = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
-	offset_weak_ptr<ArrowOpTest>   wp_t1( sp_t1 );
+	ArrowOpTest*                         p1 = new ArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
+	ipsm::offset_weak_ptr<ArrowOpTest>   wp_t1( sp_t1 );
 
 	// Act
-	offset_shared_ptr<ArrowOpTest> sp_sut( wp_t1 );
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut( wp_t1 );
 
 	// Assert
 	EXPECT_EQ( sp_t1.get(), p1 );
@@ -534,24 +532,24 @@ TEST( TestOffsetSharedPtr, CanDoConstructFromWeakPtr1 )
 TEST( TestOffsetSharedPtr, CanDoConstructFromExpiredWeakPtr1 )
 {
 	// Arrange
-	offset_weak_ptr<ArrowOpTest> wp_t1;
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_t1;
 
 	// Act
 	// Assert
-	EXPECT_THROW( offset_shared_ptr<ArrowOpTest> sp_sut( wp_t1 ), std::bad_weak_ptr );
+	EXPECT_THROW( ipsm::offset_shared_ptr<ArrowOpTest> sp_sut( wp_t1 ), std::bad_weak_ptr );
 }
 
 TEST( TestOffsetSharedPtr, CanDoConstructFromExpiredWeakPtr2 )
 {
 	// Arrange
-	ArrowOpTest*                   p1 = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
-	offset_weak_ptr<ArrowOpTest>   wp_t1( sp_t1 );
+	ArrowOpTest*                         p1 = new ArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
+	ipsm::offset_weak_ptr<ArrowOpTest>   wp_t1( sp_t1 );
 	sp_t1.reset();
 
 	// Act
 	// Assert
-	EXPECT_THROW( offset_shared_ptr<ArrowOpTest> sp_sut( wp_t1 ), std::bad_weak_ptr );
+	EXPECT_THROW( ipsm::offset_shared_ptr<ArrowOpTest> sp_sut( wp_t1 ), std::bad_weak_ptr );
 }
 
 TEST( TestOffsetSharedPtr, CanDoMakeOffsetShared )
@@ -560,7 +558,7 @@ TEST( TestOffsetSharedPtr, CanDoMakeOffsetShared )
 	ArrowOpTest t { 1, 2 };
 
 	// Act
-	offset_shared_ptr<ArrowOpTest> sp_sut = make_offset_shared<ArrowOpTest>( t );
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut = ipsm::make_offset_shared<ArrowOpTest>( t );
 
 	// Assert
 	EXPECT_EQ( sp_sut.use_count(), 1 );

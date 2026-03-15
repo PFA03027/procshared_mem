@@ -18,14 +18,12 @@
 
 #include "test_ipsm_common.hpp"
 
-using namespace ipsm;
-
 TEST( TestOffsetWeakPtr, CanDoDefaultConstruct )
 {
 	// Arrange
 
 	// Act
-	offset_weak_ptr<ArrowOpTest> wp_sut;
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_sut;
 
 	// Assert
 	EXPECT_EQ( wp_sut.use_count(), 0 );
@@ -35,10 +33,10 @@ TEST( TestOffsetWeakPtr, CanDoDefaultConstruct )
 TEST( TestOffsetWeakPtr, CanDoCopyConstructWithNull1 )
 {
 	// Arrange
-	offset_weak_ptr<ArrowOpTest> wp_t1;
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_t1;
 
 	// Act
-	offset_weak_ptr<ArrowOpTest> wp_sut( wp_t1 );
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_sut( wp_t1 );
 
 	// Assert
 	EXPECT_EQ( wp_sut.use_count(), 0 );
@@ -48,10 +46,10 @@ TEST( TestOffsetWeakPtr, CanDoCopyConstructWithNull1 )
 TEST( TestOffsetWeakPtr, CanDoCopyConstructWithNull2 )
 {
 	// Arrange
-	offset_weak_ptr<DerivedArrowOpTest> wp_t1;
+	ipsm::offset_weak_ptr<DerivedArrowOpTest> wp_t1;
 
 	// Act
-	offset_weak_ptr<ArrowOpTest> wp_sut( wp_t1 );
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_sut( wp_t1 );
 
 	// Assert
 	EXPECT_EQ( wp_sut.use_count(), 0 );
@@ -62,10 +60,10 @@ TEST( TestOffsetWeakPtr, CanDoTransConstructFromShared )
 {
 	// Arrange
 	ArrowOpTest*                   p = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_t1( p );
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_t1( p );
 
 	// Act
-	offset_weak_ptr<ArrowOpTest> wp_sut( sp_t1 );
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_sut( sp_t1 );
 
 	// Assert
 	EXPECT_EQ( wp_sut.use_count(), 1 );
@@ -75,12 +73,12 @@ TEST( TestOffsetWeakPtr, CanDoTransConstructFromShared )
 TEST( TestOffsetWeakPtr, CanDoCopyConstructWithValidResource1 )
 {
 	// Arrange
-	ArrowOpTest*                   p = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_t1( p );
-	offset_weak_ptr<ArrowOpTest>   wp_t1( sp_t1 );
+	ArrowOpTest*                       p = new ArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest>     sp_t1( p );
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_t1( sp_t1 );
 
 	// Act
-	offset_weak_ptr<ArrowOpTest> wp_sut( wp_t1 );
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_sut( wp_t1 );
 
 	// Assert
 	EXPECT_EQ( wp_sut.use_count(), 1 );
@@ -94,11 +92,11 @@ TEST( TestOffsetWeakPtr, CanDoCopyConstructWithValidResource2 )
 {
 	// Arrange
 	DerivedArrowOpTest*                   p = new DerivedArrowOpTest;
-	offset_shared_ptr<DerivedArrowOpTest> sp_t1( p );
-	offset_weak_ptr<ArrowOpTest>          wp_t1( sp_t1 );
+	ipsm::offset_shared_ptr<DerivedArrowOpTest> sp_t1( p );
+	ipsm::offset_weak_ptr<ArrowOpTest>    wp_t1( sp_t1 );
 
 	// Act
-	offset_weak_ptr<ArrowOpTest> wp_sut( wp_t1 );
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_sut( wp_t1 );
 
 	// Assert
 	EXPECT_EQ( wp_sut.use_count(), 1 );
@@ -111,12 +109,12 @@ TEST( TestOffsetWeakPtr, CanDoCopyConstructWithValidResource2 )
 TEST( TestOffsetWeakPtr, CanDoCopyConstructWithValidResource3 )
 {
 	// Arrange
-	DerivedArrowOpTest*                   p = new DerivedArrowOpTest;
-	offset_shared_ptr<DerivedArrowOpTest> sp_t1( p );
-	offset_weak_ptr<DerivedArrowOpTest>   wp_t1( sp_t1 );
+	DerivedArrowOpTest*                       p = new DerivedArrowOpTest;
+	ipsm::offset_shared_ptr<DerivedArrowOpTest>     sp_t1( p );
+	ipsm::offset_weak_ptr<DerivedArrowOpTest> wp_t1( sp_t1 );
 
 	// Act
-	offset_weak_ptr<ArrowOpTest> wp_sut( wp_t1 );
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_sut( wp_t1 );
 
 	// Assert
 	EXPECT_EQ( wp_sut.use_count(), 1 );
@@ -129,10 +127,10 @@ TEST( TestOffsetWeakPtr, CanDoCopyConstructWithValidResource3 )
 TEST( TestOffsetWeakPtr, CanDoCopyConstructWithValidResource_Then_Reset1 )
 {
 	// Arrange
-	ArrowOpTest*                   p = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_t1( p );
-	offset_weak_ptr<ArrowOpTest>   wp_t1( sp_t1 );
-	offset_weak_ptr<ArrowOpTest>   wp_sut( wp_t1 );
+	ArrowOpTest*                       p = new ArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest>     sp_t1( p );
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_t1( sp_t1 );
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_sut( wp_t1 );
 	EXPECT_EQ( wp_sut.use_count(), 1 );
 	EXPECT_FALSE( wp_sut.expired() );
 
@@ -149,10 +147,10 @@ TEST( TestOffsetWeakPtr, CanDoCopyConstructWithValidResource_Then_Reset1 )
 TEST( TestOffsetWeakPtr, CanDoCopyConstructWithValidResource_Then_Reset2 )
 {
 	// Arrange
-	ArrowOpTest*                   p = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_t1( p );
-	offset_weak_ptr<ArrowOpTest>   wp_t1( sp_t1 );
-	offset_weak_ptr<ArrowOpTest>   wp_sut( wp_t1 );
+	ArrowOpTest*                       p = new ArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest>     sp_t1( p );
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_t1( sp_t1 );
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_sut( wp_t1 );
 	EXPECT_EQ( wp_sut.use_count(), 1 );
 	EXPECT_FALSE( wp_sut.expired() );
 
@@ -169,12 +167,12 @@ TEST( TestOffsetWeakPtr, CanDoCopyConstructWithValidResource_Then_Reset2 )
 TEST( TestOffsetWeakPtr, CanDoMoveConstructWithValidResource1 )
 {
 	// Arrange
-	ArrowOpTest*                   p = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_t1( p );
-	offset_weak_ptr<ArrowOpTest>   wp_t1( sp_t1 );
+	ArrowOpTest*                       p = new ArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest>     sp_t1( p );
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_t1( sp_t1 );
 
 	// Act
-	offset_weak_ptr<ArrowOpTest> wp_sut( std::move( wp_t1 ) );
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_sut( std::move( wp_t1 ) );
 
 	// Assert
 	EXPECT_EQ( wp_sut.use_count(), 1 );
@@ -188,11 +186,11 @@ TEST( TestOffsetWeakPtr, CanDoMoveConstructWithValidResource2 )
 {
 	// Arrange
 	DerivedArrowOpTest*                   p = new DerivedArrowOpTest;
-	offset_shared_ptr<DerivedArrowOpTest> sp_t1( p );
-	offset_weak_ptr<ArrowOpTest>          wp_t1( sp_t1 );
+	ipsm::offset_shared_ptr<DerivedArrowOpTest> sp_t1( p );
+	ipsm::offset_weak_ptr<ArrowOpTest>    wp_t1( sp_t1 );
 
 	// Act
-	offset_weak_ptr<ArrowOpTest> wp_sut( std::move( wp_t1 ) );
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_sut( std::move( wp_t1 ) );
 
 	// Assert
 	EXPECT_EQ( wp_sut.use_count(), 1 );
@@ -205,12 +203,12 @@ TEST( TestOffsetWeakPtr, CanDoMoveConstructWithValidResource2 )
 TEST( TestOffsetWeakPtr, CanDoMoveConstructWithValidResource3 )
 {
 	// Arrange
-	DerivedArrowOpTest*                   p = new DerivedArrowOpTest;
-	offset_shared_ptr<DerivedArrowOpTest> sp_t1( p );
-	offset_weak_ptr<DerivedArrowOpTest>   wp_t1( sp_t1 );
+	DerivedArrowOpTest*                       p = new DerivedArrowOpTest;
+	ipsm::offset_shared_ptr<DerivedArrowOpTest>     sp_t1( p );
+	ipsm::offset_weak_ptr<DerivedArrowOpTest> wp_t1( sp_t1 );
 
 	// Act
-	offset_weak_ptr<ArrowOpTest> wp_sut( std::move( wp_t1 ) );
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_sut( std::move( wp_t1 ) );
 
 	// Assert
 	EXPECT_EQ( wp_sut.use_count(), 1 );
@@ -223,10 +221,10 @@ TEST( TestOffsetWeakPtr, CanDoMoveConstructWithValidResource3 )
 TEST( TestOffsetWeakPtr, CanDoCopyAssignmentWithValidResource1 )
 {
 	// Arrange
-	ArrowOpTest*                   p = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_t1( p );
-	offset_weak_ptr<ArrowOpTest>   wp_t1( sp_t1 );
-	offset_weak_ptr<ArrowOpTest>   wp_sut;
+	ArrowOpTest*                       p = new ArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest>     sp_t1( p );
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_t1( sp_t1 );
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_sut;
 
 	// Act
 	wp_sut = wp_t1;
@@ -243,9 +241,9 @@ TEST( TestOffsetWeakPtr, CanDoCopyAssignmentWithValidResource2 )
 {
 	// Arrange
 	DerivedArrowOpTest*                   p = new DerivedArrowOpTest;
-	offset_shared_ptr<DerivedArrowOpTest> sp_t1( p );
-	offset_weak_ptr<ArrowOpTest>          wp_t1( sp_t1 );
-	offset_weak_ptr<ArrowOpTest>          wp_sut;
+	ipsm::offset_shared_ptr<DerivedArrowOpTest> sp_t1( p );
+	ipsm::offset_weak_ptr<ArrowOpTest>    wp_t1( sp_t1 );
+	ipsm::offset_weak_ptr<ArrowOpTest>    wp_sut;
 
 	// Act
 	wp_sut = wp_t1;
@@ -261,10 +259,10 @@ TEST( TestOffsetWeakPtr, CanDoCopyAssignmentWithValidResource2 )
 TEST( TestOffsetWeakPtr, CanDoCopyAssignmentWithValidResource3 )
 {
 	// Arrange
-	DerivedArrowOpTest*                   p = new DerivedArrowOpTest;
-	offset_shared_ptr<DerivedArrowOpTest> sp_t1( p );
-	offset_weak_ptr<DerivedArrowOpTest>   wp_t1( sp_t1 );
-	offset_weak_ptr<ArrowOpTest>          wp_sut;
+	DerivedArrowOpTest*                       p = new DerivedArrowOpTest;
+	ipsm::offset_shared_ptr<DerivedArrowOpTest>     sp_t1( p );
+	ipsm::offset_weak_ptr<DerivedArrowOpTest> wp_t1( sp_t1 );
+	ipsm::offset_weak_ptr<ArrowOpTest>        wp_sut;
 
 	// Act
 	wp_sut = wp_t1;
@@ -280,12 +278,12 @@ TEST( TestOffsetWeakPtr, CanDoCopyAssignmentWithValidResource3 )
 TEST( TestOffsetWeakPtr, CanDoCopyAssignmentWithValidToValidResource1 )
 {
 	// Arrange
-	ArrowOpTest*                   p1 = new ArrowOpTest;
-	ArrowOpTest*                   p2 = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
-	offset_shared_ptr<ArrowOpTest> sp_t2( p2 );
-	offset_weak_ptr<ArrowOpTest>   wp_t1( sp_t1 );
-	offset_weak_ptr<ArrowOpTest>   wp_sut( sp_t2 );
+	ArrowOpTest*                       p1 = new ArrowOpTest;
+	ArrowOpTest*                       p2 = new ArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest>     sp_t1( p1 );
+	ipsm::offset_shared_ptr<ArrowOpTest>     sp_t2( p2 );
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_t1( sp_t1 );
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_sut( sp_t2 );
 
 	// Act
 	wp_sut = wp_t1;
@@ -303,10 +301,10 @@ TEST( TestOffsetWeakPtr, CanDoCopyAssignmentWithValidToValidResource2 )
 	// Arrange
 	DerivedArrowOpTest*                   p1 = new DerivedArrowOpTest;
 	ArrowOpTest*                          p2 = new ArrowOpTest;
-	offset_shared_ptr<DerivedArrowOpTest> sp_t1( p1 );
-	offset_shared_ptr<ArrowOpTest>        sp_t2( p2 );
-	offset_weak_ptr<ArrowOpTest>          wp_t1( sp_t1 );
-	offset_weak_ptr<ArrowOpTest>          wp_sut( sp_t2 );
+	ipsm::offset_shared_ptr<DerivedArrowOpTest> sp_t1( p1 );
+	ipsm::offset_shared_ptr<ArrowOpTest>        sp_t2( p2 );
+	ipsm::offset_weak_ptr<ArrowOpTest>    wp_t1( sp_t1 );
+	ipsm::offset_weak_ptr<ArrowOpTest>    wp_sut( sp_t2 );
 
 	// Act
 	wp_sut = wp_t1;
@@ -322,12 +320,12 @@ TEST( TestOffsetWeakPtr, CanDoCopyAssignmentWithValidToValidResource2 )
 TEST( TestOffsetWeakPtr, CanDoCopyAssignmentWithValidToValidResource3 )
 {
 	// Arrange
-	DerivedArrowOpTest*                   p1 = new DerivedArrowOpTest;
-	ArrowOpTest*                          p2 = new ArrowOpTest;
-	offset_shared_ptr<DerivedArrowOpTest> sp_t1( p1 );
-	offset_shared_ptr<ArrowOpTest>        sp_t2( p2 );
-	offset_weak_ptr<DerivedArrowOpTest>   wp_t1( sp_t1 );
-	offset_weak_ptr<ArrowOpTest>          wp_sut( sp_t2 );
+	DerivedArrowOpTest*                       p1 = new DerivedArrowOpTest;
+	ArrowOpTest*                              p2 = new ArrowOpTest;
+	ipsm::offset_shared_ptr<DerivedArrowOpTest>     sp_t1( p1 );
+	ipsm::offset_shared_ptr<ArrowOpTest>            sp_t2( p2 );
+	ipsm::offset_weak_ptr<DerivedArrowOpTest> wp_t1( sp_t1 );
+	ipsm::offset_weak_ptr<ArrowOpTest>        wp_sut( sp_t2 );
 
 	// Act
 	wp_sut = wp_t1;
@@ -343,9 +341,9 @@ TEST( TestOffsetWeakPtr, CanDoCopyAssignmentWithValidToValidResource3 )
 TEST( TestOffsetWeakPtr, CanDoCopyAssignmentFromSharedWithValidResource1 )
 {
 	// Arrange
-	ArrowOpTest*                   p = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_t1( p );
-	offset_weak_ptr<ArrowOpTest>   wp_sut;
+	ArrowOpTest*                       p = new ArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest>     sp_t1( p );
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_sut;
 
 	// Act
 	wp_sut = sp_t1;
@@ -359,8 +357,8 @@ TEST( TestOffsetWeakPtr, CanDoCopyAssignmentFromSharedWithValidResource2 )
 {
 	// Arrange
 	DerivedArrowOpTest*                   p = new DerivedArrowOpTest;
-	offset_shared_ptr<DerivedArrowOpTest> sp_t1( p );
-	offset_weak_ptr<ArrowOpTest>          wp_sut;
+	ipsm::offset_shared_ptr<DerivedArrowOpTest> sp_t1( p );
+	ipsm::offset_weak_ptr<ArrowOpTest>    wp_sut;
 
 	// Act
 	wp_sut = sp_t1;
@@ -373,11 +371,11 @@ TEST( TestOffsetWeakPtr, CanDoCopyAssignmentFromSharedWithValidResource2 )
 TEST( TestOffsetWeakPtr, CanDoCopyAssignmentFromSharedWithValidToValidResource1 )
 {
 	// Arrange
-	ArrowOpTest*                   p1 = new ArrowOpTest;
-	ArrowOpTest*                   p2 = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
-	offset_shared_ptr<ArrowOpTest> sp_t2( p2 );
-	offset_weak_ptr<ArrowOpTest>   wp_sut( sp_t2 );
+	ArrowOpTest*                       p1 = new ArrowOpTest;
+	ArrowOpTest*                       p2 = new ArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest>     sp_t1( p1 );
+	ipsm::offset_shared_ptr<ArrowOpTest>     sp_t2( p2 );
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_sut( sp_t2 );
 
 	// Act
 	wp_sut = sp_t1;
@@ -393,9 +391,9 @@ TEST( TestOffsetWeakPtr, CanDoCopyAssignmentFromSharedWithValidToValidResource2 
 	// Arrange
 	DerivedArrowOpTest*                   p1 = new DerivedArrowOpTest;
 	ArrowOpTest*                          p2 = new ArrowOpTest;
-	offset_shared_ptr<DerivedArrowOpTest> sp_t1( p1 );
-	offset_shared_ptr<ArrowOpTest>        sp_t2( p2 );
-	offset_weak_ptr<ArrowOpTest>          wp_sut( sp_t2 );
+	ipsm::offset_shared_ptr<DerivedArrowOpTest> sp_t1( p1 );
+	ipsm::offset_shared_ptr<ArrowOpTest>        sp_t2( p2 );
+	ipsm::offset_weak_ptr<ArrowOpTest>    wp_sut( sp_t2 );
 
 	// Act
 	wp_sut = sp_t1;
@@ -409,10 +407,10 @@ TEST( TestOffsetWeakPtr, CanDoCopyAssignmentFromSharedWithValidToValidResource2 
 TEST( TestOffsetWeakPtr, CanDoMoveAssignmentWithValidResource1 )
 {
 	// Arrange
-	ArrowOpTest*                   p = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_t1( p );
-	offset_weak_ptr<ArrowOpTest>   wp_t1( sp_t1 );
-	offset_weak_ptr<ArrowOpTest>   wp_sut;
+	ArrowOpTest*                       p = new ArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest>     sp_t1( p );
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_t1( sp_t1 );
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_sut;
 
 	// Act
 	wp_sut = std::move( wp_t1 );
@@ -429,9 +427,9 @@ TEST( TestOffsetWeakPtr, CanDoMoveAssignmentWithValidResource2 )
 {
 	// Arrange
 	DerivedArrowOpTest*                   p = new DerivedArrowOpTest;
-	offset_shared_ptr<DerivedArrowOpTest> sp_t1( p );
-	offset_weak_ptr<ArrowOpTest>          wp_t1( sp_t1 );
-	offset_weak_ptr<ArrowOpTest>          wp_sut;
+	ipsm::offset_shared_ptr<DerivedArrowOpTest> sp_t1( p );
+	ipsm::offset_weak_ptr<ArrowOpTest>    wp_t1( sp_t1 );
+	ipsm::offset_weak_ptr<ArrowOpTest>    wp_sut;
 
 	// Act
 	wp_sut = std::move( wp_t1 );
@@ -447,10 +445,10 @@ TEST( TestOffsetWeakPtr, CanDoMoveAssignmentWithValidResource2 )
 TEST( TestOffsetWeakPtr, CanDoMoveAssignmentWithValidResource3 )
 {
 	// Arrange
-	DerivedArrowOpTest*                   p = new DerivedArrowOpTest;
-	offset_shared_ptr<DerivedArrowOpTest> sp_t1( p );
-	offset_weak_ptr<DerivedArrowOpTest>   wp_t1( sp_t1 );
-	offset_weak_ptr<ArrowOpTest>          wp_sut;
+	DerivedArrowOpTest*                       p = new DerivedArrowOpTest;
+	ipsm::offset_shared_ptr<DerivedArrowOpTest>     sp_t1( p );
+	ipsm::offset_weak_ptr<DerivedArrowOpTest> wp_t1( sp_t1 );
+	ipsm::offset_weak_ptr<ArrowOpTest>        wp_sut;
 
 	// Act
 	wp_sut = std::move( wp_t1 );
@@ -466,12 +464,12 @@ TEST( TestOffsetWeakPtr, CanDoMoveAssignmentWithValidResource3 )
 TEST( TestOffsetWeakPtr, CanDoMoveAssignmentWithValidToValidResource1 )
 {
 	// Arrange
-	ArrowOpTest*                   p1 = new ArrowOpTest;
-	ArrowOpTest*                   p2 = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
-	offset_shared_ptr<ArrowOpTest> sp_t2( p2 );
-	offset_weak_ptr<ArrowOpTest>   wp_t1( sp_t1 );
-	offset_weak_ptr<ArrowOpTest>   wp_sut( sp_t2 );
+	ArrowOpTest*                       p1 = new ArrowOpTest;
+	ArrowOpTest*                       p2 = new ArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest>     sp_t1( p1 );
+	ipsm::offset_shared_ptr<ArrowOpTest>     sp_t2( p2 );
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_t1( sp_t1 );
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_sut( sp_t2 );
 
 	// Act
 	wp_sut = std::move( wp_t1 );
@@ -489,10 +487,10 @@ TEST( TestOffsetWeakPtr, CanDoMoveAssignmentWithValidToValidResource2 )
 	// Arrange
 	DerivedArrowOpTest*                   p1 = new DerivedArrowOpTest;
 	ArrowOpTest*                          p2 = new ArrowOpTest;
-	offset_shared_ptr<DerivedArrowOpTest> sp_t1( p1 );
-	offset_shared_ptr<ArrowOpTest>        sp_t2( p2 );
-	offset_weak_ptr<ArrowOpTest>          wp_t1( sp_t1 );
-	offset_weak_ptr<ArrowOpTest>          wp_sut( sp_t2 );
+	ipsm::offset_shared_ptr<DerivedArrowOpTest> sp_t1( p1 );
+	ipsm::offset_shared_ptr<ArrowOpTest>        sp_t2( p2 );
+	ipsm::offset_weak_ptr<ArrowOpTest>    wp_t1( sp_t1 );
+	ipsm::offset_weak_ptr<ArrowOpTest>    wp_sut( sp_t2 );
 
 	// Act
 	wp_sut = std::move( wp_t1 );
@@ -508,12 +506,12 @@ TEST( TestOffsetWeakPtr, CanDoMoveAssignmentWithValidToValidResource2 )
 TEST( TestOffsetWeakPtr, CanDoMoveAssignmentWithValidToValidResource3 )
 {
 	// Arrange
-	DerivedArrowOpTest*                   p1 = new DerivedArrowOpTest;
-	ArrowOpTest*                          p2 = new ArrowOpTest;
-	offset_shared_ptr<DerivedArrowOpTest> sp_t1( p1 );
-	offset_shared_ptr<ArrowOpTest>        sp_t2( p2 );
-	offset_weak_ptr<DerivedArrowOpTest>   wp_t1( sp_t1 );
-	offset_weak_ptr<ArrowOpTest>          wp_sut( sp_t2 );
+	DerivedArrowOpTest*                       p1 = new DerivedArrowOpTest;
+	ArrowOpTest*                              p2 = new ArrowOpTest;
+	ipsm::offset_shared_ptr<DerivedArrowOpTest>     sp_t1( p1 );
+	ipsm::offset_shared_ptr<ArrowOpTest>            sp_t2( p2 );
+	ipsm::offset_weak_ptr<DerivedArrowOpTest> wp_t1( sp_t1 );
+	ipsm::offset_weak_ptr<ArrowOpTest>        wp_sut( sp_t2 );
 
 	// Act
 	wp_sut = std::move( wp_t1 );
@@ -531,8 +529,8 @@ TEST( TestOffsetWeakPtr, CanDoMoveAssignmentFromSharedWithValidResource1 )
 {
 	// Arrange
 	ArrowOpTest*                   p = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_t1( p );
-	offset_weak_ptr<ArrowOpTest>   wp_sut;
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_t1( p );
+	ipsm::offset_weak_ptr<ArrowOpTest>   wp_sut;
 
 	// Act
 	wp_sut = std::move( sp_t1 );
@@ -546,8 +544,8 @@ TEST( TestOffsetWeakPtr, CanDoMoveAssignmentFromSharedWithValidResource2 )
 {
 	// Arrange
 	DerivedArrowOpTest*                   p = new DerivedArrowOpTest;
-	offset_shared_ptr<DerivedArrowOpTest> sp_t1( p );
-	offset_weak_ptr<ArrowOpTest>          wp_sut;
+	ipsm::offset_shared_ptr<DerivedArrowOpTest> sp_t1( p );
+	ipsm::offset_weak_ptr<ArrowOpTest>          wp_sut;
 
 	// Act
 	wp_sut = std::move( sp_t1 );
@@ -562,9 +560,9 @@ TEST( TestOffsetWeakPtr, CanDoMoveAssignmentFromSharedWithValidToValidResource1 
 	// Arrange
 	ArrowOpTest*                   p1 = new ArrowOpTest;
 	ArrowOpTest*                   p2 = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
-	offset_shared_ptr<ArrowOpTest> sp_t2( p2 );
-	offset_weak_ptr<ArrowOpTest>   wp_sut( sp_t2 );
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_t2( p2 );
+	ipsm::offset_weak_ptr<ArrowOpTest>   wp_sut( sp_t2 );
 
 	// Act
 	wp_sut = std::move( sp_t1 );
@@ -580,9 +578,9 @@ TEST( TestOffsetWeakPtr, CanDoMoveAssignmentFromSharedWithValidToValidResource2 
 	// Arrange
 	DerivedArrowOpTest*                   p1 = new DerivedArrowOpTest;
 	ArrowOpTest*                          p2 = new ArrowOpTest;
-	offset_shared_ptr<DerivedArrowOpTest> sp_t1( p1 );
-	offset_shared_ptr<ArrowOpTest>        sp_t2( p2 );
-	offset_weak_ptr<ArrowOpTest>          wp_sut( sp_t2 );
+	ipsm::offset_shared_ptr<DerivedArrowOpTest> sp_t1( p1 );
+	ipsm::offset_shared_ptr<ArrowOpTest>        sp_t2( p2 );
+	ipsm::offset_weak_ptr<ArrowOpTest>          wp_sut( sp_t2 );
 
 	// Act
 	wp_sut = std::move( sp_t1 );
@@ -597,10 +595,10 @@ TEST( TestOffsetWeakPtr, CanDoMoveAssignmentFromSharedWithValidToValidResource2 
 TEST( TestOffsetWeakPtr, CanDoDefaultConstruct_Then_Lock )
 {
 	// Arrange
-	offset_weak_ptr<ArrowOpTest> wp_sut;
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_sut;
 
 	// Act
-	offset_shared_ptr<ArrowOpTest> sp_ret = wp_sut.lock();
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_ret = wp_sut.lock();
 
 	// Assert
 	EXPECT_EQ( sp_ret.use_count(), 0 );
@@ -610,12 +608,12 @@ TEST( TestOffsetWeakPtr, CanDoDefaultConstruct_Then_Lock )
 TEST( TestOffsetWeakPtr, ValidWeakPtr_Then_Lock )
 {
 	// Arrange
-	ArrowOpTest*                   p1 = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
-	offset_weak_ptr<ArrowOpTest>   wp_sut( sp_t1 );
+	ArrowOpTest*                       p1 = new ArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest>     sp_t1( p1 );
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_sut( sp_t1 );
 
 	// Act
-	offset_shared_ptr<ArrowOpTest> sp_ret = wp_sut.lock();
+	ipsm::offset_shared_ptr<ArrowOpTest> sp_ret = wp_sut.lock();
 
 	// Assert
 	EXPECT_EQ( sp_ret.use_count(), 2 );
@@ -625,9 +623,9 @@ TEST( TestOffsetWeakPtr, ValidWeakPtr_Then_Lock )
 TEST( TestOffsetWeakPtr, ValidWeakPtr_Then_Reset1 )
 {
 	// Arrange
-	ArrowOpTest*                   p1 = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
-	offset_weak_ptr<ArrowOpTest>   wp_sut( sp_t1 );
+	ArrowOpTest*                       p1 = new ArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest>     sp_t1( p1 );
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_sut( sp_t1 );
 
 	// Act
 	wp_sut.reset();
@@ -640,9 +638,9 @@ TEST( TestOffsetWeakPtr, ValidWeakPtr_Then_Reset1 )
 TEST( TestOffsetWeakPtr, ValidWeakPtr_Then_Reset2 )
 {
 	// Arrange
-	ArrowOpTest*                   p1 = new ArrowOpTest;
-	offset_shared_ptr<ArrowOpTest> sp_t1( p1 );
-	offset_weak_ptr<ArrowOpTest>   wp_sut( sp_t1 );
+	ArrowOpTest*                       p1 = new ArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest>     sp_t1( p1 );
+	ipsm::offset_weak_ptr<ArrowOpTest> wp_sut( sp_t1 );
 
 	// Act
 	sp_t1.reset();
@@ -654,12 +652,12 @@ TEST( TestOffsetWeakPtr, ValidWeakPtr_Then_Reset2 )
 TEST( TestOffsetWeakPtr, CanDoOwnerBefore )
 {
 	// Arrange
-	ArrowOpTest*                          p1 = new ArrowOpTest;
-	DerivedArrowOpTest*                   p2 = new DerivedArrowOpTest;
-	offset_shared_ptr<ArrowOpTest>        sp_t1( p1 );
-	offset_shared_ptr<DerivedArrowOpTest> sp_sut( p2 );
-	offset_weak_ptr<ArrowOpTest>          wp_t1( sp_t1 );
-	offset_weak_ptr<DerivedArrowOpTest>   wp_sut( sp_sut );
+	ArrowOpTest*                              p1 = new ArrowOpTest;
+	DerivedArrowOpTest*                       p2 = new DerivedArrowOpTest;
+	ipsm::offset_shared_ptr<ArrowOpTest>            sp_t1( p1 );
+	ipsm::offset_shared_ptr<DerivedArrowOpTest>     sp_sut( p2 );
+	ipsm::offset_weak_ptr<ArrowOpTest>        wp_t1( sp_t1 );
+	ipsm::offset_weak_ptr<DerivedArrowOpTest> wp_sut( sp_sut );
 
 	// Act
 

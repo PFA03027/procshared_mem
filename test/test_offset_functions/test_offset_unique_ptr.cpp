@@ -19,8 +19,6 @@
 
 #include "test_ipsm_common.hpp"
 
-using namespace ipsm;
-
 template <typename T>
 struct test_no_deleter {
 	test_no_deleter( int mark )
@@ -80,7 +78,7 @@ TEST( OffsetBasedUniquePtr, CanDefaultConstruct )
 	// Arrange
 
 	// Act
-	offset_unique_ptr<int> oup_sut;
+	ipsm::offset_unique_ptr<int> oup_sut;
 
 	// Assert
 	EXPECT_EQ( oup_sut, nullptr );
@@ -93,7 +91,7 @@ TEST( OffsetBasedUniquePtr, CanConstructByPtr )
 	int* p = new int;
 
 	// Act
-	offset_unique_ptr<int> oup_sut( p );
+	ipsm::offset_unique_ptr<int> oup_sut( p );
 
 	// Assert
 	EXPECT_EQ( oup_sut.get(), p );
@@ -107,7 +105,7 @@ TEST( OffsetBasedUniquePtr, CanConstructByPtrWithDeleterCp )
 	test_deleter<int> sut_dt( 1 );
 
 	// Act
-	offset_unique_ptr<int, test_deleter<int>> oup_sut( p, sut_dt );
+	ipsm::offset_unique_ptr<int, test_deleter<int>> oup_sut( p, sut_dt );
 
 	// Assert
 	EXPECT_EQ( oup_sut.get(), p );
@@ -121,7 +119,7 @@ TEST( OffsetBasedUniquePtr, CanConstructByPtrWithDeleterMv )
 	int* p = new int;
 
 	// Act
-	offset_unique_ptr<int, test_deleter<int>> oup_sut( p, test_deleter<int>( 1 ) );
+	ipsm::offset_unique_ptr<int, test_deleter<int>> oup_sut( p, test_deleter<int>( 1 ) );
 
 	// Assert
 	EXPECT_EQ( oup_sut.get(), p );
@@ -134,7 +132,7 @@ TEST( OffsetBasedUniquePtr, CanConstructByNullPtr )
 	// Arrange
 
 	// Act
-	offset_unique_ptr<int> oup_sut( nullptr );
+	ipsm::offset_unique_ptr<int> oup_sut( nullptr );
 
 	// Assert
 	EXPECT_EQ( oup_sut, nullptr );
@@ -144,11 +142,11 @@ TEST( OffsetBasedUniquePtr, CanConstructByNullPtr )
 TEST( OffsetBasedUniquePtr, CanConstructByOffsetUp1 )
 {
 	// Arrange
-	int*                   p = new int;
-	offset_unique_ptr<int> oup_tt( p );
+	int*                         p = new int;
+	ipsm::offset_unique_ptr<int> oup_tt( p );
 
 	// Act
-	offset_unique_ptr<int> oup_sut( std::move( oup_tt ) );
+	ipsm::offset_unique_ptr<int> oup_sut( std::move( oup_tt ) );
 
 	// Assert
 	EXPECT_EQ( oup_tt, nullptr );   // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move)
@@ -159,12 +157,12 @@ TEST( OffsetBasedUniquePtr, CanConstructByOffsetUp1 )
 TEST( OffsetBasedUniquePtr, CanConstructByOffsetUp2 )
 {
 	// Arrange
-	int*                                      p = new int;
-	offset_unique_ptr<int, test_deleter<int>> oup_tt( p, test_deleter<int>( 1 ) );
+	int*                                            p = new int;
+	ipsm::offset_unique_ptr<int, test_deleter<int>> oup_tt( p, test_deleter<int>( 1 ) );
 	EXPECT_EQ( 1, oup_tt.get_deleter().test_mark_ );
 
 	// Act
-	offset_unique_ptr<int, test_deleter<int>> oup_sut( std::move( oup_tt ) );
+	ipsm::offset_unique_ptr<int, test_deleter<int>> oup_sut( std::move( oup_tt ) );
 
 	// Assert
 	EXPECT_EQ( oup_tt, nullptr );   // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move)
@@ -178,22 +176,22 @@ TEST( OffsetBasedUniquePtr, CanNotCopyConstruct )
 	// Arrange
 
 	// Act
-	EXPECT_FALSE( std::is_copy_constructible<offset_unique_ptr<int>>::value );
+	EXPECT_FALSE( std::is_copy_constructible<ipsm::offset_unique_ptr<int>>::value );
 
 	// Assert
 }
 
 TEST( OffsetBasedUniquePtr, CanMoveConstruct1 )
 {
-	EXPECT_TRUE( std::is_move_constructible<offset_unique_ptr<int>>::value );
+	EXPECT_TRUE( std::is_move_constructible<ipsm::offset_unique_ptr<int>>::value );
 
 	// Arrange
-	int*                   p = new int;
-	offset_unique_ptr<int> oup_tt( p );
+	int*                         p = new int;
+	ipsm::offset_unique_ptr<int> oup_tt( p );
 	EXPECT_EQ( oup_tt.get(), p );
 
 	// Act
-	offset_unique_ptr<int> oup_sut( std::move( oup_tt ) );
+	ipsm::offset_unique_ptr<int> oup_sut( std::move( oup_tt ) );
 
 	// Assert
 	EXPECT_EQ( oup_tt, nullptr );   // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move)
@@ -204,16 +202,16 @@ TEST( OffsetBasedUniquePtr, CanMoveConstruct1 )
 TEST( OffsetBasedUniquePtr, CanMoveConstruct2 )
 {
 
-	EXPECT_TRUE( ( std::is_move_constructible<offset_unique_ptr<int, test_deleter<int>>>::value ) );
+	EXPECT_TRUE( ( std::is_move_constructible<ipsm::offset_unique_ptr<int, test_deleter<int>>>::value ) );
 
 	// Arrange
-	int*                                      p = new int;
-	offset_unique_ptr<int, test_deleter<int>> oup_tt( p, test_deleter<int>( 1 ) );
+	int*                                            p = new int;
+	ipsm::offset_unique_ptr<int, test_deleter<int>> oup_tt( p, test_deleter<int>( 1 ) );
 	EXPECT_EQ( oup_tt.get(), p );
 	EXPECT_EQ( 1, oup_tt.get_deleter().test_mark_ );
 
 	// Act
-	offset_unique_ptr<int, test_deleter<int>> oup_sut( std::move( oup_tt ) );
+	ipsm::offset_unique_ptr<int, test_deleter<int>> oup_sut( std::move( oup_tt ) );
 
 	// Assert
 	EXPECT_EQ( oup_tt, nullptr );   // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move)
@@ -227,20 +225,20 @@ TEST( OffsetBasedUniquePtr, CanNotCopyAssign )
 	// Arrange
 
 	// Act
-	EXPECT_FALSE( std::is_copy_assignable<offset_unique_ptr<int>>::value );
+	EXPECT_FALSE( std::is_copy_assignable<ipsm::offset_unique_ptr<int>>::value );
 
 	// Assert
 }
 
 TEST( OffsetBasedUniquePtr, CanMoveAssign1 )
 {
-	EXPECT_TRUE( std::is_move_assignable<offset_unique_ptr<int>>::value );
+	EXPECT_TRUE( std::is_move_assignable<ipsm::offset_unique_ptr<int>>::value );
 
 	// Arrange
-	int*                   p = new int;
-	offset_unique_ptr<int> oup_tt( p );
+	int*                         p = new int;
+	ipsm::offset_unique_ptr<int> oup_tt( p );
 	EXPECT_EQ( oup_tt.get(), p );
-	offset_unique_ptr<int> oup_sut;
+	ipsm::offset_unique_ptr<int> oup_sut;
 	EXPECT_EQ( oup_sut, nullptr );
 
 	// Act
@@ -254,14 +252,14 @@ TEST( OffsetBasedUniquePtr, CanMoveAssign1 )
 
 TEST( OffsetBasedUniquePtr, CanMoveAssign2 )
 {
-	EXPECT_TRUE( ( std::is_move_assignable<offset_unique_ptr<int, test_deleter<int>>>::value ) );
+	EXPECT_TRUE( ( std::is_move_assignable<ipsm::offset_unique_ptr<int, test_deleter<int>>>::value ) );
 
 	// Arrange
-	int*                                      p = new int;
-	offset_unique_ptr<int, test_deleter<int>> oup_tt( p, test_deleter<int>( 1 ) );
+	int*                                            p = new int;
+	ipsm::offset_unique_ptr<int, test_deleter<int>> oup_tt( p, test_deleter<int>( 1 ) );
 	EXPECT_EQ( oup_tt.get(), p );
 	EXPECT_EQ( 1, oup_tt.get_deleter().test_mark_ );
-	offset_unique_ptr<int, test_deleter<int>> oup_sut( nullptr, test_deleter<int>( 2 ) );
+	ipsm::offset_unique_ptr<int, test_deleter<int>> oup_sut( nullptr, test_deleter<int>( 2 ) );
 	EXPECT_EQ( oup_sut, nullptr );
 	EXPECT_EQ( 2, oup_sut.get_deleter().test_mark_ );
 
@@ -278,8 +276,8 @@ TEST( OffsetBasedUniquePtr, CanMoveAssign2 )
 TEST( OffsetBasedUniquePtr, CanRelease )
 {
 	// Arrange
-	int*                   p = new int;
-	offset_unique_ptr<int> oup_sut( p );
+	int*                         p = new int;
+	ipsm::offset_unique_ptr<int> oup_sut( p );
 	EXPECT_EQ( oup_sut.get(), p );
 
 	// Act
@@ -297,8 +295,8 @@ TEST( OffsetBasedUniquePtr, CanRelease )
 TEST( OffsetBasedUniquePtr, CanReset1 )
 {
 	// Arrange
-	int*                   p = new int;
-	offset_unique_ptr<int> oup_sut( p );
+	int*                         p = new int;
+	ipsm::offset_unique_ptr<int> oup_sut( p );
 	EXPECT_EQ( oup_sut.get(), p );
 
 	// Act
@@ -312,9 +310,9 @@ TEST( OffsetBasedUniquePtr, CanReset1 )
 TEST( OffsetBasedUniquePtr, CanReset2 )
 {
 	// Arrange
-	int*                   p1 = new int;
-	int*                   p2 = new int;
-	offset_unique_ptr<int> oup_sut( p1 );
+	int*                         p1 = new int;
+	int*                         p2 = new int;
+	ipsm::offset_unique_ptr<int> oup_sut( p1 );
 	EXPECT_EQ( oup_sut.get(), p1 );
 
 	// Act
@@ -328,11 +326,11 @@ TEST( OffsetBasedUniquePtr, CanReset2 )
 TEST( OffsetBasedUniquePtr, CanSwap1 )
 {
 	// Arrange
-	int*                   p1 = new int;
-	int*                   p2 = new int;
-	offset_unique_ptr<int> oup_sut1( p1 );
+	int*                         p1 = new int;
+	int*                         p2 = new int;
+	ipsm::offset_unique_ptr<int> oup_sut1( p1 );
 	EXPECT_EQ( oup_sut1.get(), p1 );
-	offset_unique_ptr<int> oup_sut2( p2 );
+	ipsm::offset_unique_ptr<int> oup_sut2( p2 );
 	EXPECT_EQ( oup_sut2.get(), p2 );
 
 	// Act
@@ -348,12 +346,12 @@ TEST( OffsetBasedUniquePtr, CanSwap1 )
 TEST( OffsetBasedUniquePtr, CanSwap2 )
 {
 	// Arrange
-	int*                                      p1 = new int;
-	int*                                      p2 = new int;
-	offset_unique_ptr<int, test_deleter<int>> oup_sut1( p1, test_deleter<int>( 1 ) );
+	int*                                            p1 = new int;
+	int*                                            p2 = new int;
+	ipsm::offset_unique_ptr<int, test_deleter<int>> oup_sut1( p1, test_deleter<int>( 1 ) );
 	EXPECT_EQ( oup_sut1.get(), p1 );
 	EXPECT_EQ( 1, oup_sut1.get_deleter().test_mark_ );
-	offset_unique_ptr<int, test_deleter<int>> oup_sut2( p2, test_deleter<int>( 2 ) );
+	ipsm::offset_unique_ptr<int, test_deleter<int>> oup_sut2( p2, test_deleter<int>( 2 ) );
 	EXPECT_EQ( oup_sut2.get(), p2 );
 	EXPECT_EQ( 2, oup_sut2.get_deleter().test_mark_ );
 
@@ -372,11 +370,11 @@ TEST( OffsetBasedUniquePtr, CanSwap2 )
 TEST( OffsetBasedUniquePtr, CanSwap3 )
 {
 	// Arrange
-	int*                   p1 = new int;
-	int*                   p2 = new int;
-	offset_unique_ptr<int> oup_sut1( p1 );
+	int*                         p1 = new int;
+	int*                         p2 = new int;
+	ipsm::offset_unique_ptr<int> oup_sut1( p1 );
 	EXPECT_EQ( oup_sut1.get(), p1 );
-	offset_unique_ptr<int> oup_sut2( p2 );
+	ipsm::offset_unique_ptr<int> oup_sut2( p2 );
 	EXPECT_EQ( oup_sut2.get(), p2 );
 
 	// Act
@@ -392,12 +390,12 @@ TEST( OffsetBasedUniquePtr, CanSwap3 )
 TEST( OffsetBasedUniquePtr, CanSwap4 )
 {
 	// Arrange
-	int*                                      p1 = new int;
-	int*                                      p2 = new int;
-	offset_unique_ptr<int, test_deleter<int>> oup_sut1( p1, test_deleter<int>( 1 ) );
+	int*                                            p1 = new int;
+	int*                                            p2 = new int;
+	ipsm::offset_unique_ptr<int, test_deleter<int>> oup_sut1( p1, test_deleter<int>( 1 ) );
 	EXPECT_EQ( oup_sut1.get(), p1 );
 	EXPECT_EQ( 1, oup_sut1.get_deleter().test_mark_ );
-	offset_unique_ptr<int, test_deleter<int>> oup_sut2( p2, test_deleter<int>( 2 ) );
+	ipsm::offset_unique_ptr<int, test_deleter<int>> oup_sut2( p2, test_deleter<int>( 2 ) );
 	EXPECT_EQ( oup_sut2.get(), p2 );
 	EXPECT_EQ( 2, oup_sut2.get_deleter().test_mark_ );
 
@@ -416,8 +414,8 @@ TEST( OffsetBasedUniquePtr, CanSwap4 )
 TEST( OffsetBasedUniquePtr, CanCastBool1 )
 {
 	// Arrange
-	int*                   p = new int;
-	offset_unique_ptr<int> oup_sut( p );
+	int*                         p = new int;
+	ipsm::offset_unique_ptr<int> oup_sut( p );
 	EXPECT_EQ( oup_sut.get(), p );
 
 	// Act
@@ -430,7 +428,7 @@ TEST( OffsetBasedUniquePtr, CanCastBool1 )
 TEST( OffsetBasedUniquePtr, CanCastBool2 )
 {
 	// Arrange
-	offset_unique_ptr<int> oup_sut;
+	ipsm::offset_unique_ptr<int> oup_sut;
 	EXPECT_EQ( oup_sut.get(), nullptr );
 
 	// Act
@@ -445,7 +443,7 @@ TEST( OffsetBasedUniquePtr, CanRefOp )
 	// Arrange
 
 	// Act
-	offset_unique_ptr<ArrowOpTest> oup_sut = make_offset_unique<ArrowOpTest>( ArrowOpTest { 1, 2 } );
+	ipsm::offset_unique_ptr<ArrowOpTest> oup_sut = ipsm::make_offset_unique<ArrowOpTest>( ArrowOpTest { 1, 2 } );
 
 	// Assert
 	ASSERT_NE( oup_sut.get(), nullptr );
@@ -458,7 +456,7 @@ TEST( OffsetBasedUniquePtr, CanArrowOp )
 	// Arrange
 
 	// Act
-	offset_unique_ptr<ArrowOpTest> oup_sut = make_offset_unique<ArrowOpTest>( ArrowOpTest { 1, 2 } );
+	ipsm::offset_unique_ptr<ArrowOpTest> oup_sut = ipsm::make_offset_unique<ArrowOpTest>( ArrowOpTest { 1, 2 } );
 
 	// Assert
 	ASSERT_NE( oup_sut.get(), nullptr );
@@ -476,7 +474,7 @@ TEST( OffsetBasedUniquePtr, CanArrayOperator )
 	p_raw[1].y_        = 4;
 
 	// Act
-	offset_unique_ptr<ArrowOpTest[]> oup_sut( p_raw );
+	ipsm::offset_unique_ptr<ArrowOpTest[]> oup_sut( p_raw );
 
 	// Assert
 	ASSERT_NE( oup_sut.get(), nullptr );
@@ -489,11 +487,11 @@ TEST( OffsetBasedUniquePtr, CanArrayOperator )
 TEST( OffsetBasedUniquePtr, CanOperators )
 {
 	// Arrange
-	int                                          test_buff[3];
-	offset_unique_ptr<int, test_no_deleter<int>> oup_sut1( &( test_buff[0] ), test_no_deleter<int>( 0 ) );
-	offset_unique_ptr<int, test_no_deleter<int>> oup_sut2( &( test_buff[1] ), test_no_deleter<int>( 1 ) );
-	offset_unique_ptr<int, test_no_deleter<int>> oup_sut3( &( test_buff[2] ), test_no_deleter<int>( 2 ) );
-	offset_unique_ptr<int, test_no_deleter<int>> oup_sut22( &( test_buff[1] ), test_no_deleter<int>( 4 ) );
+	int                                                test_buff[3];
+	ipsm::offset_unique_ptr<int, test_no_deleter<int>> oup_sut1( &( test_buff[0] ), test_no_deleter<int>( 0 ) );
+	ipsm::offset_unique_ptr<int, test_no_deleter<int>> oup_sut2( &( test_buff[1] ), test_no_deleter<int>( 1 ) );
+	ipsm::offset_unique_ptr<int, test_no_deleter<int>> oup_sut3( &( test_buff[2] ), test_no_deleter<int>( 2 ) );
+	ipsm::offset_unique_ptr<int, test_no_deleter<int>> oup_sut22( &( test_buff[1] ), test_no_deleter<int>( 4 ) );
 
 	// Act
 
@@ -523,8 +521,8 @@ TEST( OffsetBasedUniquePtr, CanOperators )
 TEST( OffsetBasedUniquePtr, CanOperatorsWithNullPtr )
 {
 	// Arrange
-	int                                          test_buff;
-	offset_unique_ptr<int, test_no_deleter<int>> oup_sut( &( test_buff ), test_no_deleter<int>( 0 ) );
+	int                                                test_buff;
+	ipsm::offset_unique_ptr<int, test_no_deleter<int>> oup_sut( &( test_buff ), test_no_deleter<int>( 0 ) );
 
 	// Act
 
@@ -554,7 +552,7 @@ TEST( AllocateUniquePtrAllocatorDeleter, CanCallWithStdAllocatorStdDefaultDelete
 	auto alloc     = std::allocator<sut_type>();
 
 	// Act
-	offset_unique_ptr<sut_type, deleter_by_allocator<sut_type, std::allocator<sut_type>>> oup_sut = allocate_offset_unique_deleter<sut_type>( alloc, 10 );
+	ipsm::offset_unique_ptr<sut_type, ipsm::deleter_by_allocator<sut_type, std::allocator<sut_type>>> oup_sut = ipsm::allocate_offset_unique_deleter<sut_type>( alloc, 10 );
 
 	// Assert
 	EXPECT_EQ( *oup_sut, 10 );
@@ -564,13 +562,13 @@ TEST( AllocateUniquePtrAllocatorDeleter, CanCallWithOffsetAllocatorOffsetDeleter
 {
 	// Arrange
 	using sut_type = int;
-	unsigned char test_buff[1024];
-	void*         p_mem = reinterpret_cast<void*>( test_buff );
-	offset_malloc mem_alloc( p_mem, 1024 );
-	auto          alloc = offset_allocator<sut_type>( mem_alloc );
+	unsigned char       test_buff[1024];
+	void*               p_mem = reinterpret_cast<void*>( test_buff );
+	ipsm::offset_malloc mem_alloc( p_mem, 1024 );
+	auto                alloc = ipsm::offset_allocator<sut_type>( mem_alloc );
 
 	// Act
-	offset_unique_ptr<sut_type, deleter_by_allocator<sut_type, offset_allocator<sut_type>>> oup_sut = allocate_offset_unique_deleter<sut_type>( alloc, 10 );
+	ipsm::offset_unique_ptr<sut_type, ipsm::deleter_by_allocator<sut_type, ipsm::offset_allocator<sut_type>>> oup_sut = ipsm::allocate_offset_unique_deleter<sut_type>( alloc, 10 );
 
 	// Assert
 	EXPECT_EQ( *oup_sut, 10 );

@@ -27,8 +27,6 @@
 #include "ipsm_malloc.hpp"
 #include "test_ipsm_common.hpp"
 
-using namespace ipsm;
-
 TEST( Test_ipsm_malloc, CanDefaultConstruct_CanDestruct )
 {
 	// Arrange
@@ -36,7 +34,7 @@ TEST( Test_ipsm_malloc, CanDefaultConstruct_CanDestruct )
 	// Act
 	ASSERT_NO_THROW(
 		{
-			ipsm_malloc shm_obj;
+			ipsm::ipsm_malloc shm_obj;
 		} );
 
 	// Assert
@@ -45,7 +43,7 @@ TEST( Test_ipsm_malloc, CanDefaultConstruct_CanDestruct )
 TEST( Test_ipsm_malloc, CanDefaultConstruct_ThenAllocate )
 {
 	// Arrange
-	ipsm_malloc sut;
+	ipsm::ipsm_malloc sut;
 
 	// Act
 	auto p = sut.allocate( 10 );
@@ -63,7 +61,7 @@ TEST( Test_ipsm_malloc, CanConstruct_CanDestruct )
 	// Act
 	ASSERT_NO_THROW(
 		{
-			ipsm_malloc shm_obj( shm_name.c_str(), lifetime_ctrl_fname.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+			ipsm::ipsm_malloc shm_obj( shm_name.c_str(), lifetime_ctrl_fname.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 		} );
 
 	// Assert
@@ -72,14 +70,14 @@ TEST( Test_ipsm_malloc, CanConstruct_CanDestruct )
 TEST( Test_ipsm_malloc, CanMoveConstruct )
 {
 	// Arrange
-	std::string shm_name            = "/test_ipsm_malloc_" + std::to_string( getpid() );
-	std::string lifetime_ctrl_fname = "/tmp/test_ipsm_malloc_lifetime_ctrl_" + std::to_string( getpid() );
-	ipsm_malloc sut;
+	std::string       shm_name            = "/test_ipsm_malloc_" + std::to_string( getpid() );
+	std::string       lifetime_ctrl_fname = "/tmp/test_ipsm_malloc_lifetime_ctrl_" + std::to_string( getpid() );
+	ipsm::ipsm_malloc sut;
 
 	// Act
 	ASSERT_NO_THROW(
 		{
-			sut = ipsm_malloc( shm_name.c_str(), lifetime_ctrl_fname.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+			sut = ipsm::ipsm_malloc( shm_name.c_str(), lifetime_ctrl_fname.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 		} );
 
 	// Assert
@@ -88,15 +86,15 @@ TEST( Test_ipsm_malloc, CanMoveConstruct )
 // ===============================================================================
 class TestIpsmMallocFixture : public ::testing::Test {
 protected:
-	std::string shm_name_;
-	std::string lifetime_ctrl_fname;
-	ipsm_malloc sut_;
+	std::string       shm_name_;
+	std::string       lifetime_ctrl_fname;
+	ipsm::ipsm_malloc sut_;
 
 	void SetUp( void ) override
 	{
 		shm_name_           = "/test_ipsm_malloc_" + std::to_string( getpid() );
 		lifetime_ctrl_fname = "/tmp/test_ipsm_malloc_lifetime_ctrl_" + std::to_string( getpid() );
-		sut_                = ipsm_malloc( shm_name_.c_str(), lifetime_ctrl_fname.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+		sut_                = ipsm::ipsm_malloc( shm_name_.c_str(), lifetime_ctrl_fname.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 	}
 
 	void TearDown( void ) override
@@ -130,7 +128,7 @@ TEST_F( TestIpsmMallocFixture, CanConstruct_ThenAllocateDeallocate )
 TEST_F( TestIpsmMallocFixture, CanMoveConstruct_ThenAllocate )
 {
 	// Arrange
-	ipsm_malloc sut2( std::move( sut_ ) );
+	ipsm::ipsm_malloc sut2( std::move( sut_ ) );
 
 	// Act
 	auto p = sut2.allocate( 10 );
@@ -142,8 +140,8 @@ TEST_F( TestIpsmMallocFixture, CanMoveConstruct_ThenAllocate )
 TEST_F( TestIpsmMallocFixture, CanMoveConstruct_ThenAllocateDeallocate )
 {
 	// Arrange
-	ipsm_malloc sut2( std::move( sut_ ) );
-	auto        p = sut2.allocate( 10 );
+	ipsm::ipsm_malloc sut2( std::move( sut_ ) );
+	auto              p = sut2.allocate( 10 );
 	EXPECT_NE( p, nullptr );
 
 	// Act
@@ -162,7 +160,7 @@ TEST_F( TestIpsmMallocFixture, CanMoveAssignment )
 	std::string lifetime_ctrl_fname2 = "/tmp/test_ipsm_malloc_lifetime_ctrl2_" + std::to_string( getpid() );
 
 	// Act
-	sut_ = ipsm_malloc( shm_name2.c_str(), lifetime_ctrl_fname2.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	sut_ = ipsm::ipsm_malloc( shm_name2.c_str(), lifetime_ctrl_fname2.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 
 	// Assert
 	auto p2 = sut_.allocate( 10 );
@@ -178,7 +176,7 @@ TEST_F( TestIpsmMallocFixture, CanMoveAssignment_ThenDeallocate )
 
 	std::string shm_name2            = "/test_ipsm_malloc2_" + std::to_string( getpid() );
 	std::string lifetime_ctrl_fname2 = "/tmp/test_ipsm_malloc_lifetime_ctrl2_" + std::to_string( getpid() );
-	sut_                             = ipsm_malloc( shm_name2.c_str(), lifetime_ctrl_fname2.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	sut_                             = ipsm::ipsm_malloc( shm_name2.c_str(), lifetime_ctrl_fname2.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 	auto p2                          = sut_.allocate( 10 );
 	EXPECT_NE( p2, nullptr );
 	EXPECT_NE( p1, p2 );
@@ -276,9 +274,9 @@ TEST_F( TestIpsmMallocFixture, SendMsg_CanTryReceiveFor1sec_ThenReturnMsg )
 TEST( Test_ipsm_malloc, CanAllocateBwProcess )
 {
 	// Arrange
-	std::string shm_name            = "/test_ipsm_malloc_" + std::to_string( getpid() );
-	std::string lifetime_ctrl_fname = "/tmp/test_ipsm_malloc_lifetime_ctrl_" + std::to_string( getpid() );
-	ipsm_malloc shm_malloc_obj( shm_name.c_str(), lifetime_ctrl_fname.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	std::string       shm_name            = "/test_ipsm_malloc_" + std::to_string( getpid() );
+	std::string       lifetime_ctrl_fname = "/tmp/test_ipsm_malloc_lifetime_ctrl_" + std::to_string( getpid() );
+	ipsm::ipsm_malloc shm_malloc_obj( shm_name.c_str(), lifetime_ctrl_fname.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 	EXPECT_EQ( shm_malloc_obj.get_bind_count(), 1 + shm_malloc_obj.channel_size() );
 
 	std::packaged_task<child_proc_return_t( std::function<int()> )> task1( call_pred_on_child_process );   // 非同期実行する関数を登録する
@@ -286,7 +284,7 @@ TEST( Test_ipsm_malloc, CanAllocateBwProcess )
 
 	// Act
 	std::thread t1( std::move( task1 ), [shm_name, lifetime_ctrl_fname]() -> int {
-		ipsm_malloc sut_secondary( shm_name.c_str(), lifetime_ctrl_fname.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+		ipsm::ipsm_malloc sut_secondary( shm_name.c_str(), lifetime_ctrl_fname.c_str(), 4096, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 		if ( sut_secondary.get_bind_count() < 0 ) {
 			fprintf( stderr, "Error: bind count is %d\n", sut_secondary.get_bind_count() );
 			return 4;
@@ -322,7 +320,7 @@ struct proc_task_data {
 template <typename T>
 class fifo_que {
 public:
-	fifo_que( const offset_allocator<T>& a )
+	fifo_que( const ipsm::offset_allocator<T>& a )
 	  : mtx_()
 	  , cond_()
 	  , que_( a )
@@ -331,17 +329,17 @@ public:
 
 	void push( const T& v )
 	{
-		std::lock_guard<ipsm_mutex> lk( mtx_ );
+		std::lock_guard<ipsm::ipsm_mutex> lk( mtx_ );
 		que_.emplace_back( v );
 	}
 	void push( T&& v )
 	{
-		std::lock_guard<ipsm_mutex> lk( mtx_ );
+		std::lock_guard<ipsm::ipsm_mutex> lk( mtx_ );
 		que_.emplace_back( std::move( v ) );
 	}
 	T pop( void )
 	{
-		std::unique_lock<ipsm_mutex> lk( mtx_ );
+		std::unique_lock<ipsm::ipsm_mutex> lk( mtx_ );
 		cond_.wait( lk, [this]() -> bool {
 			return !( que_.empty() );
 		} );
@@ -351,9 +349,9 @@ public:
 	}
 
 private:
-	ipsm_mutex                          mtx_;
-	ipsm_condition_variable_monotonic   cond_;
-	offset_list<T, offset_allocator<T>> que_;
+	ipsm::ipsm_mutex                          mtx_;
+	ipsm::ipsm_condition_variable_monotonic   cond_;
+	ipsm::offset_list<T, ipsm::offset_allocator<T>> que_;
 };
 
 #define SHM_OBJ_NAME_STRING               "/my_test_shm_test_ipsm_malloc"
@@ -362,20 +360,20 @@ private:
 TEST( Test_ipsm_malloc, CanMsgChannel )
 {
 	// Arrange
-	constexpr int  num_of_threads = 100;
-	constexpr int  num_of_loop    = 10000;
-	ipsm_malloc    shm_malloc_obj( SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096UL * 100UL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
-	fifo_que<int>* p_sut_list = ipsm::allocate_instance<fifo_que<int>>( shm_malloc_obj.get_allocator<fifo_que<int>>(), shm_malloc_obj.get_allocator<int>() );
-	proc_task_data pt_pack[num_of_threads];
+	constexpr int     num_of_threads = 100;
+	constexpr int     num_of_loop    = 10000;
+	ipsm::ipsm_malloc shm_malloc_obj( SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096UL * 100UL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+	fifo_que<int>*    p_sut_list = ipsm::allocate_instance<fifo_que<int>>( shm_malloc_obj.get_allocator<fifo_que<int>>(), shm_malloc_obj.get_allocator<int>() );
+	proc_task_data    pt_pack[num_of_threads];
 	// Act
 	for ( auto& e : pt_pack ) {
 		shm_malloc_obj.send( 0, p_sut_list );
 		std::packaged_task<child_proc_return_t( std::function<int()> )> task( call_pred_on_child_process );
 		e.f = task.get_future();
 		e.t = std::thread( std::move( task ), []() -> int {
-			ipsm_malloc    sut_secondary( SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096UL * 100UL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
-			void*          p_tmp      = sut_secondary.receive( 0 );
-			fifo_que<int>* p_sut_list = reinterpret_cast<fifo_que<int>*>( p_tmp );
+			ipsm::ipsm_malloc sut_secondary( SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096UL * 100UL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+			void*             p_tmp      = sut_secondary.receive( 0 );
+			fifo_que<int>*    p_sut_list = reinterpret_cast<fifo_que<int>*>( p_tmp );
 
 			int v = 0;
 			for ( int i = 0; i < num_of_loop; i++ ) {

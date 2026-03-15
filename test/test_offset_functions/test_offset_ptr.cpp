@@ -20,8 +20,6 @@
 
 #include "test_ipsm_common.hpp"
 
-using namespace ipsm;
-
 #if ( __cpp_concepts >= 201907L )
 template <std::random_access_iterator I>
 bool f( I x )
@@ -40,7 +38,7 @@ TEST( OffsetPtr, CanDefaultConstruct )
 	// Arrange
 
 	// Act
-	offset_ptr<int> op_a;
+	ipsm::offset_ptr<int> op_a;
 
 	// Assert
 	EXPECT_EQ( op_a.get(), nullptr );
@@ -54,7 +52,7 @@ TEST( OffsetPtr, CanConstruct )
 	int a;
 
 	// Act
-	offset_ptr<int> op_a( &a );
+	ipsm::offset_ptr<int> op_a( &a );
 
 	// Assert
 	EXPECT_EQ( op_a.get(), &a );
@@ -66,7 +64,7 @@ TEST( OffsetPtr, CanConstruct2 )
 	int a;
 
 	// Act
-	offset_ptr<void> op_a( reinterpret_cast<void*>( &a ) );
+	ipsm::offset_ptr<void> op_a( reinterpret_cast<void*>( &a ) );
 
 	// Assert
 	EXPECT_EQ( op_a.get(), &a );
@@ -75,11 +73,11 @@ TEST( OffsetPtr, CanConstruct2 )
 TEST( OffsetPtr, CanCopyConstruct )
 {
 	// Arrange
-	int             a;
-	offset_ptr<int> op_a( &a );
+	int                   a;
+	ipsm::offset_ptr<int> op_a( &a );
 
 	// Act
-	offset_ptr<int> op_b( op_a );
+	ipsm::offset_ptr<int> op_b( op_a );
 
 	// Assert
 	EXPECT_EQ( op_a.get(), op_b.get() );
@@ -88,11 +86,11 @@ TEST( OffsetPtr, CanCopyConstruct )
 TEST( OffsetPtr, CanMoveConstruct )
 {
 	// Arrange
-	int             a;
-	offset_ptr<int> op_a( &a );
+	int                   a;
+	ipsm::offset_ptr<int> op_a( &a );
 
 	// Act
-	offset_ptr<int> op_b( std::move( op_a ) );
+	ipsm::offset_ptr<int> op_b( std::move( op_a ) );
 
 	// Assert
 	EXPECT_NE( op_a.get(), op_b.get() );   // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move)
@@ -103,9 +101,9 @@ TEST( OffsetPtr, CanMoveConstruct )
 TEST( OffsetPtr, CanCopyAssingment )
 {
 	// Arrange
-	int             a;
-	offset_ptr<int> op_a( &a );
-	offset_ptr<int> op_b;
+	int                   a;
+	ipsm::offset_ptr<int> op_a( &a );
+	ipsm::offset_ptr<int> op_b;
 	EXPECT_EQ( op_b.get(), nullptr );
 
 	// Act
@@ -118,9 +116,9 @@ TEST( OffsetPtr, CanCopyAssingment )
 TEST( OffsetPtr, CanMoveAssingment )
 {
 	// Arrange
-	int             a;
-	offset_ptr<int> op_a( &a );
-	offset_ptr<int> op_b;
+	int                   a;
+	ipsm::offset_ptr<int> op_a( &a );
+	ipsm::offset_ptr<int> op_b;
 	EXPECT_EQ( op_b.get(), nullptr );
 
 	// Act
@@ -135,10 +133,10 @@ TEST( OffsetPtr, CanMoveAssingment )
 TEST( OffsetPtr, CanSwap1 )
 {
 	// Arrange
-	int             a;
-	int             b;
-	offset_ptr<int> op_a( &a );
-	offset_ptr<int> op_b( &b );
+	int                   a;
+	int                   b;
+	ipsm::offset_ptr<int> op_a( &a );
+	ipsm::offset_ptr<int> op_b( &b );
 
 	// Act
 	op_b.swap( op_a );
@@ -151,10 +149,10 @@ TEST( OffsetPtr, CanSwap1 )
 TEST( OffsetPtr, CanSwap2 )
 {
 	// Arrange
-	int             a;
-	int             b;
-	offset_ptr<int> op_a( &a );
-	offset_ptr<int> op_b( &b );
+	int                   a;
+	int                   b;
+	ipsm::offset_ptr<int> op_a( &a );
+	ipsm::offset_ptr<int> op_b( &b );
 
 	// Act
 	swap( op_a, op_b );
@@ -170,7 +168,7 @@ TEST( OffsetPtr, CanArrowOperator )
 	ArrowOpTest a;
 
 	// Act
-	offset_ptr<ArrowOpTest> op_a( &a );
+	ipsm::offset_ptr<ArrowOpTest> op_a( &a );
 
 	// Assert
 	EXPECT_EQ( &( op_a->x_ ), &( a.x_ ) );
@@ -182,7 +180,7 @@ TEST( OffsetPtr, CanRefOperator )
 	ArrowOpTest a;
 
 	// Act
-	offset_ptr<ArrowOpTest> op_a( &a );
+	ipsm::offset_ptr<ArrowOpTest> op_a( &a );
 
 	// Assert
 	EXPECT_EQ( &( *op_a ), &( a ) );
@@ -193,7 +191,7 @@ TEST( OffsetPtr, CanBoolOperatorFalse )
 	// Arrange
 
 	// Act
-	offset_ptr<ArrowOpTest> op_a;
+	ipsm::offset_ptr<ArrowOpTest> op_a;
 
 	// Assert
 	EXPECT_FALSE( op_a );
@@ -205,7 +203,7 @@ TEST( OffsetPtr, CanBoolOperatorTrue )
 	ArrowOpTest a;
 
 	// Act
-	offset_ptr<ArrowOpTest> op_a( &a );
+	ipsm::offset_ptr<ArrowOpTest> op_a( &a );
 
 	// Assert
 	EXPECT_TRUE( op_a );
@@ -214,8 +212,8 @@ TEST( OffsetPtr, CanBoolOperatorTrue )
 TEST( OffsetPtr, CanTpointerOperator )
 {
 	// Arrange
-	ArrowOpTest             a;
-	offset_ptr<ArrowOpTest> op_a( &a );
+	ArrowOpTest                   a;
+	ipsm::offset_ptr<ArrowOpTest> op_a( &a );
 
 	// Act
 	ArrowOpTest* p_a = op_a;   // type cast to row pointer
@@ -227,8 +225,8 @@ TEST( OffsetPtr, CanTpointerOperator )
 TEST( OffsetPtr, CanArrayOperator )
 {
 	// Arrange
-	ArrowOpTest             a[2];
-	offset_ptr<ArrowOpTest> op_a( a );
+	ArrowOpTest                   a[2];
+	ipsm::offset_ptr<ArrowOpTest> op_a( a );
 
 	// Act
 	ArrowOpTest* p_a = &( op_a[1] );
@@ -240,11 +238,11 @@ TEST( OffsetPtr, CanArrayOperator )
 TEST( OffsetPtr, CanPreIncrementOperator )
 {
 	// Arrange
-	ArrowOpTest             a[2];
-	offset_ptr<ArrowOpTest> op_a( a );
+	ArrowOpTest                   a[2];
+	ipsm::offset_ptr<ArrowOpTest> op_a( a );
 
 	// Act
-	offset_ptr<ArrowOpTest> p = ++op_a;
+	ipsm::offset_ptr<ArrowOpTest> p = ++op_a;
 
 	// Assert
 	EXPECT_EQ( p.get(), &( a[1] ) );
@@ -254,11 +252,11 @@ TEST( OffsetPtr, CanPreIncrementOperator )
 TEST( OffsetPtr, CanPostIncrementOperator )
 {
 	// Arrange
-	ArrowOpTest             a[2];
-	offset_ptr<ArrowOpTest> op_a( a );
+	ArrowOpTest                   a[2];
+	ipsm::offset_ptr<ArrowOpTest> op_a( a );
 
 	// Act
-	offset_ptr<ArrowOpTest> p = op_a++;
+	ipsm::offset_ptr<ArrowOpTest> p = op_a++;
 
 	// Assert
 	EXPECT_EQ( p.get(), &( a[0] ) );
@@ -268,11 +266,11 @@ TEST( OffsetPtr, CanPostIncrementOperator )
 TEST( OffsetPtr, CanPreDecrementOperator )
 {
 	// Arrange
-	ArrowOpTest             a[2];
-	offset_ptr<ArrowOpTest> op_a( &( a[1] ) );
+	ArrowOpTest                   a[2];
+	ipsm::offset_ptr<ArrowOpTest> op_a( &( a[1] ) );
 
 	// Act
-	offset_ptr<ArrowOpTest> p = --op_a;
+	ipsm::offset_ptr<ArrowOpTest> p = --op_a;
 
 	// Assert
 	EXPECT_EQ( p.get(), &( a[0] ) );
@@ -282,11 +280,11 @@ TEST( OffsetPtr, CanPreDecrementOperator )
 TEST( OffsetPtr, CanPostDecrementOperator )
 {
 	// Arrange
-	ArrowOpTest             a[2];
-	offset_ptr<ArrowOpTest> op_a( &( a[1] ) );
+	ArrowOpTest                   a[2];
+	ipsm::offset_ptr<ArrowOpTest> op_a( &( a[1] ) );
 
 	// Act
-	offset_ptr<ArrowOpTest> p = op_a--;
+	ipsm::offset_ptr<ArrowOpTest> p = op_a--;
 
 	// Assert
 	EXPECT_EQ( p.get(), &( a[1] ) );
@@ -296,10 +294,10 @@ TEST( OffsetPtr, CanPostDecrementOperator )
 TEST( OffsetPtr, CanCompareOperatorEQ )
 {
 	// Arrange
-	ArrowOpTest             a;
-	offset_ptr<ArrowOpTest> op_a( &a );
-	offset_ptr<ArrowOpTest> op_b( &a );
-	offset_ptr<ArrowOpTest> op_c( &a );
+	ArrowOpTest                   a;
+	ipsm::offset_ptr<ArrowOpTest> op_a( &a );
+	ipsm::offset_ptr<ArrowOpTest> op_b( &a );
+	ipsm::offset_ptr<ArrowOpTest> op_c( &a );
 	op_c++;
 
 	// Act
@@ -312,10 +310,10 @@ TEST( OffsetPtr, CanCompareOperatorEQ )
 TEST( OffsetPtr, CanCompareOperatorNE )
 {
 	// Arrange
-	ArrowOpTest             a;
-	offset_ptr<ArrowOpTest> op_a( &a );
-	offset_ptr<ArrowOpTest> op_b( &a );
-	offset_ptr<ArrowOpTest> op_c( &a );
+	ArrowOpTest                   a;
+	ipsm::offset_ptr<ArrowOpTest> op_a( &a );
+	ipsm::offset_ptr<ArrowOpTest> op_b( &a );
+	ipsm::offset_ptr<ArrowOpTest> op_c( &a );
 	op_c++;
 
 	// Act
@@ -328,10 +326,10 @@ TEST( OffsetPtr, CanCompareOperatorNE )
 TEST( OffsetPtr, CanCompareOperatorGT )
 {
 	// Arrange
-	ArrowOpTest             a;
-	offset_ptr<ArrowOpTest> op_a( &a );
-	offset_ptr<ArrowOpTest> op_b( &a );
-	offset_ptr<ArrowOpTest> op_c( &a );
+	ArrowOpTest                   a;
+	ipsm::offset_ptr<ArrowOpTest> op_a( &a );
+	ipsm::offset_ptr<ArrowOpTest> op_b( &a );
+	ipsm::offset_ptr<ArrowOpTest> op_c( &a );
 	op_c++;
 
 	// Act
@@ -346,10 +344,10 @@ TEST( OffsetPtr, CanCompareOperatorGT )
 TEST( OffsetPtr, CanCompareOperatorGE )
 {
 	// Arrange
-	ArrowOpTest             a;
-	offset_ptr<ArrowOpTest> op_a( &a );
-	offset_ptr<ArrowOpTest> op_b( &a );
-	offset_ptr<ArrowOpTest> op_c( &a );
+	ArrowOpTest                   a;
+	ipsm::offset_ptr<ArrowOpTest> op_a( &a );
+	ipsm::offset_ptr<ArrowOpTest> op_b( &a );
+	ipsm::offset_ptr<ArrowOpTest> op_c( &a );
 	op_c++;
 
 	// Act
@@ -364,10 +362,10 @@ TEST( OffsetPtr, CanCompareOperatorGE )
 TEST( OffsetPtr, CanCompareOperatorLT )
 {
 	// Arrange
-	ArrowOpTest             a;
-	offset_ptr<ArrowOpTest> op_a( &a );
-	offset_ptr<ArrowOpTest> op_b( &a );
-	offset_ptr<ArrowOpTest> op_c( &a );
+	ArrowOpTest                   a;
+	ipsm::offset_ptr<ArrowOpTest> op_a( &a );
+	ipsm::offset_ptr<ArrowOpTest> op_b( &a );
+	ipsm::offset_ptr<ArrowOpTest> op_c( &a );
 	op_c++;
 
 	// Act
@@ -382,10 +380,10 @@ TEST( OffsetPtr, CanCompareOperatorLT )
 TEST( OffsetPtr, CanCompareOperatorLE )
 {
 	// Arrange
-	ArrowOpTest             a;
-	offset_ptr<ArrowOpTest> op_a( &a );
-	offset_ptr<ArrowOpTest> op_b( &a );
-	offset_ptr<ArrowOpTest> op_c( &a );
+	ArrowOpTest                   a;
+	ipsm::offset_ptr<ArrowOpTest> op_a( &a );
+	ipsm::offset_ptr<ArrowOpTest> op_b( &a );
+	ipsm::offset_ptr<ArrowOpTest> op_c( &a );
 	op_c++;
 
 	// Act
@@ -400,8 +398,8 @@ TEST( OffsetPtr, CanCompareOperatorLE )
 TEST( OffsetPtr, CanAddOperator1 )
 {
 	// Arrange
-	ArrowOpTest             a[2];
-	offset_ptr<ArrowOpTest> op_a( a );
+	ArrowOpTest                   a[2];
+	ipsm::offset_ptr<ArrowOpTest> op_a( a );
 
 	// Act
 	op_a += 1;
@@ -413,8 +411,8 @@ TEST( OffsetPtr, CanAddOperator1 )
 TEST( OffsetPtr, CanAddOperator2 )
 {
 	// Arrange
-	ArrowOpTest             a[2];
-	offset_ptr<ArrowOpTest> op_a( a );
+	ArrowOpTest                   a[2];
+	ipsm::offset_ptr<ArrowOpTest> op_a( a );
 
 	// Act
 	auto op_b = op_a + 1;
@@ -427,8 +425,8 @@ TEST( OffsetPtr, CanAddOperator2 )
 TEST( OffsetPtr, CanAddOperator3 )
 {
 	// Arrange
-	ArrowOpTest             a[2];
-	offset_ptr<ArrowOpTest> op_a( a );
+	ArrowOpTest                   a[2];
+	ipsm::offset_ptr<ArrowOpTest> op_a( a );
 
 	// Act
 	auto op_b = 1 + op_a;
@@ -441,8 +439,8 @@ TEST( OffsetPtr, CanAddOperator3 )
 TEST( OffsetPtr, CanSubOperator1 )
 {
 	// Arrange
-	ArrowOpTest             a[2];
-	offset_ptr<ArrowOpTest> op_a( &( a[1] ) );
+	ArrowOpTest                   a[2];
+	ipsm::offset_ptr<ArrowOpTest> op_a( &( a[1] ) );
 
 	// Act
 	op_a -= 1;
@@ -454,8 +452,8 @@ TEST( OffsetPtr, CanSubOperator1 )
 TEST( OffsetPtr, CanSubOperator2 )
 {
 	// Arrange
-	ArrowOpTest             a[2];
-	offset_ptr<ArrowOpTest> op_a( &( a[1] ) );
+	ArrowOpTest                   a[2];
+	ipsm::offset_ptr<ArrowOpTest> op_a( &( a[1] ) );
 
 	// Act
 	auto op_b = op_a - 1;
@@ -468,9 +466,9 @@ TEST( OffsetPtr, CanSubOperator2 )
 TEST( OffsetPtr, CanSubOperator3 )
 {
 	// Arrange
-	ArrowOpTest             a[2];
-	offset_ptr<ArrowOpTest> op_a( &( a[0] ) );
-	offset_ptr<ArrowOpTest> op_b( &( a[1] ) );
+	ArrowOpTest                   a[2];
+	ipsm::offset_ptr<ArrowOpTest> op_a( &( a[0] ) );
+	ipsm::offset_ptr<ArrowOpTest> op_b( &( a[1] ) );
 
 	// Act
 	auto d = op_b - op_a;
