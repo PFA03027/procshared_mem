@@ -29,6 +29,8 @@ enum class psm_log_lv {
  * The logger function should be exception-safe, even if p_logger throws an exception, the logging system will not throw an exception.
  *
  * @param p_logger A pointer to the logger function. if nullptr is passed, the default logger will be used, which outputs to stderr.
+ *
+ * @note If you would like to handle the filtering by psm_log_lv fully, please set compile definition ENABLE_DELEGATION_OF_FILTERING
  */
 void set_psm_logger( void ( *p_logger )( psm_log_lv, const char* ) );
 
