@@ -31,11 +31,31 @@ namespace ipsm {
 template <class T, class D = std::default_delete<T>>
 class offset_unique_ptr {
 public:
-	using pointer      = T*;
-	using element_type = T;
+	using element_type = typename std::remove_extent<T>::type;
+	using pointer      = typename std::add_pointer<element_type>::type;
 	using deleter_type = D;
 
-	constexpr offset_unique_ptr( void ) noexcept = default;
+#if ( __cplusplus >= 202002L )
+	constexpr
+#endif
+		~offset_unique_ptr()
+	{
+		reset();
+	}
+	constexpr offset_unique_ptr( void ) noexcept             = default;
+	constexpr offset_unique_ptr( const offset_unique_ptr& )  = delete;
+	constexpr offset_unique_ptr( offset_unique_ptr&& )       = default;
+	offset_unique_ptr& operator=( const offset_unique_ptr& ) = delete;
+	offset_unique_ptr& operator=( offset_unique_ptr&& x )
+	{
+		if ( this != &x ) {
+			reset();
+			op_target_ = std::move( x.op_target_ );
+			deleter_   = std::move( x.deleter_ );
+		}
+		return *this;
+	}
+
 	constexpr explicit offset_unique_ptr( pointer p ) noexcept
 	  : op_target_( p )
 	  , deleter_()
@@ -78,26 +98,6 @@ public:
 	}
 #endif
 
-#if ( __cplusplus >= 202002L )
-	constexpr
-#endif
-		~offset_unique_ptr()
-	{
-		reset();
-	}
-	constexpr offset_unique_ptr( const offset_unique_ptr& )  = delete;
-	constexpr offset_unique_ptr( offset_unique_ptr&& )       = default;
-	offset_unique_ptr& operator=( const offset_unique_ptr& ) = delete;
-	offset_unique_ptr& operator=( offset_unique_ptr&& x )
-	{
-		if ( this != &x ) {
-			reset();
-			op_target_ = std::move( x.op_target_ );
-			deleter_   = std::move( x.deleter_ );
-		}
-		return *this;
-	}
-
 	constexpr pointer release( void ) noexcept
 	{
 		pointer p  = op_target_.get();
@@ -152,169 +152,16 @@ public:
 		return get();
 	}
 
-#if ( __cpp_impl_three_way_comparison > 201907L )
-	template <class T2, class D2>
-	constexpr bool operator==( const offset_unique_ptr<T2, D2>& c ) const noexcept
+	template <typename U = T>
+	constexpr typename std::enable_if<std::is_array<U>::value, typename std::add_lvalue_reference<typename std::remove_extent<U>::type>::type>::type
+	operator[]( std::ptrdiff_t idx )
 	{
-		return ( get() == c.get() );
-	}
-	template <class T2, class D2>
-	constexpr auto operator<=>( const offset_unique_ptr<T2, D2>& c ) const noexcept -> std::strong_ordering
-	{
-		return ( get() <=> c.get() );
-	}
-	constexpr bool operator==( std::nullptr_t ) const noexcept
-	{
-		return ( get() == nullptr );
-	}
-	constexpr auto operator<=>( std::nullptr_t ) const noexcept -> std::strong_ordering
-	{
-		return ( get() <=> nullptr );
+		return op_target_[idx];
 	}
 
-#else
-#endif   // __cpp_impl_three_way_comparison
-
-private:
-	offset_ptr<T> op_target_;
-	D             deleter_;
-
-	template <typename U, typename E>
-	friend class offset_unique_ptr;
-};
-
-/**
- * @brief offset based unique pointer for array
- *
- * @tparam T
- * @tparam D
- */
-template <class T, class D>
-class offset_unique_ptr<T[], D> {
-public:
-	using pointer      = T*;
-	using element_type = T;
-	using deleter_type = D;
-
-	constexpr offset_unique_ptr( void ) noexcept = default;
-	constexpr explicit offset_unique_ptr( pointer p ) noexcept
-	  : op_target_( p )
-	  , deleter_()
-	{
-	}
-	constexpr offset_unique_ptr( pointer p, const D& d1 ) noexcept
-	  : op_target_( p )
-	  , deleter_( d1 )
-	{
-	}
-	constexpr offset_unique_ptr( pointer p, D&& d2 ) noexcept
-	  : op_target_( p )
-	  , deleter_( std::move( d2 ) )
-	{
-	}
-	constexpr offset_unique_ptr( std::nullptr_t ) noexcept
-	  : op_target_( nullptr )
-	  , deleter_()
-	{
-	}
-
-#if ( __cplusplus >= 202002L )
-	template <class U = T, class E = D,
-	          typename std::enable_if<std::is_nothrow_convertible<typename offset_unique_ptr<U, E>::pointer, pointer>::value &&
-	                                  ( !std::is_array<U>::value ) &&
-	                                  std::is_nothrow_convertible<E, D>::value>::type* = nullptr>
-	offset_unique_ptr( offset_unique_ptr<U, E>&& u ) noexcept
-	  : op_target_( u.release() )
-	  , deleter_( u.deleter_ )
-	{
-	}
-#else
-	template <class U = T, class E = D,
-	          typename std::enable_if<std::is_convertible<typename offset_unique_ptr<U, E>::pointer, pointer>::value &&
-	                                  ( !std::is_array<U>::value ) &&
-	                                  std::is_convertible<E, D>::value>::type* = nullptr>
-	offset_unique_ptr( offset_unique_ptr<U, E>&& u )
-	  : op_target_( u.release() )
-	  , deleter_( u.deleter_ )
-	{
-	}
-#endif
-
-#if ( __cplusplus >= 202002L )
-	constexpr
-#endif
-		~offset_unique_ptr()
-	{
-		reset();
-	}
-	constexpr offset_unique_ptr( const offset_unique_ptr& )  = delete;
-	constexpr offset_unique_ptr( offset_unique_ptr&& )       = default;
-	offset_unique_ptr& operator=( const offset_unique_ptr& ) = delete;
-	offset_unique_ptr& operator=( offset_unique_ptr&& x )
-	{
-		if ( this != &x ) {
-			reset();
-			op_target_ = std::move( x.op_target_ );
-			deleter_   = std::move( x.deleter_ );
-		}
-		return *this;
-	}
-
-	constexpr pointer release( void ) noexcept
-	{
-		pointer p  = op_target_.get();
-		op_target_ = nullptr;
-		return p;
-	}
-
-	constexpr void reset( pointer p = nullptr ) noexcept
-	{
-		pointer orig_p = op_target_.get();
-		if ( orig_p != nullptr ) {
-			deleter_( orig_p );
-		}
-		op_target_ = p;
-	}
-
-	constexpr void swap( offset_unique_ptr& x ) noexcept
-	{
-		op_target_.swap( x.op_target_ );
-		deleter_type tmp_dl = deleter_;
-		deleter_            = x.deleter_;
-		x.deleter_          = tmp_dl;
-	}
-
-	constexpr pointer get() const noexcept
-	{
-		return op_target_.get();
-	}
-
-	constexpr deleter_type& get_deleter() noexcept
-	{
-		return deleter_;
-	}
-
-	constexpr const deleter_type& get_deleter() const noexcept
-	{
-		return deleter_;
-	}
-
-	constexpr explicit operator bool() const noexcept
-	{
-		return ( get() != nullptr );
-	}
-
-	constexpr typename std::add_lvalue_reference<element_type>::type operator*() const
-	{
-		return *get();
-	}
-
-	constexpr pointer operator->() const noexcept
-	{
-		return get();
-	}
-
-	constexpr element_type& operator[]( std::ptrdiff_t idx )
+	template <typename U = T>
+	constexpr typename std::enable_if<std::is_array<U>::value, typename std::add_lvalue_reference<typename std::add_const<typename std::remove_extent<U>::type>::type>::type>::type
+	operator[]( std::ptrdiff_t idx ) const
 	{
 		return op_target_[idx];
 	}
@@ -343,8 +190,11 @@ public:
 #endif   // __cpp_impl_three_way_comparison
 
 private:
-	offset_ptr<T> op_target_;
-	D             deleter_;
+	offset_ptr<element_type> op_target_;
+	D                        deleter_;
+
+	template <typename U, typename E>
+	friend class offset_unique_ptr;
 };
 
 #if ( __cpp_impl_three_way_comparison > 201907L )
