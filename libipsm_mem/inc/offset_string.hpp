@@ -92,6 +92,8 @@ private:
 	value_type                    soo_buff_[soo_buff_size_];   //!< small object optimization buffer
 };
 
+using offset_string = offset_basic_string<char>;
+
 ///////////////////////////////////////////////////////////////////////////////////////////////
 /// implementation
 
