@@ -7,6 +7,11 @@
  *
  * @copyright Copyright (c) 2026, Teruaki Ata (PFA03027@nifty.com)
  *
+ * このサンプルの内容
+ * * 共有メモリ上に構築したプロセス間で共有できるメモリアロケータipsm::ipsm_mallocの構築
+ *   setup_shared_memory()
+ * * ipsm::ipsm_mallocが用意している通信用チャンネルを使って、ipsm::ipsm_mallocで確保したメモリを送受信する
+ *
  */
 
 #include <cstdio>
@@ -16,6 +21,11 @@
 
 #include "ipsm_malloc.hpp"
 
+/**
+ * @brief Set the up shared memory object b/w processes
+ *
+ * @return ipsm::ipsm_malloc shared memory object
+ */
 ipsm::ipsm_malloc setup_shared_memory( void )
 {
 	// Create a shared memory object with the name "/my_shared_memory", a lifetime control file named "lifetime_control_file", a size of 1024 bytes, and read/write permissions for the owner and group.
@@ -28,6 +38,11 @@ ipsm::ipsm_malloc setup_shared_memory( void )
 	return shared_memory;
 }
 
+/**
+ * @brief allocate memory and send it via channel on ipsm::ipsm_malloc
+ *
+ * @param shared_memory [in] reference to a shared memory object
+ */
 void allocate_and_send_message( ipsm::ipsm_malloc& shared_memory )
 {
 	// Allocate memory for a message in the shared memory
@@ -46,6 +61,11 @@ void allocate_and_send_message( ipsm::ipsm_malloc& shared_memory )
 	shared_memory.send( 0, p_allocated_memory );
 }
 
+/**
+ * @brief receive offset and print it
+ *
+ * @param shared_memory  [in] reference to a shared memory object
+ */
 void receive_and_print_message( ipsm::ipsm_malloc& shared_memory )
 {
 	// Receive the message using the shared memory's receive function (assuming channel 0 is used for communication)
