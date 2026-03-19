@@ -41,7 +41,7 @@ public:
 	void swap( offset_malloc& src );
 
 	explicit offset_malloc( void* p_mem, size_t mem_bytes );   // bind and setup memory allocator implementation. caution: this instance does not become not p_mem area owner.
-	explicit offset_malloc( void* p_mem );                     // bind to memory allocator that has already setup. caution: this instance does not become not p_mem area owner.
+	explicit offset_malloc( void* p_mem );                     // bind to memory that has already setup. caution: this instance does not become not p_mem area owner.
 
 	/**
 	 * @brief Allocate memory from internal heap memory
