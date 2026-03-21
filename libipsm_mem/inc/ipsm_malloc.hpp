@@ -29,10 +29,14 @@ struct msg_channels;
 
 class ipsm_malloc {
 public:
-	~ipsm_malloc();
-	ipsm_malloc( void );
-	ipsm_malloc( ipsm_malloc&& src ) = default;
-	ipsm_malloc& operator=( ipsm_malloc&& src );
+	~ipsm_malloc()                                   = default;
+	ipsm_malloc( void )                              = default;
+	ipsm_malloc( ipsm_malloc&& src )                 = default;
+	ipsm_malloc& operator=( ipsm_malloc&& src )      = default;
+	ipsm_malloc( const ipsm_malloc& src )            = default;
+	ipsm_malloc& operator=( const ipsm_malloc& src ) = default;
+
+	void swap( ipsm_malloc& src );
 
 	/**
 	 * @brief Construct and allocate a new cooperative startup shared memory object
@@ -95,7 +99,10 @@ public:
 	template <typename T, typename... Args>
 	T* new_instance( Args&&... args )
 	{
-		return shm_heap_.new_instance( std::forward<Args>( args )... );
+		if ( sp_impl_ == nullptr ) {
+			throw std::bad_alloc();
+		}
+		return sp_impl_->shm_heap_.new_instance( std::forward<Args>( args )... );
 	}
 
 	/**
@@ -111,7 +118,8 @@ public:
 	template <typename T>
 	void delete_instance( T* p )
 	{
-		shm_heap_.delete_instance( p );
+		if ( sp_impl_ == nullptr ) return;
+		return sp_impl_->shm_heap_.delete_instance( p );
 	}
 
 	/**
@@ -127,7 +135,10 @@ public:
 	template <typename T>
 	T* new_array( size_t n )
 	{
-		return shm_heap_.new_array<T>( n );
+		if ( sp_impl_ == nullptr ) {
+			throw std::bad_alloc();
+		}
+		return sp_impl_->shm_heap_.new_array<T>( n );
 	}
 
 	/**
@@ -142,7 +153,8 @@ public:
 	template <typename T>
 	void delete_array( T* p )
 	{
-		shm_heap_.delete_array( p );
+		if ( sp_impl_ == nullptr ) return;
+		sp_impl_->shm_heap_.delete_array( p );
 	}
 
 	/**
@@ -227,14 +239,42 @@ public:
 	size_t channel_size( void ) const;
 
 private:
-	ipsm_malloc( const ipsm_malloc& src )            = delete;
-	ipsm_malloc& operator=( const ipsm_malloc& src ) = delete;
+	struct impl {
+		ipsm_mem      shm_obj_;    //!< shared memory object. this member variable declaration order required like ipsm_mem, then offset_malloc
+		offset_malloc shm_heap_;   //!< offset base memory allocator on shared memory. this member variable declaration order required like ipsm_mem, then offset_malloc
+		msg_channels* p_msgch_;    //!< pointer to message channels structure
 
-	void swap( ipsm_malloc& src );
+		~impl();
+		impl( void );
+		impl( impl&& src )                 = delete;
+		impl& operator=( impl&& src )      = delete;
+		impl( const impl& src )            = delete;
+		impl& operator=( const impl& src ) = delete;
 
-	ipsm_mem      shm_obj_;    //!< shared memory object. this member variable declaration order required like ipsm_mem, then offset_malloc
-	offset_malloc shm_heap_;   //!< offset base memory allocator on shared memory. this member variable declaration order required like ipsm_mem, then offset_malloc
-	msg_channels* p_msgch_;
+		impl(
+			const char* p_shm_name,              //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
+			const char* p_lifetime_ctrl_fname,   //!< [in] lifetime control file name.
+			size_t      length,                  //!< [in] shared memory size
+			mode_t      mode,                    //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
+			size_t      channel_size,            //!< [in] the number of channels for message passing. this value must be agreed upon in advance between communicating processes.
+			int         timeout_msec,            //!< [in] timeout in milliseconds for waiting for shared memory initialization.
+			int         retry_interval_msec      //!< [in] retry interval in milliseconds for waiting for shared memory initialization.
+		);
+
+#if __has_cpp_attribute( nodiscard )
+		[[nodiscard]]
+#endif
+		void*                           allocate( size_t n, size_t alignment );
+		void                            deallocate( void* p, size_t alignment );
+		int                             get_bind_count( void ) const;
+		void                            send( unsigned int ch, offset_ptr<void> sending_value );
+		offset_ptr<void>                receive( unsigned int ch );
+		std::optional<offset_ptr<void>> try_receive( unsigned int ch );
+		std::optional<offset_ptr<void>> try_receive_until( unsigned int ch, const time_util::timespec_monotonic& abs_timeout_time );
+		size_t                          channel_size( void ) const;
+	};
+
+	std::shared_ptr<impl> sp_impl_;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -242,7 +282,7 @@ private:
 template <typename T>
 offset_allocator<T> ipsm_malloc::get_allocator( void )
 {
-	return offset_allocator<T>( shm_heap_ );   // NOLINT(clang-diagnostic-error)
+	return offset_allocator<T>( sp_impl_->shm_heap_ );   // NOLINT(clang-diagnostic-error)
 }
 
 }   // namespace ipsm

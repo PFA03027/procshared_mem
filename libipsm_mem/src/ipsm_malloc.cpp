@@ -47,35 +47,27 @@ size_t msg_channels::calc_required_bytes( size_t channel_size_arg )
 	return required_bytes;
 }
 
-ipsm_malloc::ipsm_malloc( void )
+// ======================================================================
+
+ipsm_malloc::impl::~impl()
+{
+}
+ipsm_malloc::impl::impl( void )
   : shm_obj_()
   , shm_heap_()
   , p_msgch_( nullptr )
 {
 }
 
-ipsm_malloc::~ipsm_malloc()
-{
-}
-
-ipsm_malloc& ipsm_malloc::operator=( ipsm_malloc&& src )
-{
-	if ( this == &src ) return *this;
-
-	// メンバ変数の開放順を守るため、デストラクタの処理を利用する。
-	ipsm_malloc( std::move( src ) ).swap( *this );
-
-	return *this;
-}
-
-ipsm_malloc::ipsm_malloc(
-	const char* p_shm_name,
-	const char* p_lifetime_ctrl_fname,
-	size_t      length,
-	mode_t      mode,
-	size_t      channel_size,
-	int         timeout_msec,
-	int         retry_interval_msec )
+ipsm_malloc::impl::impl(
+	const char* p_shm_name,              //!< [in] shared memory name. this string should start '/' and shorter than NAME_MAX-4
+	const char* p_lifetime_ctrl_fname,   //!< [in] lifetime control file name.
+	size_t      length,                  //!< [in] shared memory size
+	mode_t      mode,                    //!< [in] access mode. e.g. S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
+	size_t      channel_size,            //!< [in] the number of channels for message passing. this value must be agreed upon in advance between communicating processes.
+	int         timeout_msec,            //!< [in] timeout in milliseconds for waiting for shared memory initialization.
+	int         retry_interval_msec      //!< [in] retry interval in milliseconds for waiting for shared memory initialization.
+	)
   : shm_obj_()
   , shm_heap_()
   , p_msgch_( nullptr )
@@ -112,34 +104,23 @@ ipsm_malloc::ipsm_malloc(
 #if __has_cpp_attribute( nodiscard )
 [[nodiscard]]
 #endif
-void* ipsm_malloc::allocate( size_t n, size_t alignment )
+void* ipsm_malloc::impl::allocate( size_t n, size_t alignment )
 {
 	return shm_heap_.allocate( n, alignment );
 }
 
-void ipsm_malloc::deallocate( void* p, size_t alignment )
+void ipsm_malloc::impl::deallocate( void* p, size_t alignment )
 {
 	shm_heap_.deallocate( p, alignment );
 }
 
-void ipsm_malloc::swap( ipsm_malloc& src )
-{
-	shm_obj_.swap( src.shm_obj_ );
-	shm_heap_.swap( src.shm_heap_ );
-	std::swap( p_msgch_, src.p_msgch_ );
-}
-
-int ipsm_malloc::get_bind_count( void ) const
+int ipsm_malloc::impl::get_bind_count( void ) const
 {
 	return shm_heap_.get_bind_count();
 }
 
-void ipsm_malloc::send( unsigned int ch, offset_ptr<void> sending_value )
+void ipsm_malloc::impl::send( unsigned int ch, offset_ptr<void> sending_value )
 {
-	if ( p_msgch_ == nullptr ) {
-		psm_logoutput( psm_log_lv::kErr, "Error: in ipsm_malloc::send(), p_msgch_ of ipsm_malloc is nullptr" );
-		return;
-	}
 	if ( ch >= p_msgch_->channel_size_ ) {
 		psm_logoutput( psm_log_lv::kErr, "Error: in ipsm_malloc::send(), ch is too big, requested ch=%u, actual channel_size=%u", ch, p_msgch_->channel_size_ );
 		return;
@@ -152,7 +133,7 @@ void ipsm_malloc::send( unsigned int ch, offset_ptr<void> sending_value )
 	p_msgch_->cond_.notify_all();
 	return;
 }
-offset_ptr<void> ipsm_malloc::receive( unsigned int ch )
+offset_ptr<void> ipsm_malloc::impl::receive( unsigned int ch )
 {
 	if ( p_msgch_ == nullptr ) {
 		psm_logoutput( psm_log_lv::kErr, "Error: in ipsm_malloc::receive(), p_msgch_ of ipsm_malloc is nullptr" );
@@ -173,7 +154,7 @@ offset_ptr<void> ipsm_malloc::receive( unsigned int ch )
 	return ans;
 }
 
-std::optional<offset_ptr<void>> ipsm_malloc::try_receive( unsigned int ch )
+std::optional<offset_ptr<void>> ipsm_malloc::impl::try_receive( unsigned int ch )
 {
 	if ( p_msgch_ == nullptr ) {
 		psm_logoutput( psm_log_lv::kErr, "Error: in ipsm_malloc::try_receive(), p_msgch_ of ipsm_malloc is nullptr" );
@@ -193,7 +174,7 @@ std::optional<offset_ptr<void>> ipsm_malloc::try_receive( unsigned int ch )
 	return ans;
 }
 
-std::optional<offset_ptr<void>> ipsm_malloc::try_receive_until( unsigned int ch, const time_util::timespec_monotonic& abs_timeout_time )
+std::optional<offset_ptr<void>> ipsm_malloc::impl::try_receive_until( unsigned int ch, const time_util::timespec_monotonic& abs_timeout_time )
 {
 	if ( p_msgch_ == nullptr ) {
 		psm_logoutput( psm_log_lv::kErr, "Error: in ipsm_malloc::try_receive_until(), p_msgch_ of ipsm_malloc is nullptr" );
@@ -216,13 +197,98 @@ std::optional<offset_ptr<void>> ipsm_malloc::try_receive_until( unsigned int ch,
 	return ans;
 }
 
-size_t ipsm_malloc::channel_size( void ) const
+size_t ipsm_malloc::impl::channel_size( void ) const
 {
 	if ( p_msgch_ == nullptr ) {
 		psm_logoutput( psm_log_lv::kErr, "Error: in ipsm_malloc::channel_size(), p_msgch_ of ipsm_malloc is nullptr" );
 		return 0;
 	}
 	return p_msgch_->channel_size_;
+}
+
+// ======================================================================
+
+void ipsm_malloc::swap( ipsm_malloc& src )
+{
+	sp_impl_.swap( src.sp_impl_ );
+}
+
+ipsm_malloc::ipsm_malloc(
+	const char* p_shm_name,
+	const char* p_lifetime_ctrl_fname,
+	size_t      length,
+	mode_t      mode,
+	size_t      channel_size,
+	int         timeout_msec,
+	int         retry_interval_msec )
+  : sp_impl_( std::make_shared<impl>( p_shm_name, p_lifetime_ctrl_fname, length, mode, channel_size, timeout_msec, retry_interval_msec ) )
+{
+}
+
+#if __has_cpp_attribute( nodiscard )
+[[nodiscard]]
+#endif
+void* ipsm_malloc::allocate( size_t n, size_t alignment )
+{
+	if ( sp_impl_ == nullptr ) return nullptr;
+	return sp_impl_->allocate( n, alignment );
+}
+
+void ipsm_malloc::deallocate( void* p, size_t alignment )
+{
+	if ( sp_impl_ == nullptr ) return;
+	sp_impl_->deallocate( p, alignment );
+}
+
+int ipsm_malloc::get_bind_count( void ) const
+{
+	if ( sp_impl_ == nullptr ) return 0;
+	return sp_impl_->get_bind_count();
+}
+
+void ipsm_malloc::send( unsigned int ch, offset_ptr<void> sending_value )
+{
+	if ( sp_impl_ == nullptr ) {
+		psm_logoutput( psm_log_lv::kErr, "Error: in ipsm_malloc::send(), sp_impl_ of ipsm_malloc is nullptr" );
+		return;
+	}
+	sp_impl_->send( ch, sending_value );
+	return;
+}
+offset_ptr<void> ipsm_malloc::receive( unsigned int ch )
+{
+	if ( sp_impl_ == nullptr ) {
+		psm_logoutput( psm_log_lv::kErr, "Error: in ipsm_malloc::receive(), sp_impl_ of ipsm_malloc is nullptr" );
+		return nullptr;
+	}
+	return sp_impl_->receive( ch );
+}
+
+std::optional<offset_ptr<void>> ipsm_malloc::try_receive( unsigned int ch )
+{
+	if ( sp_impl_ == nullptr ) {
+		psm_logoutput( psm_log_lv::kErr, "Error: in ipsm_malloc::try_receive(), sp_impl_ of ipsm_malloc is nullptr" );
+		return nullptr;
+	}
+	return sp_impl_->try_receive( ch );
+}
+
+std::optional<offset_ptr<void>> ipsm_malloc::try_receive_until( unsigned int ch, const time_util::timespec_monotonic& abs_timeout_time )
+{
+	if ( sp_impl_ == nullptr ) {
+		psm_logoutput( psm_log_lv::kErr, "Error: in ipsm_malloc::try_receive_until(), sp_impl_ of ipsm_malloc is nullptr" );
+		return nullptr;
+	}
+	return sp_impl_->try_receive_until( ch, abs_timeout_time );
+}
+
+size_t ipsm_malloc::channel_size( void ) const
+{
+	if ( sp_impl_ == nullptr ) {
+		psm_logoutput( psm_log_lv::kErr, "Error: in ipsm_malloc::channel_size(), sp_impl_ of ipsm_malloc is nullptr" );
+		return 0;
+	}
+	return sp_impl_->channel_size();
 }
 
 }   // namespace ipsm
