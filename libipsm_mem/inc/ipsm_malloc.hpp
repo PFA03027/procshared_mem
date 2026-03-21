@@ -92,10 +92,10 @@ public:
 	 * @note
 	 * This interface is analogy to non-array type new expression
 	 */
-	template <typename T, typename... Args>
+	template <typename T, typename... Args, typename std::enable_if<!std::is_array<T>::value>::type* = nullptr>
 	T* new_instance( Args&&... args )
 	{
-		return shm_heap_.new_instance( std::forward<Args>( args )... );
+		return shm_heap_.new_instance<T>( std::forward<Args>( args )... );
 	}
 
 	/**
