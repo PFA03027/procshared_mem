@@ -56,7 +56,7 @@ using sample_list           = ipsm::offset_list<sample_list_element, sample_list
 
 sample_list* setup_shared_list( ipsm::ipsm_malloc& shared_memory )
 {
-	sample_list* p_ans = shared_memory.new_instance<sample_list>( shared_memory.get_allocator<sample_list_element>() );
+	sample_list* p_ans = shared_memory.new_instance<sample_list>( sample_list_allocator( shared_memory.get_offset_malloc() ) );
 	return p_ans;
 }
 

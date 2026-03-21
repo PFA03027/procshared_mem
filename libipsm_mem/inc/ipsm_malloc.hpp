@@ -156,15 +156,6 @@ public:
 	int get_bind_count( void ) const;
 
 	/**
-	 * @brief Get the allocator object that is bound to this shared memory
-	 *
-	 * @tparam T
-	 * @return offset_allocator<T>
-	 */
-	template <typename T>
-	offset_allocator<T> get_allocator( void );
-
-	/**
 	 * @brief Get the offset malloc object reference
 	 *
 	 * @return const offset_malloc&
@@ -243,14 +234,6 @@ private:
 	offset_malloc shm_heap_;   //!< offset base memory allocator on shared memory. this member variable declaration order required like ipsm_mem, then offset_malloc
 	msg_channels* p_msgch_;
 };
-
-////////////////////////////////////////////////////////////////////
-// Implement
-template <typename T>
-offset_allocator<T> ipsm_malloc::get_allocator( void )
-{
-	return offset_allocator<T>( shm_heap_ );   // NOLINT(clang-diagnostic-error)
-}
 
 }   // namespace ipsm
 

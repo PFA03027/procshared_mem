@@ -202,7 +202,7 @@ TEST_F( TestIpsmMallocFixture, CanSend_ThenReceive )
 {
 	// Arrange
 
-	int* p_send = ipsm::allocate_instance<int>( sut_.get_allocator<int>(), 12345 );
+	int* p_send = ipsm::allocate_instance<int>( ipsm::offset_allocator<int>( sut_.get_offset_malloc() ), 12345 );
 
 	// Act
 	sut_.send( 0, p_send );   // 通常の生ポインタは、send()の引数型であるoffset_ptr<void>に暗黙的に変換され、送信される。
@@ -251,7 +251,7 @@ TEST_F( TestIpsmMallocFixture, SendMsg_CanTryReceiveFor1sec_ThenReturnMsg )
 	// Arrange
 	std::thread sender( [this]() {
 		std::this_thread::sleep_for( std::chrono::milliseconds( 10 ) );
-		int* p_send = ipsm::allocate_instance<int>( sut_.get_allocator<int>(), 12345 );
+		int* p_send = ipsm::allocate_instance<int>( ipsm::offset_allocator<int>( sut_.get_offset_malloc() ), 12345 );
 		sut_.send( 0, p_send );
 	} );
 
@@ -349,8 +349,8 @@ public:
 	}
 
 private:
-	ipsm::ipsm_mutex                          mtx_;
-	ipsm::ipsm_condition_variable_monotonic   cond_;
+	ipsm::ipsm_mutex                                mtx_;
+	ipsm::ipsm_condition_variable_monotonic         cond_;
 	ipsm::offset_list<T, ipsm::offset_allocator<T>> que_;
 };
 
@@ -363,7 +363,7 @@ TEST( Test_ipsm_malloc, CanMsgChannel )
 	constexpr int     num_of_threads = 100;
 	constexpr int     num_of_loop    = 10000;
 	ipsm::ipsm_malloc shm_malloc_obj( SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096UL * 100UL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
-	fifo_que<int>*    p_sut_list = ipsm::allocate_instance<fifo_que<int>>( shm_malloc_obj.get_allocator<fifo_que<int>>(), shm_malloc_obj.get_allocator<int>() );
+	fifo_que<int>*    p_sut_list = ipsm::allocate_instance<fifo_que<int>>( ipsm::offset_allocator<fifo_que<int>>( shm_malloc_obj.get_offset_malloc() ), shm_malloc_obj.get_allocator<int>() );
 	proc_task_data    pt_pack[num_of_threads];
 	// Act
 	for ( auto& e : pt_pack ) {
@@ -382,7 +382,7 @@ TEST( Test_ipsm_malloc, CanMsgChannel )
 				v      = vv + 1;
 			}
 
-			int* p_ret = ipsm::allocate_instance<int>( sut_secondary.get_allocator<int>(), v );
+			int* p_ret = ipsm::allocate_instance<int>( ipsm::offset_allocator<int>( sut_secondary.get_offset_malloc() ), v );
 			sut_secondary.send( 1, p_ret );
 			return EXIT_SUCCESS;
 		} );
