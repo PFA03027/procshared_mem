@@ -326,14 +326,14 @@ constexpr offset_unique_ptr<T> make_offset_unique( Args&&... args )
 }
 
 template <class T, class... Args, typename std::enable_if<!std::is_array<T>::value>::type* = nullptr>
-auto allocate_offset_unique_deleter( offset_malloc a, Args&&... args ) -> offset_unique_ptr<T, deleter_by_offset_malloc<T>>
+auto allocate_offset_unique( offset_malloc a, Args&&... args ) -> offset_unique_ptr<T, deleter_by_offset_malloc<T>>
 {
 	auto op = a.new_instance<T>( std::forward<Args>( args )... );
 	return offset_unique_ptr<T, deleter_by_offset_malloc<T>>( op, deleter_by_offset_malloc<T>( a ) );
 }
 
 template <class T, typename std::enable_if<std::is_array<T>::value>::type* = nullptr>
-auto allocate_offset_unique_deleter( offset_malloc a, size_t n ) -> offset_unique_ptr<T, deleter_by_offset_malloc<T>>
+auto allocate_offset_unique( offset_malloc a, size_t n ) -> offset_unique_ptr<T, deleter_by_offset_malloc<T>>
 {
 	using element_type = typename std::remove_extent<T>::type;
 	auto op            = a.new_array<element_type>( n );

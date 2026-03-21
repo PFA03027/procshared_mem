@@ -553,7 +553,7 @@ TEST( AllocateUniquePtrAllocatorDeleter, CanCall )
 	ipsm::offset_malloc om( mem, 1024 );
 
 	// Act
-	ipsm::offset_unique_ptr<sut_type, ipsm::deleter_by_offset_malloc<sut_type>> oup_sut = ipsm::allocate_offset_unique_deleter<sut_type>( om, 10 );
+	ipsm::offset_unique_ptr<sut_type, ipsm::deleter_by_offset_malloc<sut_type>> oup_sut = ipsm::allocate_offset_unique<sut_type>( om, 10 );
 
 	// Assert
 	EXPECT_EQ( *oup_sut, 10 );
@@ -569,7 +569,7 @@ TEST( AllocateUniquePtrAllocatorDeleter, CanCallWithArrayType )
 	ipsm::offset_malloc om( mem, 1024 );
 
 	// Act
-	ipsm::offset_unique_ptr<sut_type[], ipsm::deleter_by_offset_malloc<sut_type[]>> oup_sut = ipsm::allocate_offset_unique_deleter<sut_type[]>( om, 10 );
+	ipsm::offset_unique_ptr<sut_type[], ipsm::deleter_by_offset_malloc<sut_type[]>> oup_sut = ipsm::allocate_offset_unique<sut_type[]>( om, 10 );
 
 	// Assert
 	EXPECT_EQ( oup_sut[0].td_, 10 );
