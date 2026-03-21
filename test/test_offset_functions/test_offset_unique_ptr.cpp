@@ -545,31 +545,33 @@ TEST( OffsetBasedUniquePtr, CanOperatorsWithNullPtr )
 	EXPECT_FALSE( ( nullptr >= oup_sut ) );
 }
 
-TEST( AllocateUniquePtrAllocatorDeleter, CanCallWithStdAllocatorStdDefaultDeleter )
+TEST( AllocateUniquePtrAllocatorDeleter, CanCall )
 {
 	// Arrange
 	using sut_type = int;
-	auto alloc     = std::allocator<sut_type>();
+	unsigned char       mem[1024];
+	ipsm::offset_malloc om( mem, 1024 );
 
 	// Act
-	ipsm::offset_unique_ptr<sut_type, ipsm::deleter_by_allocator<sut_type, std::allocator<sut_type>>> oup_sut = ipsm::allocate_offset_unique_deleter<sut_type>( alloc, 10 );
+	ipsm::offset_unique_ptr<sut_type, ipsm::deleter_by_offset_malloc<sut_type>> oup_sut = ipsm::allocate_offset_unique_deleter<sut_type>( om, 10 );
 
 	// Assert
 	EXPECT_EQ( *oup_sut, 10 );
 }
 
-TEST( AllocateUniquePtrAllocatorDeleter, CanCallWithOffsetAllocatorOffsetDeleterOnOffsetMalloc )
+TEST( AllocateUniquePtrAllocatorDeleter, CanCallWithArrayType )
 {
 	// Arrange
-	using sut_type = int;
-	unsigned char       test_buff[1024];
-	void*               p_mem = reinterpret_cast<void*>( test_buff );
-	ipsm::offset_malloc mem_alloc( p_mem, 1024 );
-	auto                alloc = ipsm::offset_allocator<sut_type>( mem_alloc );
+	struct sut_type {
+		int td_ = 10;
+	};
+	unsigned char       mem[1024];
+	ipsm::offset_malloc om( mem, 1024 );
 
 	// Act
-	ipsm::offset_unique_ptr<sut_type, ipsm::deleter_by_allocator<sut_type, ipsm::offset_allocator<sut_type>>> oup_sut = ipsm::allocate_offset_unique_deleter<sut_type>( alloc, 10 );
+	ipsm::offset_unique_ptr<sut_type[], ipsm::deleter_by_offset_malloc<sut_type[]>> oup_sut = ipsm::allocate_offset_unique_deleter<sut_type[]>( om, 10 );
 
 	// Assert
-	EXPECT_EQ( *oup_sut, 10 );
+	EXPECT_EQ( oup_sut[0].td_, 10 );
+	EXPECT_EQ( oup_sut[1].td_, 10 );
 }

@@ -225,4 +225,9 @@ size_t ipsm_malloc::channel_size( void ) const
 	return p_msgch_->channel_size_;
 }
 
+const offset_malloc& ipsm_malloc::get_offset_malloc( void ) const
+{
+	return shm_heap_;
+}
+
 }   // namespace ipsm

@@ -165,6 +165,13 @@ public:
 	offset_allocator<T> get_allocator( void );
 
 	/**
+	 * @brief Get the offset malloc object reference
+	 *
+	 * @return const offset_malloc&
+	 */
+	const offset_malloc& get_offset_malloc( void ) const;
+
+	/**
 	 * @brief Send the value object
 	 *
 	 * Uses a pre-constructed message channel to send and receive values between processes.

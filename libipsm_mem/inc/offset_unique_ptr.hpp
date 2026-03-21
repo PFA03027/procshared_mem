@@ -325,23 +325,19 @@ constexpr offset_unique_ptr<T> make_offset_unique( Args&&... args )
 	return offset_unique_ptr<T>( new T( std::forward<Args>( args )... ) );
 }
 
-template <class T, class Allocator, class... Args>
-auto allocate_offset_unique_deleter( const Allocator& a, Args&&... args ) -> offset_unique_ptr<T, deleter_by_allocator<T, typename std::allocator_traits<Allocator>::template rebind_alloc<T>>>
+template <class T, class... Args, typename std::enable_if<!std::is_array<T>::value>::type* = nullptr>
+auto allocate_offset_unique_deleter( offset_malloc a, Args&&... args ) -> offset_unique_ptr<T, deleter_by_offset_malloc<T>>
 {
-	using Ts_allocator        = typename std::allocator_traits<Allocator>::template rebind_alloc<T>;
-	using Ts_allocator_traits = typename std::allocator_traits<Allocator>::template rebind_traits<T>;
-	using Ts_deleter          = deleter_by_allocator<T, Ts_allocator>;
+	auto op = a.new_instance<T>( std::forward<Args>( args )... );
+	return offset_unique_ptr<T, deleter_by_offset_malloc<T>>( op, deleter_by_offset_malloc<T>( a ) );
+}
 
-	Ts_allocator ts_alloc( a );
-
-	T* p = Ts_allocator_traits::allocate( ts_alloc, 1 );
-	try {
-		Ts_allocator_traits::construct( ts_alloc, p, std::forward<Args>( args )... );
-	} catch ( ... ) {
-		Ts_allocator_traits::deallocate( ts_alloc, p, 1 );
-		throw;
-	}
-	return offset_unique_ptr<T, Ts_deleter>( p, Ts_deleter( ts_alloc ) );
+template <class T, typename std::enable_if<std::is_array<T>::value>::type* = nullptr>
+auto allocate_offset_unique_deleter( offset_malloc a, size_t n ) -> offset_unique_ptr<T, deleter_by_offset_malloc<T>>
+{
+	using element_type = typename std::remove_extent<T>::type;
+	auto op            = a.new_array<element_type>( n );
+	return offset_unique_ptr<T, deleter_by_offset_malloc<T>>( op, deleter_by_offset_malloc<T>( a ) );
 }
 
 }   // namespace ipsm

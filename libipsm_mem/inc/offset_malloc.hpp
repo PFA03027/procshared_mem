@@ -199,6 +199,52 @@ constexpr bool operator!=( const offset_malloc& a, const offset_malloc& b ) noex
 	return ( a.p_impl_ != b.p_impl_ );
 }
 
+/**
+ * @brief deleter that delete the memory area that allocated by offset_malloc.new_instance<T>()
+ *
+ * @tparam T
+ */
+template <typename T>
+class deleter_by_offset_malloc {
+public:
+	~deleter_by_offset_malloc() = default;
+	deleter_by_offset_malloc( const offset_malloc& alloc_arg )
+	  : ma_( alloc_arg )
+	{
+	}
+
+	void operator()( T* ptr )
+	{
+		ma_.delete_instance<T>( ptr );
+	}
+
+private:
+	offset_malloc ma_;
+};
+
+/**
+ * @brief deleter that delete the memory area that allocated by offset_malloc.new_array<T>()
+ *
+ * @tparam T[]
+ */
+template <typename T>
+class deleter_by_offset_malloc<T[]> {
+public:
+	~deleter_by_offset_malloc() = default;
+	deleter_by_offset_malloc( const offset_malloc& alloc_arg )
+	  : ma_( alloc_arg )
+	{
+	}
+
+	void operator()( T* ptr )
+	{
+		ma_.delete_array<T>( ptr );
+	}
+
+private:
+	offset_malloc ma_;
+};
+
 }   // namespace ipsm
 
 #endif   // OFFSET_MALLOC_HPP_
