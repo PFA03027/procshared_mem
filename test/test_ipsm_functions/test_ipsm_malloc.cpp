@@ -403,12 +403,12 @@ TEST( Test_ipsm_malloc, CanMsgChannel )
 		int*  p_ret = reinterpret_cast<int*>( p_tmp );
 		ASSERT_NE( p_ret, nullptr );
 		sum_value += *p_ret;
-		destruct_obj_usee_allocator( ipsm::offset_allocator<int>( shm_malloc_obj.get_offset_malloc() ), p_ret );
+		destruct_obj_use_allocator( ipsm::offset_allocator<int>( shm_malloc_obj.get_offset_malloc() ), p_ret );
 	}
 	EXPECT_EQ( sum_value, num_of_loop * num_of_threads );
 
 	// Cleanup
-	destruct_obj_usee_allocator( ipsm::offset_allocator<int>( shm_malloc_obj.get_offset_malloc() ), p_sut_list );
+	destruct_obj_use_allocator( ipsm::offset_allocator<int>( shm_malloc_obj.get_offset_malloc() ), p_sut_list );
 }
 
 #endif   // TEST_ENABLE_ADDRESSSANITIZER

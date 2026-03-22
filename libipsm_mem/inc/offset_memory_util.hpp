@@ -87,7 +87,7 @@ inline T* allocate_instance( const Allocator& alloc_arg, Args&&... args )
 }
 
 template <typename T, typename Allocator>
-inline void destruct_obj_usee_allocator( const Allocator& alloc_arg, T* p )
+inline void destruct_obj_use_allocator( const Allocator& alloc_arg, T* p )
 {
 	if ( p == nullptr ) return;
 
