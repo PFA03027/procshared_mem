@@ -153,15 +153,23 @@ void offset_malloc::offset_malloc_impl::deallocate( void* p, size_t alignment )
 	uintptr_t addr_end = reinterpret_cast<uintptr_t>( op_end_.get() );
 	if ( addr_p < addr_top ) {
 		// out of range
-		psm_logoutput( psm_log_lv::kErr, "Error: incorrect deallocation is requested. it is out of range, p_mem=%p, addr_top=%p",
-		               p, reinterpret_cast<void*>( addr_top ) );
+		psm_logoutput( psm_log_lv::kErr, "Error: incorrect deallocation is requested. it is out of range, p=%p, addr_top=%p - addr_end=%p",
+		               p, reinterpret_cast<void*>( addr_top ), reinterpret_cast<void*>( addr_end ) );
+#ifdef NDEBUG
 		return;
+#else
+		throw std::out_of_range( "Error: deallocation requested addr of p is out of range" );
+#endif
 	}
 	if ( addr_end <= addr_p ) {
 		// out of range
-		psm_logoutput( psm_log_lv::kErr, "Error: incorrect deallocation is requested. it is out of range, p_mem=%p, addr_end=%p",
-		               p, reinterpret_cast<void*>( addr_end ) );
+		psm_logoutput( psm_log_lv::kErr, "Error: incorrect deallocation is requested. it is out of range, p=%p, addr_top=%p - addr_end=%p",
+		               p, reinterpret_cast<void*>( addr_top ), reinterpret_cast<void*>( addr_end ) );
+#ifdef NDEBUG
 		return;
+#else
+		throw std::out_of_range( "Error: deallocation requested addr of p is out of range" );
+#endif
 	}
 
 	uintptr_t    addr_target_blk = ( addr_p / size_of_block_header() - 1 ) * size_of_block_header();

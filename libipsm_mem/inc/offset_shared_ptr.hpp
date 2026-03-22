@@ -15,16 +15,16 @@
 #include <memory>
 #include <mutex>
 
-#include "offset_unique_ptr.hpp"
 #include "ipsm_mutex.hpp"
+#include "offset_unique_ptr.hpp"
 
 namespace ipsm {
 
 namespace offset_shared_ptr_detail {
 
-class alloc_if_abst;
+class ctrl_block_deleter_if;
 
-class offset_shared_ptr_impl_if {
+class offset_shared_ptr_ctrl_block_if {
 public:
 	struct ctrl_data {
 		ctrl_data( void )
@@ -71,16 +71,16 @@ public:
 		}
 
 	private:
-		explicit ascer( offset_shared_ptr_impl_if& a )
+		explicit ascer( offset_shared_ptr_ctrl_block_if& a )
 		  : lk_( a.mtx_ )
 		  , p_ctrl_( &( a.ctrl_ ) )
 		{
 		}
 
-		friend offset_shared_ptr_impl_if;
+		friend offset_shared_ptr_ctrl_block_if;
 
 		std::unique_lock<ipsm_mutex> lk_;
-		ctrl_data*                         p_ctrl_;
+		ctrl_data*                   p_ctrl_;
 	};
 
 	class const_ascer {
@@ -111,21 +111,21 @@ public:
 		}
 
 	private:
-		explicit const_ascer( const offset_shared_ptr_impl_if& a )
+		explicit const_ascer( const offset_shared_ptr_ctrl_block_if& a )
 		  : lk_( a.mtx_ )
 		  , p_ctrl_( &( a.ctrl_ ) )
 		{
 		}
 
-		friend offset_shared_ptr_impl_if;
+		friend offset_shared_ptr_ctrl_block_if;
 
 		std::unique_lock<ipsm_mutex> lk_;
-		const ctrl_data*                   p_ctrl_;
+		const ctrl_data*             p_ctrl_;
 	};
 
-	virtual ~offset_shared_ptr_impl_if()              = default;
-	virtual alloc_if_abst* get_alloc_if( void ) const = 0;   // 取得したオブジェクトは、使い終わったらdeleteで破棄すること。
-	virtual void           dispose_resource( void )   = 0;
+	virtual ~offset_shared_ptr_ctrl_block_if()                    = default;
+	virtual ctrl_block_deleter_if* get_self_deleter( void ) const = 0;   //!< 取得したオブジェクトは、使い終わったらdeleteで破棄すること。
+	virtual void                   dispose_resource( void )       = 0;   //!< 共有しているオブジェクトを破棄する。
 
 	ascer get_ascer( void )
 	{
@@ -137,62 +137,93 @@ public:
 		return const_ascer( *this );
 	}
 
-	static inline void try_dispose_shared( offset_ptr<offset_shared_ptr_impl_if>& p )
+	static inline void try_dispose_shared( offset_ptr<offset_shared_ptr_ctrl_block_if>& p )
 	{
-		try_dispose_com( p, &offset_shared_ptr_impl_if::ctrl_data::shrd_refc_ );
+		try_dispose_com( p, &offset_shared_ptr_ctrl_block_if::ctrl_data::shrd_refc_ );
 	}
-	static inline void try_dispose_weak( offset_ptr<offset_shared_ptr_impl_if>& p )
+	static inline void try_dispose_weak( offset_ptr<offset_shared_ptr_ctrl_block_if>& p )
 	{
-		try_dispose_com( p, &offset_shared_ptr_impl_if::ctrl_data::weak_refc_ );
+		try_dispose_com( p, &offset_shared_ptr_ctrl_block_if::ctrl_data::weak_refc_ );
 	}
 
 private:
-	static void try_dispose_com( offset_ptr<offset_shared_ptr_impl_if>& p, long ctrl_data::*mp_tcnt );
+	static void try_dispose_com( offset_ptr<offset_shared_ptr_ctrl_block_if>& p, long ctrl_data::* mp_tcnt );
 
 	mutable ipsm_mutex mtx_;   // mutex for exclusive access control
-	ctrl_data                ctrl_;
+	ctrl_data          ctrl_;
 };
 
-class alloc_if_abst {
+class ctrl_block_deleter_if {
 public:
-	virtual ~alloc_if_abst()                                             = default;
-	virtual void call_destroy_deallocate( offset_shared_ptr_impl_if* p ) = 0;
+	virtual ~ctrl_block_deleter_if()                                           = default;
+	virtual void call_destroy_deallocate( offset_shared_ptr_ctrl_block_if* p ) = 0;
 };
 
-template <typename Alloc, typename IFConcrete>
-class alloc_if_concrete_of_Alloc : public alloc_if_abst {
+/**
+ * @brief deleter of control block
+ *
+ * @tparam Alloc allocator type of control block that is allocated by Alloc
+ * @tparam CtrlBlock control block type
+ */
+template <typename Alloc, typename CtrlBlock>
+class ctrl_block_deleter_by_alloc : public ctrl_block_deleter_if {
 public:
-	using value_type            = typename Alloc::value_type;
-	using size_type             = typename Alloc::size_type;
-	using difference_type       = typename Alloc::difference_type;
-	using allocator_type        = typename std::allocator_traits<Alloc>::template rebind_alloc<IFConcrete>;
-	using allocator_traits_type = std::allocator_traits<allocator_type>;
-
-	alloc_if_concrete_of_Alloc( const Alloc& al );
-	~alloc_if_concrete_of_Alloc() = default;
-
-	void call_destroy_deallocate( offset_shared_ptr_impl_if* p ) override;
-
-private:
-	allocator_type allocator_;
-};
-
-template <typename R, typename D, typename AllocRT>
-class offset_shared_ptr_impl : public offset_shared_ptr_impl_if {
-public:
-	using resource_type           = R;
-	using resource_pointer        = resource_type*;
-	using deleter_type            = D;
-	using resource_allocator_type = AllocRT;
-
-	offset_shared_ptr_impl( resource_pointer p_r_arg, D& del, AllocRT& allc )
-	  : offset_shared_ptr_impl_if()
-	  , op_to_obj_( p_r_arg, del )
-	  , alloc_( allc )
+	~ctrl_block_deleter_by_alloc() = default;
+	ctrl_block_deleter_by_alloc( const Alloc& al )
+	  : ctrl_block_allocator_( al )
 	{
 	}
 
-	alloc_if_abst* get_alloc_if( void ) const override;
+	void call_destroy_deallocate( offset_shared_ptr_ctrl_block_if* p ) override
+	{
+		using allocator_traits_type = std::allocator_traits<Alloc>;
+
+		if ( p == nullptr ) {
+			// 呼び出し側のエラーだけど、例外を投げるわけにもいかないので、そのまま終了する。
+			return;
+		}
+
+		CtrlBlock* p_tmp = dynamic_cast<CtrlBlock*>( p );
+		if ( p_tmp == nullptr ) {
+			// エラーだけど、例外を投げるわけにもいかないので、そのまま終了する。
+			return;
+		}
+		allocator_traits_type::destroy( ctrl_block_allocator_, p_tmp );
+		allocator_traits_type::deallocate( ctrl_block_allocator_, p_tmp, 1 );
+	}
+
+private:
+	// using ctrl_block_allocator_type = typename std::allocator_traits<Alloc>::template rebind_alloc<CtrlBlock>;
+	Alloc ctrl_block_allocator_;
+};
+
+/**
+ * @brief control block class
+ *
+ * @tparam R type that keep the data
+ * @tparam D deleter type that is able to delete the pointer of R
+ * @tparam Alloc allocator class. 型情報がループしないようにコントロールブロック型への紐づきを切るために、あえてコントロールブロックの型情報を持たせない。
+ */
+template <typename R, typename D, typename Alloc>
+class offset_shared_ptr_ctrl_block_concrete : public offset_shared_ptr_ctrl_block_if {
+public:
+	using resource_type    = R;
+	using resource_pointer = typename std::add_pointer<resource_type>::type;
+	using deleter_type     = D;
+
+	offset_shared_ptr_ctrl_block_concrete( resource_pointer p_r_arg, D& del, const Alloc& allc )
+	  : offset_shared_ptr_ctrl_block_if()
+	  , op_to_obj_( p_r_arg, del )
+	  , self_deleter_allocator_( allc )
+	{
+	}
+
+	ctrl_block_deleter_if* get_self_deleter( void ) const override
+	{
+		using self_deleter_t = ctrl_block_deleter_by_alloc<self_ctrl_block_alloc_t, offset_shared_ptr_ctrl_block_concrete>;
+		auto p_ans           = new self_deleter_t( self_deleter_allocator_ );
+		return p_ans;
+	}
 
 	void dispose_resource( void ) override
 	{
@@ -200,41 +231,10 @@ public:
 	}
 
 private:
-	offset_unique_ptr<R, D> op_to_obj_;   // offset pointer to an object of T
-
-	AllocRT alloc_;   // allocator
+	using self_ctrl_block_alloc_t = typename std::allocator_traits<Alloc>::template rebind_alloc<offset_shared_ptr_ctrl_block_concrete>;
+	offset_unique_ptr<R, D> op_to_obj_;                // offset pointer to an object of T
+	self_ctrl_block_alloc_t self_deleter_allocator_;   // allocator
 };
-
-template <typename Alloc, typename IFConcrete>
-alloc_if_concrete_of_Alloc<Alloc, IFConcrete>::alloc_if_concrete_of_Alloc( const Alloc& al )
-  : allocator_( al )
-{
-}
-
-template <typename Alloc, typename IFConcrete>
-void alloc_if_concrete_of_Alloc<Alloc, IFConcrete>::call_destroy_deallocate( offset_shared_ptr_impl_if* p )
-{
-	if ( p == nullptr ) {
-		// 呼び出し側のエラーだけど、例外を投げるわけにもいかないので、そのまま終了する。
-		return;
-	}
-
-	IFConcrete* p_tmp = dynamic_cast<IFConcrete*>( p );
-	if ( p_tmp == nullptr ) {
-		// エラーだけど、例外を投げるわけにもいかないので、そのまま終了する。
-		return;
-	}
-	allocator_traits_type::destroy( allocator_, p_tmp );
-	allocator_traits_type::deallocate( allocator_, p_tmp, 1 );
-}
-
-template <typename R, typename D, typename AllocRT>
-alloc_if_abst* offset_shared_ptr_impl<R, D, AllocRT>::get_alloc_if( void ) const
-{
-	using concrete_alloc = alloc_if_concrete_of_Alloc<AllocRT, offset_shared_ptr_impl<R, D, AllocRT>>;
-	auto p_ans           = new concrete_alloc( alloc_ );
-	return p_ans;
-}
 
 }   // namespace offset_shared_ptr_detail
 
@@ -249,7 +249,7 @@ public:
 
 	~offset_shared_ptr()
 	{
-		offset_shared_ptr_detail::offset_shared_ptr_impl_if::try_dispose_shared( p_r_impl_ );
+		offset_shared_ptr_detail::offset_shared_ptr_ctrl_block_if::try_dispose_shared( p_r_impl_ );
 		p_r_impl_ = nullptr;
 		p_        = nullptr;
 	}
@@ -279,26 +279,28 @@ public:
 	{
 		static_assert( std::is_convertible<Y*, T*>::value, "Y* should be convertible to T*" );
 
-		using concrete_type     = offset_shared_ptr_detail::offset_shared_ptr_impl<Y, D, Alloc>;
-		using impl_alloc        = std::allocator<concrete_type>;
-		using impl_alloc_traits = std::allocator_traits<impl_alloc>;
+		using char_allocator_t            = typename std::allocator_traits<Alloc>::template rebind_alloc<char>;
+		using ctrl_block_t                = offset_shared_ptr_detail::offset_shared_ptr_ctrl_block_concrete<Y, D, char_allocator_t>;
+		using ctrl_block_allocator_t      = typename std::allocator_traits<Alloc>::template rebind_alloc<ctrl_block_t>;
+		using ctrl_block_allocator_traits = std::allocator_traits<ctrl_block_allocator_t>;
 
-		impl_alloc     cur_alloc;
-		concrete_type* p_tmp = nullptr;
+		char_allocator_t       char_alloc( alc );
+		ctrl_block_allocator_t cb_alloc( alc );
+		ctrl_block_t*          p_tmp = nullptr;
 		try {
-			p_tmp = impl_alloc_traits::allocate( cur_alloc, 1 );
+			p_tmp = ctrl_block_allocator_traits::allocate( cb_alloc, 1 );   // メモリ領域の確保
 		} catch ( ... ) {
 			del( p_arg );
 			throw;
 		}
 		try {
-			impl_alloc_traits::construct( cur_alloc, p_tmp, p_arg, del, alc );
-			p_tmp->get_ascer().ref().shrd_refc_++;
+			ctrl_block_allocator_traits::construct( cb_alloc, p_tmp, p_arg, del, char_alloc );   // 確保したメモリ領域でコンストラクタを呼び出す。
 		} catch ( ... ) {
-			impl_alloc_traits::deallocate( cur_alloc, p_tmp, 1 );
+			ctrl_block_allocator_traits::deallocate( cb_alloc, p_tmp, 1 );
 			del( p_arg );
 			throw;
 		}
+		p_tmp->get_ascer().ref().shrd_refc_++;   // offset_shared_ptrと接続したので、カウンタをupする。
 		p_r_impl_ = p_tmp;
 	}
 
@@ -419,9 +421,9 @@ public:
 		p_                     = b.p_;
 		b.p_                   = p_backup;
 
-		offset_shared_ptr_detail::offset_shared_ptr_impl_if* p_r_impl_backup = p_r_impl_;
-		p_r_impl_                                                            = b.p_r_impl_;
-		b.p_r_impl_                                                          = p_r_impl_backup;
+		offset_shared_ptr_detail::offset_shared_ptr_ctrl_block_if* p_r_impl_backup = p_r_impl_;
+		p_r_impl_                                                                  = b.p_r_impl_;
+		b.p_r_impl_                                                                = p_r_impl_backup;
 
 		return;
 	}
@@ -493,8 +495,8 @@ public:
 	}
 
 private:
-	offset_ptr<offset_shared_ptr_detail::offset_shared_ptr_impl_if> p_r_impl_;
-	offset_ptr<element_type>                                        p_;
+	offset_ptr<offset_shared_ptr_detail::offset_shared_ptr_ctrl_block_if> p_r_impl_;
+	offset_ptr<element_type>                                              p_;
 
 	template <typename U>
 	friend class offset_shared_ptr;
@@ -509,7 +511,7 @@ public:
 
 	~offset_weak_ptr()
 	{
-		offset_shared_ptr_detail::offset_shared_ptr_impl_if::try_dispose_weak( p_r_impl_ );
+		offset_shared_ptr_detail::offset_shared_ptr_ctrl_block_if::try_dispose_weak( p_r_impl_ );
 		p_r_impl_ = nullptr;
 		p_        = nullptr;
 	}
@@ -614,8 +616,8 @@ public:
 	{
 		if ( this == &r ) return;
 
-		offset_shared_ptr_detail::offset_shared_ptr_impl_if* p_tmp_impl_ = p_r_impl_;
-		element_type*                                        p_tmp       = p_;
+		offset_shared_ptr_detail::offset_shared_ptr_ctrl_block_if* p_tmp_impl_ = p_r_impl_;
+		element_type*                                              p_tmp       = p_;
 
 		p_r_impl_ = r.p_r_impl_;
 		p_        = r.p_;
@@ -671,8 +673,8 @@ public:
 	}
 
 private:
-	offset_ptr<offset_shared_ptr_detail::offset_shared_ptr_impl_if> p_r_impl_;
-	offset_ptr<element_type>                                        p_;
+	offset_ptr<offset_shared_ptr_detail::offset_shared_ptr_ctrl_block_if> p_r_impl_;
+	offset_ptr<element_type>                                              p_;
 
 	template <typename U>
 	friend class offset_weak_ptr;
@@ -685,6 +687,23 @@ offset_shared_ptr<T> make_offset_shared( Args&&... args )
 {
 	// 仮実装
 	return offset_shared_ptr<T>( new T( std::forward<Args>( args )... ) );
+}
+
+template <typename T, typename... Args, typename std::enable_if<!std::is_array<T>::value>::type* = nullptr>
+offset_shared_ptr<T> allocate_offset_shared( offset_malloc a, Args&&... args )
+{
+	// 仮実装
+	auto op = a.new_instance<T>( std::forward<Args>( args )... );
+	return offset_shared_ptr<T>( op, deleter_by_offset_malloc<T>( a ), offset_allocator<T>( std::move( a ) ) );
+}
+
+template <typename T, typename... Args, typename std::enable_if<std::is_array<T>::value>::type* = nullptr>
+offset_shared_ptr<T> allocate_offset_shared( offset_malloc a, size_t n )
+{
+	// 仮実装
+	using element_type = typename std::remove_extent<T>::type;
+	auto op            = a.new_array<element_type>( n );
+	return offset_shared_ptr<T>( op, deleter_by_offset_malloc<T>( a ), offset_allocator<T>( a ) );
 }
 
 template <typename T>

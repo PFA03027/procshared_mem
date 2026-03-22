@@ -363,7 +363,7 @@ TEST( Test_ipsm_malloc, CanMsgChannel )
 	constexpr int     num_of_threads = 100;
 	constexpr int     num_of_loop    = 10000;
 	ipsm::ipsm_malloc shm_malloc_obj( SHM_OBJ_NAME_STRING, SHM_OBJ_NAME_LIFETIME_CTRL_STRING, 4096UL * 100UL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
-	fifo_que<int>*    p_sut_list = ipsm::allocate_instance<fifo_que<int>>( ipsm::offset_allocator<fifo_que<int>>( shm_malloc_obj.get_offset_malloc() ), shm_malloc_obj.get_allocator<int>() );
+	fifo_que<int>*    p_sut_list = ipsm::allocate_instance<fifo_que<int>>( ipsm::offset_allocator<fifo_que<int>>( shm_malloc_obj.get_offset_malloc() ), ipsm::offset_allocator<int>( shm_malloc_obj.get_offset_malloc() ) );
 	proc_task_data    pt_pack[num_of_threads];
 	// Act
 	for ( auto& e : pt_pack ) {
@@ -403,12 +403,12 @@ TEST( Test_ipsm_malloc, CanMsgChannel )
 		int*  p_ret = reinterpret_cast<int*>( p_tmp );
 		ASSERT_NE( p_ret, nullptr );
 		sum_value += *p_ret;
-		destruct_obj_usee_allocator( shm_malloc_obj.get_allocator<int>(), p_ret );
+		destruct_obj_usee_allocator( ipsm::offset_allocator<int>( shm_malloc_obj.get_offset_malloc() ), p_ret );
 	}
 	EXPECT_EQ( sum_value, num_of_loop * num_of_threads );
 
 	// Cleanup
-	destruct_obj_usee_allocator( shm_malloc_obj.get_allocator<fifo_que<int>>(), p_sut_list );
+	destruct_obj_usee_allocator( ipsm::offset_allocator<int>( shm_malloc_obj.get_offset_malloc() ), p_sut_list );
 }
 
 #endif   // TEST_ENABLE_ADDRESSSANITIZER

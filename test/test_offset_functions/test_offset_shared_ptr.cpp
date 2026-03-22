@@ -566,3 +566,34 @@ TEST( TestOffsetSharedPtr, CanDoMakeOffsetShared )
 	EXPECT_EQ( sp_sut->x_, 1 );
 	EXPECT_EQ( sp_sut->y_, 2 );
 }
+
+TEST( AllocateOffsetShared, CanCall )
+{
+	// Arrange
+	using sut_type = int;
+	unsigned char       mem[1024];
+	ipsm::offset_malloc om( mem, 1024 );
+
+	// Act
+	ipsm::offset_shared_ptr<sut_type> osp_ret = ipsm::allocate_offset_shared<int>( om, 11 );
+
+	// Arrange
+	EXPECT_EQ( *osp_ret, 11 );
+}
+
+// TEST( AllocateOffsetShared, CanCallWithArrayType )
+// {
+// 	// Arrange
+// 	struct sut_type {
+// 		int td_ = 10;
+// 	};
+// 	unsigned char       mem[1024];
+// 	ipsm::offset_malloc om( mem, 1024 );
+
+// 	// Act
+// 	ipsm::offset_shared_ptr<sut_type[]> osp_ret = ipsm::allocate_offset_shared<sut_type[]>( om, 10 );
+
+// 	// Assert
+// 	EXPECT_EQ( osp_ret[0].td_, 10 );
+// 	EXPECT_EQ( osp_ret[1].td_, 10 );
+// }

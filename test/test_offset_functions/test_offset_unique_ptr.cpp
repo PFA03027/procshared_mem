@@ -545,7 +545,7 @@ TEST( OffsetBasedUniquePtr, CanOperatorsWithNullPtr )
 	EXPECT_FALSE( ( nullptr >= oup_sut ) );
 }
 
-TEST( AllocateUniquePtrAllocatorDeleter, CanCall )
+TEST( AllocateOffsetUnique, CanCall )
 {
 	// Arrange
 	using sut_type = int;
@@ -559,7 +559,7 @@ TEST( AllocateUniquePtrAllocatorDeleter, CanCall )
 	EXPECT_EQ( *oup_sut, 10 );
 }
 
-TEST( AllocateUniquePtrAllocatorDeleter, CanCallWithArrayType )
+TEST( AllocateOffsetUnique, CanCallWithArrayType )
 {
 	// Arrange
 	struct sut_type {
