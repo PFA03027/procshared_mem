@@ -49,6 +49,7 @@ set(TEST_OFFSET_FUNCTIONS_SOURCES
   test_offset_functions/test_offset_shared_ptr.cpp
   test_offset_functions/test_offset_weak_ptr.cpp
   test_offset_functions/test_offset_shared_weak_highload.cpp
+  test_offset_functions/test_offset_basic_string.cpp
 
   test_offset_functions/test_offset_allocator.cpp
   test_offset_functions/test_offset_malloc_impl.cpp
