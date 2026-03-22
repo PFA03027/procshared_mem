@@ -457,17 +457,17 @@ public:
 		offset_shared_ptr<element_type>( p_arg, del, alc ).swap( *this );
 	}
 
-	element_type* get( void ) const noexcept
+	constexpr element_type* get( void ) const noexcept
 	{
 		return p_.get();
 	}
 
-	element_type& operator*() const noexcept
+	constexpr element_type& operator*() const noexcept
 	{
 		return *( p_.get() );
 	}
 
-	element_type* operator->() const noexcept
+	constexpr element_type* operator->() const noexcept
 	{
 		return p_.get();
 	}
@@ -476,14 +476,14 @@ public:
 	constexpr typename std::enable_if<std::is_array<U>::value, typename std::add_lvalue_reference<typename std::remove_extent<U>::type>::type>::type
 	operator[]( std::ptrdiff_t idx )
 	{   // 戻り値型でSFINAEを行う
-		return get()[idx];
+		return p_.get()[idx];
 	}
 
 	template <typename U = T>
 	constexpr typename std::enable_if<std::is_array<U>::value, typename std::add_lvalue_reference<typename std::add_const<typename std::remove_extent<U>::type>::type>::type>::type
 	operator[]( ptrdiff_t idx ) const
 	{   // 戻り値型でSFINAEを行う
-		return get()[idx];
+		return p_.get()[idx];
 	}
 
 	long use_count() const noexcept
