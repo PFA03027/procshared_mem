@@ -244,7 +244,7 @@ class offset_weak_ptr;
 template <typename T>
 class offset_shared_ptr {
 public:
-	using element_type = T;
+	using element_type = typename std::remove_extent<T>::type;
 	using weak_type    = offset_weak_ptr<T>;
 
 	~offset_shared_ptr()
@@ -277,7 +277,7 @@ public:
 	  : p_r_impl_( nullptr )
 	  , p_( p_arg )
 	{
-		static_assert( std::is_convertible<Y*, T*>::value, "Y* should be convertible to T*" );
+		static_assert( std::is_convertible<Y*, element_type*>::value, "Y* should be convertible to T*" );
 
 		using char_allocator_t            = typename std::allocator_traits<Alloc>::template rebind_alloc<char>;
 		using ctrl_block_t                = offset_shared_ptr_detail::offset_shared_ptr_ctrl_block_concrete<Y, D, char_allocator_t>;
@@ -472,9 +472,18 @@ public:
 		return p_.get();
 	}
 
-	element_type& operator[]( ptrdiff_t i ) const
-	{
-		return get()[i];
+	template <typename U = T>
+	constexpr typename std::enable_if<std::is_array<U>::value, typename std::add_lvalue_reference<typename std::remove_extent<U>::type>::type>::type
+	operator[]( std::ptrdiff_t idx )
+	{   // 戻り値型でSFINAEを行う
+		return get()[idx];
+	}
+
+	template <typename U = T>
+	constexpr typename std::enable_if<std::is_array<U>::value, typename std::add_lvalue_reference<typename std::add_const<typename std::remove_extent<U>::type>::type>::type>::type
+	operator[]( ptrdiff_t idx ) const
+	{   // 戻り値型でSFINAEを行う
+		return get()[idx];
 	}
 
 	long use_count() const noexcept

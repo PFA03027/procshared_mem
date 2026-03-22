@@ -296,7 +296,7 @@ TEST( TestOffsetSharedPtr, CanDoOperatorArray )
 	p[0].y_        = 2;
 	p[1].x_        = 3;
 	p[1].y_        = 4;
-	ipsm::offset_shared_ptr<ArrowOpTest> sp_sut( p, std::default_delete<ArrowOpTest[]>() );
+	ipsm::offset_shared_ptr<ArrowOpTest[]> sp_sut( p, std::default_delete<ArrowOpTest[]>() );
 
 	// Act
 
@@ -581,19 +581,19 @@ TEST( AllocateOffsetShared, CanCall )
 	EXPECT_EQ( *osp_ret, 11 );
 }
 
-// TEST( AllocateOffsetShared, CanCallWithArrayType )
-// {
-// 	// Arrange
-// 	struct sut_type {
-// 		int td_ = 10;
-// 	};
-// 	unsigned char       mem[1024];
-// 	ipsm::offset_malloc om( mem, 1024 );
+TEST( AllocateOffsetShared, CanCallWithArrayType )
+{
+	// Arrange
+	struct sut_type {
+		int td_ = 10;
+	};
+	unsigned char       mem[1024];
+	ipsm::offset_malloc om( mem, 1024 );
 
-// 	// Act
-// 	ipsm::offset_shared_ptr<sut_type[]> osp_ret = ipsm::allocate_offset_shared<sut_type[]>( om, 10 );
+	// Act
+	ipsm::offset_shared_ptr<sut_type[]> osp_ret = ipsm::allocate_offset_shared<sut_type[]>( om, 10 );
 
-// 	// Assert
-// 	EXPECT_EQ( osp_ret[0].td_, 10 );
-// 	EXPECT_EQ( osp_ret[1].td_, 10 );
-// }
+	// Assert
+	EXPECT_EQ( osp_ret[0].td_, 10 );
+	EXPECT_EQ( osp_ret[1].td_, 10 );
+}
