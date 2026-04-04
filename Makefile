@@ -107,6 +107,7 @@ build-test-no-sanitizer: configure-cmake-no-sanitizer
 sample: build-sample
 	-./build/sample/sample_01_msg_exchange_via_shared_memory
 	-./build/sample/sample_02_list_of_unique_ptr
+	-./build/sample/sample_03_offset_shared_ptr
 
 build-sample: configure-cmake-no-sanitizer
 	cmake --build ${BUILD_DIR} -j ${JOBS} -v --target build-sample

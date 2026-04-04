@@ -703,7 +703,7 @@ offset_shared_ptr<T> allocate_offset_shared( offset_malloc a, Args&&... args )
 {
 	// 仮実装
 	auto op = a.new_instance<T>( std::forward<Args>( args )... );
-	return offset_shared_ptr<T>( op, deleter_by_offset_malloc<T>( a ), offset_allocator<T>( std::move( a ) ) );
+	return offset_shared_ptr<T>( op, deleter_by_offset_malloc<T>( a ), offset_allocator<T>( a ) );
 }
 
 template <typename T, typename... Args, typename std::enable_if<std::is_array<T>::value>::type* = nullptr>
